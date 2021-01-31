@@ -1,34 +1,27 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, OneToOne, JoinColumn } from "typeorm";
-import { Product } from "./Product";
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, PrimaryColumn } from "typeorm";
+import { OrderDetails } from "./OrderDetails";
 import { TelegramUser } from "./TelegramUser";
 
 @Entity()
 export class Order {
 
-    @PrimaryGeneratedColumn()
-    Id?: number;
-
-    @Column()
-    Amount: number;
-
-    @Column({ length: 4000, nullable: true })
-    Description?: string;
+    @PrimaryColumn({ type: 'uuid' })
+    Id: string;
 
     @Column({ type: 'smallint', default: 0 })
     Status?: number;
 
     @Column({ type: 'datetime' })
     CreateDate: Date;
+    @Column({ length: 4000, nullable: true })
+    Description?: string;
     @Column()
     userId: number;
 
-    @ManyToOne(() => TelegramUser, user => user.OrderDetails)
-    user?: Promise<TelegramUser>;
-    @Column()
-    productId: number;
+    @ManyToOne(() => TelegramUser, user => user.Orders)
+    user?: TelegramUser;
 
-    @ManyToOne(() => Product, product => product.Orders)
-    @JoinColumn()
-    Product?: Product;
+    @OneToMany(() => OrderDetails, order => order.Order)
+    OrderDetails?: OrderDetails[];
 
 }

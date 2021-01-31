@@ -3,7 +3,7 @@ export enum CallBackQueryResult {
     AddToBasket = "ADD_TO_BASKET",
     //AddToBasketAndCompleteOrder = "ADD_TO_BASKET_COMPLETE_ORDER",
     TrackOrder = "ORDER_TRACKING",
-    MyOrders = "MY_ORDERS",
+    MyBasket = "MY_ORDERS",
     //AddressRequest = "ADRESS_REQUEST",
     //SearchAgain = "SEARCH_AGAIN",
     //IncreaseOrder = "IncreaseOrder",
@@ -14,5 +14,7 @@ export enum CallBackQueryResult {
     SendOrder = "SEND_ORDER",
     ConfirmOrder = "CONFIRM_ORDER",
     EmptyBakset = "EMPTY_BASKET",
-    MainMenu = "MAIN_MENU"
+    MainMenu = "MAIN_MENU",
+    AddNoteToOrder = "ADD_NOTE_TO_ORDER",
+    GetConfirmedOrders = "GET_CONFIRMED_ORDERS",
 }

@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from "typeorm";
 import { Order } from "./Order";
+import { OrderDetails } from "./OrderDetails";
 import { TelegramUser } from "./TelegramUser";
 
 @Entity()
@@ -26,8 +27,8 @@ export class Product {
     @Column({ type: 'decimal', nullable: true })
     UnitPrice?: number;
 
-    @OneToMany(() => Order, order => order.Product)
-    Orders: Promise<Order[]>;
+    @OneToMany(() => OrderDetails, orderDetails => orderDetails.Product)
+    OrderDetails: Promise<Order[]>;
 
     // @Column()
     // userId: number;

@@ -1,105 +1,150 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import Telegraf, { Context, session, Stage } from 'telegraf';
-import { TelegrafContext } from 'telegraf/typings/context';
+import { Context, Scenes, session, Telegraf } from 'telegraf';
+// import { TelegrafContext } from 'telegraf/typings/context';
 import { InlineQueryResult, InlineQueryResultArticle, User } from 'telegraf/typings/telegram-types';
-import { getRepository, Repository } from 'typeorm';
+import { getCustomRepository, getRepository, Repository } from 'typeorm';
+import { BotContext } from './bot/interfaces/BotContext';
 import { CallBackQueryResult } from './bot/models/CallBackQueryResult';
 import { AddressWizardService } from './bot/wiards/address-wizard.service';
 import { OrderStatus } from './DB/enums/OrderStatus';
 import { Order } from './DB/models/Order';
 import { Product } from './DB/models/Product';
 import { TelegramUser } from './DB/models/TelegramUser';
+import { Guid } from "guid-typescript";
+import { AddnoteToOrderWizardService } from './bot/wiards/order-note.-wizard.service';
+import { UserRepository } from './bot/custom-repositories/UserRepository';
+import { StartOrderingCb } from './bot/helpers/start-ordering-CB-handler';
+import { OrdersInBasketCb } from './bot/helpers/get-orders-in-basket-CB-handler';
+import { FirstMessageHandler } from './bot/helpers/first-message-handler';
+import { CompleteOrderHandler } from './bot/helpers/complete-order-handler';
+import { OrderRepository } from './bot/custom-repositories/OrderRepository';
+import { ConfirmOrderHandler } from './bot/helpers/confirm-order.handler';
+import { OrderDetails } from './DB/models/OrderDetails';
+import { GetConfirmedOrderCb } from './bot/helpers/get-confirmed-orders-handler';
 
 @Injectable()
 export class AppService implements OnModuleInit {
-  userRepository: Repository<TelegramUser> = getRepository(TelegramUser);
-  orderRepository: Repository<Order> = getRepository(Order);
+  userRepository = getCustomRepository(UserRepository);
+  orderRepository = getCustomRepository(OrderRepository);
+  orderDetailsRepository: Repository<OrderDetails> = getRepository(OrderDetails);
   productRepository: Repository<Product> = getRepository(Product);
-  constructor(private addressWizard: AddressWizardService) {
+  constructor(private addressWizard: AddressWizardService, private addNoteToOrderWizard: AddnoteToOrderWizardService) {
 
   }
   onModuleInit() {
     this.InitlizeAndLunchBot();
   }
   getHello(): string {
-    return 'Hello World!';
+    return 'Hello Fuat!';
   }
 
   InitlizeAndLunchBot() {
-    const bot = new Telegraf("1572537123:AAHs1SWycLVjjdgwWFkDRrMDegJBLf5rfvs");
+    const bot = new Telegraf<BotContext>("1485687554:AAFbN5pD2h5hzi9o9eydQjh6l4RcVYTtp5c"); //, { handlerTimeout: 1000 }
 
     this.InitlizeWizards(bot);
-
     this.InilizeBotEventsHandlers(bot);
+
 
     bot.launch();
   }
-  InilizeBotEventsHandlers(bot: Telegraf<Context>) {
+  InilizeBotEventsHandlers(bot: Telegraf<BotContext>) {
     bot.command("start",
-      async ctx => await this.startOptions(ctx)
+      async ctx => await FirstMessageHandler.startOptions(ctx)
     );
 
 
-    bot.on("callback_query", async ctx => {
-      switch (ctx.callbackQuery.data) {
+    bot.on("callback_query", async (ctx) => {
+      // if ("data" in ctx.callbackQuery && ctx.callbackQuery.data) {
+      //   console.log(ctx.callbackQuery.from.id)
+      // }
+      if ("data" in ctx.callbackQuery && ctx.callbackQuery.data) {
+        // console.log(ctx.callbackQuery.data)
+        switch (ctx.callbackQuery.data) {
 
-        case CallBackQueryResult.StartOrdering:
-          await ctx.answerCbQuery();
-          await this.StartOrdering(ctx);
-          break;
+          case CallBackQueryResult.StartOrdering:
+            await ctx.answerCbQuery();
+            await StartOrderingCb.StartOrdering(ctx);
+            break;
 
-        case CallBackQueryResult.AddProductAndCompleteOrder:
-          await ctx.answerCbQuery();
-          await this.AddProductAndCompleteOrder(ctx as ExtendedTelegrafContext);
-          break;
+          case CallBackQueryResult.AddProductAndCompleteOrder:
+            await ctx.answerCbQuery();
+            await this.AddProductAndCompleteOrder(ctx);
+            break;
 
-        case CallBackQueryResult.CompleteOrder:
-          await this.CompleteOrder(ctx as ExtendedTelegrafContext);
-          break;
-
-
-        case CallBackQueryResult.AddToBasket:
-          await ctx.answerCbQuery();
-          await this.AddToBasket(ctx);
-          break;
-
-        case CallBackQueryResult.EnterAddress:
-          await ctx.answerCbQuery();
-          await this.EnterAddress(ctx as ExtendedTelegrafContext);
-          break;
-
-        case CallBackQueryResult.SendOrder:
-          await ctx.answerCbQuery();
-          await this.SendOrder(ctx);
-          break;
-
-        case CallBackQueryResult.MyOrders:
-          const orderDetails = await this.GetOrdersInBasket(ctx);
-          await this.ShowProductCategories(ctx, orderDetails);
-          break;
-
-        case CallBackQueryResult.ConfirmOrder:
-          await ctx.answerCbQuery();
-          await this.ConfirmOrder(ctx);
-          break;
+          case CallBackQueryResult.CompleteOrder:
+            await CompleteOrderHandler.CompleteOrder(ctx);
+            break;
 
 
-        case CallBackQueryResult.EmptyBakset:
-          await this.EmptyBasket(ctx);
-          break;
+          case CallBackQueryResult.AddToBasket:
+            await ctx.answerCbQuery();
+            await this.AddToBasket(ctx);
+            break;
 
-        case CallBackQueryResult.MainMenu:
-          await ctx.answerCbQuery();
-          await this.startOptions(ctx);
-          break;
+          case CallBackQueryResult.EnterAddress:
+            await ctx.answerCbQuery();
+            await this.EnterAddress(ctx);
+            break;
 
-        case CallBackQueryResult.TrackOrder:
-          await ctx.answerCbQuery("Bu Özellik Yapım Aşamasındadır");
-          break;
+          case CallBackQueryResult.SendOrder:
+            await this.SendOrder(ctx);
+            break;
 
-        default:
-          break;
+          case CallBackQueryResult.MyBasket:
+            const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(ctx, OrderStatus.InBasket);
+            if (orderDetails != null)
+              await ctx.editMessageText(orderDetails,
+                {
+                  parse_mode: 'HTML',
+                  reply_markup: {
+                    // one_time_keyboard: true,
+                    inline_keyboard:
+                      [
+                        [{ text: "🥘 Sipariş Ver 🥘", callback_data: CallBackQueryResult.StartOrdering }],
+                        [{ text: "🚚 Siparişini Takip Et 🚚", callback_data: CallBackQueryResult.GetConfirmedOrders }],
+                        // [{ text: "🗑 Sepetem 🗑", callback_data: CallBackQueryResult.MyBasket }],
+                        [{ text: "🗑 Sepetemi Boşalt 🗑", callback_data: CallBackQueryResult.EmptyBakset }],
+                        [{ text: "✔️ Siparişimi Tamamla ✔️", callback_data: CallBackQueryResult.CompleteOrder }],
+                        [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
+                      ]
+                  }
+                });
+            break;
+
+          case CallBackQueryResult.ConfirmOrder:
+            await ConfirmOrderHandler.ConfirmOrder(ctx);
+            // await FirstMessageHandler.startOptions(ctx);
+            break;
+
+
+          case CallBackQueryResult.EmptyBakset:
+            await this.EmptyBasket(ctx);
+            break;
+
+          case CallBackQueryResult.MainMenu:
+            await ctx.answerCbQuery();
+            await FirstMessageHandler.startOptions(ctx);
+            break;
+
+          case CallBackQueryResult.TrackOrder:
+            await ctx.answerCbQuery("Bu Özellik Yapım Aşamasındadır");
+            break;
+
+          case CallBackQueryResult.AddNoteToOrder:
+            await this.addNoteToOrder(ctx)
+            break;
+
+          case CallBackQueryResult.GetConfirmedOrders:
+            await GetConfirmedOrderCb.GetConfirmedOrders(ctx);
+            // await FirstMessageHandler.startOptions(ctx);
+            break;
+
+          default:
+            await ctx.answerCbQuery();
+            break;
+        }
       }
+
     });
 
     bot.on("inline_query", async (ctx) => {
@@ -156,7 +201,7 @@ export class AppService implements OnModuleInit {
 
 
     bot.on("message", async ctx => {
-      if (ctx.message['via_bot']?.is_bot) {
+      if ("text" in ctx.message && ctx.message['via_bot']?.is_bot) {
         if (parseInt(ctx.message.text, 10)) {
           await this.AddToBasketAndComplteOrderOrContinueShopping(ctx);
         }
@@ -165,9 +210,8 @@ export class AppService implements OnModuleInit {
   }
   async EmptyBasket(ctx: Context) {
     try {
-      await this.orderRepository.delete({ userId: ctx.from.id, Status: OrderStatus.Given })
+      await this.orderRepository.delete({ userId: ctx.callbackQuery.from.id, Status: OrderStatus.InBasket })
       await ctx.answerCbQuery("Sepetiniz Boşaltılmıştır.");
-      await this.startOptions(ctx);
     } catch (error) {
       //Loglama
       console.log(error);
@@ -175,252 +219,126 @@ export class AppService implements OnModuleInit {
     }
 
   }
-  async ConfirmOrder(ctx: Context) {
-    let orderDetails = await this.GetOrdersInBasket(ctx);
-    const orders = orderDetails === "" ? 'Lütfen bir ürün seçiniz' : orderDetails;
-    await ctx.reply('📍 Adresiniz Alınmıştır.📍 \n\n' + `<b>Sipariş Özeti</b>:\n` + orders,
-      {
-        parse_mode: 'HTML',
-        reply_markup: {
-          one_time_keyboard: true,
-          inline_keyboard:
-            [
-              [{ text: "👌 Siparişimi Onayla 👌", callback_data: CallBackQueryResult.SendOrder }],
-              [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
-            ]
-        }
-      });
-  }
-  async SendOrder(ctx: Context) {
 
-    await this.orderRepository.update({ userId: ctx.from.id }, { Status: OrderStatus.Accepted });
-    ctx.reply("Siparişiniz Gönderilmiştir");
-    // Ana Sayfaya Yönlendir
-  }
-  EnterAddress(ctx: ExtendedTelegrafContext) {
-    ctx.scene.enter('address');
-  }
-  async AddToBasket(ctx: TelegrafContext) {
-    await this.AddNewOrder(ctx);
-    await this.StartOrdering(ctx);
-  }
-  async startOptions(ctx: Context) {
-    await this.createNewUserIfUserDoesnitExist(ctx);
-    return await ctx.reply('Hoş Geldiniz , \n Sipariş vermeniz için ben size yardımcı olacağım.',
-      {
-        reply_markup: {
-          one_time_keyboard: true,
-          inline_keyboard:
-            [
-              [{ text: "🥘 Sipariş Ver 🥘", callback_data: CallBackQueryResult.StartOrdering }],
-              [{ text: "🚚 Siparişini Takip Et 🚚", callback_data: CallBackQueryResult.TrackOrder }],
-              [{ text: "🗑 Sepetem 🗑", callback_data: CallBackQueryResult.MyOrders }],
-              [{ text: "🗑 Sepetemi Boşalt 🗑", callback_data: CallBackQueryResult.EmptyBakset }],
-              [{ text: "✔️ Siparişimi Tamamla ✔️", callback_data: CallBackQueryResult.CompleteOrder }],
-            ]
-        }
-      })
-  }
-  async createNewUserIfUserDoesnitExist(ctx: Context) {
-    const user = await this.userRepository.findOne(ctx.from.id);
-    if (!user) {
-      const newUser: TelegramUser = { Id: ctx.from.id, FirstName: ctx.from.first_name, LastName: ctx.from.last_name, Username: ctx.from.username };
-      await this.userRepository.save(newUser);
+  async SendOrder(ctx: BotContext) {
+    try {
+      const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
+      await this.orderRepository.update({ userId: userInfo.id, Status: OrderStatus.InBasket }, { Status: OrderStatus.UserConfirmed });
+      await ctx.answerCbQuery("Siparişiniz Gönderilmiştir");
+      await FirstMessageHandler.startOptions(ctx);
+    } catch (error) {
+      console.log(error)
+      await ctx.answerCbQuery("Bir hata oluştu. Lütfen tekrar deneyiniz.")
     }
 
   }
+  async EnterAddress(ctx: BotContext) {
+    await ctx.scene.enter('address', await ctx.reply('Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal'));
+  }
+  async AddToBasket(ctx: BotContext) {
+    await this.AddNewOrder(ctx);
+    await StartOrderingCb.StartOrdering(ctx);
+  }
+
   InitlizeWizards(bot: Telegraf<Context>) {
+    const addNoteToOrderWizard = this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
     let addressWizard = this.addressWizard.InitilizeAdressWizard();
-    const stage = new Stage([addressWizard]);
+    const stage = new Scenes.Stage<BotContext>([addressWizard, addNoteToOrderWizard]);
     stage.command('iptal', async (ctx) => {
       await ctx.scene.leave();
-      await this.startOptions(ctx);
+      await FirstMessageHandler.startOptions(ctx);
     })
     bot.use(session());
     bot.use(stage.middleware());
 
   }
 
-  async StartOrdering(ctx: TelegrafContext) {
-    let user = await this.getUser(ctx.from);
-    user.SelectedProducts = null;
-    await this.userRepository.update({ Id: user.Id }, user);
 
-    let orderDetails = await this.GetOrdersInBasket(ctx);
-    await this.ShowProductCategories(ctx, orderDetails);
+  async AddToBasketAndComplteOrderOrContinueShopping(ctx) {
+    if ("text" in ctx.message) {
+      const selectedProduct = ctx.message.text;
 
+      const user = await this.userRepository.getUser(ctx);
+      if (user) {
+        // let selectedProducts: string[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
+        let selectedProducts: string[] = [selectedProduct];
+        // selectedProducts.push(ctx.message.text);
+        user.SelectedProducts = JSON.stringify(selectedProducts);
+        this.userRepository.save(user);
+      }
 
-  }
-  async ShowProductCategories(ctx: Context, orderDetails: string) {
-    try {
-      const orders = orderDetails === "" ? 'Lütfen bir ürün seçiniz' : orderDetails;
-      await ctx.editMessageText(orders,
+      // Get Prodcut Details From DB and Show Them
+      const product = await this.productRepository.findOne({ where: { Id: selectedProduct } });
+      await ctx.reply(`<b>${product.Title}</b> \n` + `Açıklama:<i> ${product.Description}</i> \n` + `Fiyat: <u> ${product.UnitPrice} TL</u>`,
         {
-          parse_mode: "HTML",
+          parse_mode: 'HTML',
           reply_markup: {
             one_time_keyboard: true,
             inline_keyboard:
               [
-                [{ text: "🍖 Kebap 🍢", switch_inline_query_current_chat: 'Kebap' }],
-                [{ text: "🥤 İçecek 🍸", switch_inline_query_current_chat: "\u0130\u00E7ecek" }],
-                [{ text: "🍲 Çorba 🥣", switch_inline_query_current_chat: "\u00C7orba" }],
-                [{ text: "🍬 Tatlı 🍬", switch_inline_query_current_chat: "Tatl\u0131" }],
+                [{ text: `🛒 Sepete Ekle ve Alışverişe devam et 🛒`, callback_data: CallBackQueryResult.AddToBasket }],
+                [{ text: `🛒 Sepete Ekle ve Siarişimi Tamamla ✔️`, callback_data: CallBackQueryResult.AddProductAndCompleteOrder }],
+                [{ text: "🍛 Başka Ürün Seç 🍝", callback_data: CallBackQueryResult.StartOrdering }],
+                [{ text: "✔️ Siparişimi Tamamla ✔️", callback_data: CallBackQueryResult.CompleteOrder }],
                 [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
               ]
           }
-        });
-    } catch (error) {
-      //Loglama
-      console.log(error);
-    }
-
-  }
-  async GetOrdersInBasket(ctx: TelegrafContext) {
-    let orderDetails = '';
-    try {
-      const ordersInBasket = await this.orderRepository.find({ where: { userId: ctx.from.id, Status: OrderStatus.Given }, relations: ['Product'] });
-      if (ordersInBasket.length == 0) {
-        orderDetails = 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';
-        await ctx.answerCbQuery("Sepetiniz Boştur. Lütfen Ürün Seçiniz");
-      } else {
-        let TotalPrice = ordersInBasket.map(value => value.Product.UnitPrice * (value.Amount > 0 ? value.Amount : 1)).reduce((previous, current) => previous + current);
-        orderDetails = 'Sepetinizdeki Ürünler:\n\n';
-        ordersInBasket.forEach(order => {
-          orderDetails = orderDetails.concat(`Ürün İsmi : ${order.Product.Title}\n`, `Fiyat: <u> ${order.Product.UnitPrice} TL</u>\n`, `Miktar : ${order.Amount}\n`, `Açıklama : ${order.Description ?? "Yok"}` + '\n\n');
-        });
-        orderDetails = orderDetails.concat(`\n\n Toplam: ${TotalPrice} TL`);
-        await ctx.answerCbQuery();
-      }
-
-    } catch (error) {
-      //Loglama
-      console.log(error);
-      await ctx.answerCbQuery("Bir hata oluştu. Lütfen tekrar deneyiniz.")
+        })
     }
 
 
-    return orderDetails;
   }
 
-  async AddToBasketAndComplteOrderOrContinueShopping(ctx: TelegrafContext) {
-    const selectedProduct = ctx.message.text;
 
-    const user = await this.getUser(ctx.from);
-    if (user) {
-      // let selectedProducts: string[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
-      let selectedProducts: string[] = [selectedProduct];
-      // selectedProducts.push(ctx.message.text);
-      user.SelectedProducts = JSON.stringify(selectedProducts);
-      this.userRepository.save(user);
-    }
-
-    // Get Prodcut Details From DB and Show Them
-    const product = await this.productRepository.findOne({ where: { Id: selectedProduct } });
-    await ctx.reply(`<b>${product.Title}</b> \n` + `Açıklama:<i> ${product.Description}</i> \n` + `Fiyat: <u> ${product.UnitPrice} TL</u>`,
-      {
-        parse_mode: 'HTML',
-        reply_markup: {
-          one_time_keyboard: true,
-          inline_keyboard:
-            [
-              [{ text: `🛒 Sepete Ekle ve Alışverişe devam et 🛒`, callback_data: CallBackQueryResult.AddToBasket }],
-              [{ text: `🛒 Sepete Ekle ve Siarişimi Tamamla ✔️`, callback_data: CallBackQueryResult.AddProductAndCompleteOrder }],
-              [{ text: "🍛 Başka Ürün Seç 🍝", callback_data: CallBackQueryResult.StartOrdering }],
-              [{ text: "✔️ Siparişimi Tamamla ✔️", callback_data: CallBackQueryResult.CompleteOrder }],
-              [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
-            ]
-        }
-      })
-
-  }
-  async getUser(from: User, relations?: string[]) {
-    if (relations && relations.length > 0) {
-      return await this.userRepository.findOne(from.id, { relations: relations });
-    } else
-      return await this.userRepository.findOne(from.id);
-  }
-
-  async AddProductAndCompleteOrder(ctx: ExtendedTelegrafContext) {
+  async AddProductAndCompleteOrder(ctx: BotContext) {
     await this.AddNewOrder(ctx);
-    await this.CompleteOrder(ctx);
-
-  }
-  async CompleteOrder(ctx: ExtendedTelegrafContext) {
-    try {
-      const user = await this.getUser(ctx.from, ["Orders"]);
-      const orders = await user.Orders;
-
-      if (orders.length > 0) {
-        await ctx.answerCbQuery();
-        if (user.Address) {
-
-
-          if (user.Location) {
-            const location = JSON.parse(user.Location);
-            await ctx.replyWithLocation(
-              location.latitude,
-              location.longitude
-            );
-          }
-
-
-          await ctx.replyWithMarkdown(`<i>${user.Address}</i> \n \n`
-            + '<b>Kayıtlı olan adres ve konumunuz mu kullanalım?</b> \n \n'
-            + '<b>Note:</b> Açık adres ile konumun uyuşmadığı tadirde, açık adres kullanılacaktır.',
-            {
-              parse_mode: 'HTML',
-              reply_markup: {
-                inline_keyboard:
-                  [
-                    [
-                      { text: 'Evet', callback_data: CallBackQueryResult.ConfirmOrder },
-                      { text: 'Hayır', callback_data: CallBackQueryResult.EnterAddress }
-                    ]
-                  ]
-              }
-            });
-        } else {
-          ctx.scene.enter('address');
-        }
-      } else {
-        await ctx.answerCbQuery("Sepetiniz Boştur. Lütfen Ürün Seçiniz");
-        await this.ShowProductCategories(ctx, "")
-      }
-    } catch (error) {
-      //Loglama
-      console.log(error);
-      await ctx.answerCbQuery("Bir hata oluştu. Lütfen tekrar deneyiniz. /start")
-    }
+    await CompleteOrderHandler.CompleteOrder(ctx);
 
   }
 
-  async AddNewOrder(ctx: TelegrafContext) {
-    const user = await this.getUser(ctx.from);
+
+  async AddNewOrder(ctx: BotContext) {
+    const user = await this.userRepository.getUser(ctx);
     if (user) {
+      console.log("AddNEwOrder")
       let selectedProducts: number[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
       if (selectedProducts.length > 0) {
-        const orderDetails: Order[] = await this.orderRepository.find({ where: { userId: user.Id, Status: OrderStatus.Given } });
-        selectedProducts.map((Id) => {
-          const order = orderDetails.find((fi) => fi.productId == Id)
-          if (order) {
-            orderDetails.find((fi) => fi.productId == Id).Amount += 1;
-          } else {
-            orderDetails.push({ productId: Id, Amount: 1, userId: user.Id, CreateDate: new Date() });
-          }
-        });
+
+        let order: Order = await this.orderRepository.findOne({ where: { userId: user.Id, Status: OrderStatus.InBasket }, relations: ["OrderDetails"] });
+        if (order) {
+          selectedProducts.map((Id) => {
+            const orderDetails = order.OrderDetails.find((fi) => fi.productId == Id);
+            if (orderDetails) {
+              order.OrderDetails.find((fi) => fi.productId == Id).Amount += 1;
+            } else {
+              order.OrderDetails.push({ productId: Id, Amount: 1, OrderId: order.Id, CreateDate: new Date() });
+            }
+          });
+        } else {
+          const guid = Guid.create().toString();
+          order = new Order();
+          order = { CreateDate: new Date(), Status: OrderStatus.InBasket, userId: user.Id, Id: guid };
+          order.OrderDetails = [];
+          selectedProducts.map((Id) => {
+            order.OrderDetails.push({ productId: Id, Amount: 1, OrderId: guid, CreateDate: new Date() });
+          });
+
+        }
+        await this.orderRepository.save(order);
+        await this.orderDetailsRepository.save(order.OrderDetails);
         user.SelectedProducts = null;
         await this.userRepository.update({ Id: user.Id }, user);
-        await this.orderRepository.save(orderDetails);
       }
     }
   }
+
+  async addNoteToOrder(ctx: BotContext) {
+    const orderInBasket = await this.orderRepository.getOrdersInBasketByStatus(ctx, OrderStatus.InBasket, ['OrderDetails']);
+    if (orderInBasket.OrderDetails.length > 0) {
+      ctx.scene.enter('AddNoteToOrder', ctx.reply("Lütfen Eklemek İstediğiniz notu giriniz... \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal"))
+    } else {
+      await ctx.answerCbQuery("Sepetiniz Boştur.");
+    }
+
+  }
 }
-
-
-export interface ExtendedTelegrafContext extends Context {
-  session: any;
-  scene: any;
-  wizard: Wizrd;
-}
-
-type Wizrd = { back: () => any, next: () => any, steps: any, cursor: any }
