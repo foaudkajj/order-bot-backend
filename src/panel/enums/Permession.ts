@@ -1,3 +1,3 @@
-export enum Permession {
-    CAN_TEST = "CAN_TEST"
+export enum PermessionEnum {
+    SHOW_ROLE = "SHOW_ROLE"
 }

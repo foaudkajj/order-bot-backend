@@ -11,6 +11,8 @@ export class Permession {
     PermessionKey: string;
     @Column({ type: 'nvarchar', length: 50, nullable: true })
     ParentKey: string;
+    @Column({ type: 'bit' })
+    IsParent: string;
     @Column({ name: 'menuId', nullable: true })
     MenuId: number;
     @OneToOne(() => Menu, { nullable: true })

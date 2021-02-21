@@ -1,4 +1,3 @@
-import { Permession } from "src/panel/enums/Permession";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserStatus } from "../enums/UserStatus";
 import { Role } from "./Role";
