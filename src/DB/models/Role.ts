@@ -9,7 +9,7 @@ export class Role {
     Id: number;
     @Column()
     RoleName: string;
-    @Column()
+    @Column({ nullable: true })
     Description: string;
     @OneToMany(() => RoleAndPermession, roleAndPermession => roleAndPermession.Role)
     RoleAndPermessions: RoleAndPermession[];

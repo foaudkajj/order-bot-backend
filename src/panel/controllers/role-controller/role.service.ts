@@ -59,4 +59,38 @@ export class RoleService {
             return <UIResponseBase<Permession>>{ IsError: true, MessageKey: 'ERROR', StatusCode: 500 }
         }
     }
+
+    async Insert(role: Role) {
+        try {
+            let response: UIResponseBase<Role> = { IsError: false, Result: role, MessageKey: 'SUCCESS', StatusCode: 200 };
+            await getRepository(Role).insert(role);
+            return response;
+        } catch (error) {
+            console.log(error)
+            throw <UIResponseBase<Role>>{ IsError: true, MessageKey: "ERROR", StatusCode: 500 }
+        }
+
+    }
+
+    async Update(updateDetails: Role) {
+        try {
+            let role = await getRepository(Role).findOne({ where: { Id: updateDetails.Id } });
+            let { Id, ...updatedRole } = { ...role, ...updateDetails }
+            await getRepository(Role).update({ Id: role.Id }, updatedRole);
+            return <UIResponseBase<Role>>{ IsError: false, Result: updatedRole, MessageKey: 'SUCCESS', StatusCode: 200 };;
+        } catch (error) {
+            console.log(error)
+            throw <UIResponseBase<Role>>{ IsError: true, MessageKey: "ERROR", StatusCode: 500 }
+        }
+    }
+
+    async Delete(Id: number) {
+        try {
+            await getRepository(Role).delete({ Id: Id });
+            return <UIResponseBase<Role>>{ IsError: false, MessageKey: 'SUCCESS', StatusCode: 200 };;
+        } catch (error) {
+            console.log(error)
+            throw <UIResponseBase<Role>>{ IsError: true, MessageKey: "ERROR", StatusCode: 500 }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
 import { User } from 'src/DB/models/User';
 import { getRepository, Repository } from 'typeorm';
 import { LoginRequest } from '../dtos/loginRequestDto';
@@ -21,22 +20,26 @@ export class AuthService {
 
   async validateUser(loginRequest: LoginRequest): Promise<any> {
     // let user: User = await this.userRepository.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('Role.RoleAndPermessions', 'RoleAndPermessions').getOne();
-    let user = await this.userRepository.findOne({ where: { UserName: loginRequest.UserName }, relations: ['Role', 'Role.RoleAndPermessions', 'Role.RoleAndPermessions.Permession'] });
-    let Menus = await this.menusRepository.find();
+    let user = await this.userRepository.findOne({ where: { UserName: loginRequest.UserName }, relations: ['Role', 'Role.RoleAndPermessions', 'Role.RoleAndPermessions.Permession', 'Role.RoleAndPermessions.Permession.Menu'] });
+    let Menus = user.Role.RoleAndPermessions.filter(fi => fi.Permession.Menu).map(fi => fi.Permession.Menu);
+    let parentMenus = await this.menusRepository.find({ where: { IsParent: true } });
+    Menus = Menus.concat(parentMenus);
     let sortedMenus = sortBy(Menus, 'Priority');
     let NavigationItems = this.CreateMenus(sortedMenus);
+    NavigationItems = NavigationItems.filter(fi => fi.children.length != 0);
 
-    const Permessions = user.Role.RoleAndPermessions.map(mp => mp.Permession.PermessionKey);
+    const permessions = user.Role.RoleAndPermessions.map(mp => mp.Permession.PermessionKey);
+
     const isMatch = await bcrypt.compareSync(loginRequest.Password, user?.Password);
     if (user && isMatch) {
       let loginReponse: UIResponseBase<LoginResponse> = {
         Result: {
           IsAuthenticated: true,
-          Token: this.jwtService.sign({ UserName: user.UserName, Permessions: Permessions }),
+          Token: this.jwtService.sign({ UserName: user.UserName, Permessions: permessions }),
           UserId: user.Id,
           UserName: user.UserName,
           UserStatus: user.UserStatus,
-          Permessions: Permessions,
+          Permessions: JSON.stringify(permessions),
           NavigationItems: NavigationItems
         },
         StatusCode: 200,

@@ -7,6 +7,6 @@ export interface LoginResponse {
     UserStatus: UserStatus;
     Token: string;
     IsAuthenticated: boolean;
-    Permessions?: string[];
+    Permessions?: string;
     NavigationItems?: NavigationItems[];
 }

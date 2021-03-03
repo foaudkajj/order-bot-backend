@@ -7,9 +7,10 @@ import { AddnoteToOrderWizardService } from './bot/wiards/order-note.-wizard.ser
 import { PermessionsGuard } from './panel/guards/permessions.guard';
 import { PanelModule } from './panel/panel.module';
 import { JwtAuthGuard } from './panel/passport/guards/jwt-auth.guard';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [PanelModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PanelModule],
   controllers: [AppController],
   providers: [
     {

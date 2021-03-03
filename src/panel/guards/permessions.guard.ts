@@ -2,12 +2,11 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMESSIONS_KEY } from '../decorators/permessions.decorator';
 import { PermessionEnum } from '../enums/Permession';
-
 @Injectable()
 export class PermessionsGuard implements CanActivate {
     constructor(private reflector: Reflector) { }
 
-    canActivate(context: ExecutionContext): boolean {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const requiredPermessions = this.reflector.getAllAndOverride<PermessionEnum[]>(PERMESSIONS_KEY, [
             context.getHandler(),
             context.getClass(),
