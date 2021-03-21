@@ -1,0 +1,13 @@
+{
+    "type": "mssql",
+    "host": "DG-MFNUROGLU\\MSSQLSERVER01",
+    "port": 1433,
+    "username": "ureticibulbot",
+    "password": "Fouad@Fouad1",
+    "database": "SiparisBotu",
+    "synchronize": true,
+    "logging": false,
+    "entities": [
+        "dist/**/*.js"
+    ]
+}
