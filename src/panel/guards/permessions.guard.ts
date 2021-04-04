@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMESSIONS_KEY } from '../decorators/permessions.decorator';
-import { PermessionEnum } from '../enums/Permession';
+import { PermessionEnum } from '../enums/PermessionsEnum';
 @Injectable()
 export class PermessionsGuard implements CanActivate {
     constructor(private reflector: Reflector) { }

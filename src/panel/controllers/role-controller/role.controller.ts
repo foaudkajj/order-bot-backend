@@ -7,7 +7,7 @@ import { GetRolesDto } from 'src/panel/dtos/GetRolesDto';
 import { RoleIdAndPermessions } from 'src/panel/dtos/RoleIdAndPermessions';
 import { UIResponseBase } from 'src/panel/dtos/UIResponseBase';
 import { PermessionsGuard } from '../../decorators/permessions.decorator';
-import { PermessionEnum } from '../../enums/Permession';
+import { PermessionEnum } from '../../enums/PermessionsEnum';
 import { RoleService } from './role.service';
 
 @Controller('api/Roles')

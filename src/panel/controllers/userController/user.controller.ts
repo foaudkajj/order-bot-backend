@@ -6,7 +6,7 @@ import { DxGridDeleteRequest } from 'src/panel/dtos/DxGridDeleteRequest';
 import { DxGridUpdateRequest } from 'src/panel/dtos/DxGridUpdateRequest';
 import { LoginResponse } from 'src/panel/dtos/loginResponse';
 import { UIResponseBase } from 'src/panel/dtos/UIResponseBase';
-import { PermessionEnum } from 'src/panel/enums/Permession';
+import { PermessionEnum } from 'src/panel/enums/PermessionsEnum';
 import { AllowAnonymous } from '../../decorators/public.decorator';
 import { AuthService } from '../../passport/auth.service';
 import { LocalAuthGuard } from '../../passport/guards/local-auth.guard';
