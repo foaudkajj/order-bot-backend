@@ -1,10 +1,10 @@
 {
-    "type": "mssql",
-    "host": "DG-MFNUROGLU\\MSSQLSERVER01",
-    "port": 1433,
-    "username": "ureticibulbot",
-    "password": "Fouad@Fouad1",
-    "database": "SiparisBotu",
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3307,
+    "username": "mfuat",
+    "password": "Fuat@Fuat1",
+    "database": "siparisbotu",
     "synchronize": true,
     "logging": false,
     "entities": [
