@@ -1,8 +1,8 @@
 import { OrderStatus } from "src/DB/enums/OrderStatus";
+import { Customer } from "src/DB/models/Customer";
 import { Order } from "src/DB/models/Order";
-import { TelegramUser } from "src/DB/models/TelegramUser";
 import { getCustomRepository, getRepository, Repository } from "typeorm";
-import { UserRepository } from "../custom-repositories/UserRepository";
+import { CustomerRepository } from "../custom-repositories/CustomerRepository";
 import { BotContext } from "../interfaces/BotContext";
 import { CallBackQueryResult } from "../models/CallBackQueryResult";
 
@@ -10,12 +10,13 @@ export abstract class CompleteOrderHandler {
 
     static async CompleteOrder(ctx: BotContext) {
         const orderRepository: Repository<Order> = getRepository(Order);
+        const customerRepository = getCustomRepository(CustomerRepository);
         try {
-            const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-
-            const ordersInBasket = await orderRepository.find({ where: { userId: userInfo.id, Status: OrderStatus.InBasket, }, relations: ["user"] });
+            // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
+            const userInfo = await customerRepository.getUser(ctx);
+            const ordersInBasket = await orderRepository.find({ where: { customerId: userInfo.Id, OrderStatus: OrderStatus.InBasket, }, relations: ["customer"] });
             if (ordersInBasket.length > 0) {
-                const user = ordersInBasket[0].user;
+                const user = ordersInBasket[0].customer;
                 await ctx.answerCbQuery();
                 if (user.Address) {
 

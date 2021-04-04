@@ -1,6 +1,6 @@
-import { TelegramUser } from "src/DB/models/TelegramUser";
+import { Customer } from "src/DB/models/Customer";
 import { getCustomRepository } from "typeorm";
-import { UserRepository } from "../custom-repositories/UserRepository";
+import { CustomerRepository } from "../custom-repositories/CustomerRepository";
 import { BotContext } from "../interfaces/BotContext";
 import { CallBackQueryResult } from "../models/CallBackQueryResult";
 
@@ -43,11 +43,11 @@ export abstract class FirstMessageHandler {
     }
 
     private static async createNewUserIfUserDoesnitExist(ctx: BotContext) {
-        const userRepository = getCustomRepository(UserRepository);
-        const user = await userRepository.findOne(ctx.from.id);
+        const userRepository = getCustomRepository(CustomerRepository);
+        const user = await userRepository.getUser(ctx);
         if (!user) {
-            const newUser: TelegramUser = { Id: ctx.from.id, FirstName: ctx.from.first_name, LastName: ctx.from.last_name, Username: ctx.from.username };
-            await userRepository.save(newUser);
+            const newCustomer: Customer = { TelegramId: ctx.from.id, FirstName: ctx.from.first_name, LastName: ctx.from.last_name, Username: ctx.from.username };
+            await userRepository.save(newCustomer);
         }
 
     }

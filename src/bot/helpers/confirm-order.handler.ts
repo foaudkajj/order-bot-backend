@@ -1,6 +1,4 @@
 import { OrderStatus } from "src/DB/enums/OrderStatus";
-import { getCustomRepository } from "typeorm";
-import { UserRepository } from "../custom-repositories/UserRepository";
 import { BotContext } from "../interfaces/BotContext";
 import { CallBackQueryResult } from "../models/CallBackQueryResult";
 import { OrdersInBasketCb } from "./get-orders-in-basket-CB-handler";

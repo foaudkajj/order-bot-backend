@@ -2,7 +2,8 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { OrderStatus } from 'src/DB/enums/OrderStatus';
 import { Order } from 'src/DB/models/Order';
 import { Scenes } from 'telegraf';
-import { getRepository, Repository } from 'typeorm';
+import { getCustomRepository, getRepository, Repository } from 'typeorm';
+import { CustomerRepository } from '../custom-repositories/CustomerRepository';
 import { ConfirmOrderHandler } from '../helpers/confirm-order.handler';
 import { FirstMessageHandler } from '../helpers/first-message-handler';
 import { StartOrderingCb } from '../helpers/start-ordering-CB-handler';
@@ -11,6 +12,7 @@ import { BotContext } from '../interfaces/BotContext';
 @Injectable()
 export class AddnoteToOrderWizardService {
     orderRepository: Repository<Order> = getRepository(Order);
+    customerRepository = getCustomRepository(CustomerRepository);
     constructor() {
 
     }
@@ -25,8 +27,9 @@ export class AddnoteToOrderWizardService {
                 if (ctx.message && "text" in ctx.message) {
                     await ctx.reply("Kaydedilmiştir...");
                     console.log(ctx.message.text);
-                    const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-                    await this.orderRepository.update({ userId: userInfo.id, Status: OrderStatus.InBasket }, { Description: ctx.message.text });
+                    // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
+                    const userInfo = await this.customerRepository.getUser(ctx);
+                    await this.orderRepository.update({ customerId: userInfo.Id, OrderStatus: OrderStatus.InBasket }, { Description: ctx.message.text });
                     await ConfirmOrderHandler.ConfirmOrder(ctx);
                     await ctx.scene.leave();
                 } else {

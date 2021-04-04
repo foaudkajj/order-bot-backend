@@ -1,6 +1,4 @@
 import { OrderStatus } from "src/DB/enums/OrderStatus";
-import { getCustomRepository } from "typeorm";
-import { UserRepository } from "../custom-repositories/UserRepository";
 import { BotContext } from "../interfaces/BotContext";
 import { CallBackQueryResult } from "../models/CallBackQueryResult";
 import { OrdersInBasketCb } from "./get-orders-in-basket-CB-handler";
@@ -18,8 +16,8 @@ export abstract class GetConfirmedOrderCb {
                         one_time_keyboard: true,
                         inline_keyboard:
                             [
-                                [{ text: "👌 Siparişimi Onayla 👌", callback_data: CallBackQueryResult.SendOrder }],
-                                [{ text: "🗒 Siparişe Not Ekle 🗒", callback_data: CallBackQueryResult.AddNoteToOrder }],
+                                // [{ text: "👌 Siparişimi Onayla 👌", callback_data: CallBackQueryResult.SendOrder }],
+                                // [{ text: "🗒 Siparişe Not Ekle 🗒", callback_data: CallBackQueryResult.AddNoteToOrder }],
                                 [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
                             ]
                     }

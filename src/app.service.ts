@@ -2,17 +2,15 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Context, Scenes, session, Telegraf } from 'telegraf';
 // import { TelegrafContext } from 'telegraf/typings/context';
 import { InlineQueryResult, InlineQueryResultArticle, User } from 'telegraf/typings/telegram-types';
-import { getCustomRepository, getRepository, Repository } from 'typeorm';
+import { getCustomRepository, getRepository, Like, Repository } from 'typeorm';
 import { BotContext } from './bot/interfaces/BotContext';
 import { CallBackQueryResult } from './bot/models/CallBackQueryResult';
 import { AddressWizardService } from './bot/wiards/address-wizard.service';
 import { OrderStatus } from './DB/enums/OrderStatus';
 import { Order } from './DB/models/Order';
 import { Product } from './DB/models/Product';
-import { TelegramUser } from './DB/models/TelegramUser';
-import { Guid } from "guid-typescript";
 import { AddnoteToOrderWizardService } from './bot/wiards/order-note.-wizard.service';
-import { UserRepository } from './bot/custom-repositories/UserRepository';
+import { CustomerRepository } from './bot/custom-repositories/CustomerRepository';
 import { StartOrderingCb } from './bot/helpers/start-ordering-CB-handler';
 import { OrdersInBasketCb } from './bot/helpers/get-orders-in-basket-CB-handler';
 import { FirstMessageHandler } from './bot/helpers/first-message-handler';
@@ -21,13 +19,15 @@ import { OrderRepository } from './bot/custom-repositories/OrderRepository';
 import { ConfirmOrderHandler } from './bot/helpers/confirm-order.handler';
 import { OrderDetails } from './DB/models/OrderDetails';
 import { GetConfirmedOrderCb } from './bot/helpers/get-confirmed-orders-handler';
+import { Category } from './DB/models/Category';
 
 @Injectable()
 export class AppService implements OnModuleInit {
-  userRepository = getCustomRepository(UserRepository);
+  userRepository = getCustomRepository(CustomerRepository);
   orderRepository = getCustomRepository(OrderRepository);
   orderDetailsRepository: Repository<OrderDetails> = getRepository(OrderDetails);
   productRepository: Repository<Product> = getRepository(Product);
+  categoryRepository: Repository<Category> = getRepository(Category);
   constructor(private addressWizard: AddressWizardService, private addNoteToOrderWizard: AddnoteToOrderWizardService) {
 
   }
@@ -37,15 +37,15 @@ export class AppService implements OnModuleInit {
   getHello(): string {
     return 'Hello Fuat!';
   }
-
+  static bot: Telegraf<BotContext>;
   InitlizeAndLunchBot() {
-    const bot = new Telegraf<BotContext>("1485687554:AAFbN5pD2h5hzi9o9eydQjh6l4RcVYTtp5c"); //, { handlerTimeout: 1000 }
+    AppService.bot = new Telegraf<BotContext>("1485687554:AAFbN5pD2h5hzi9o9eydQjh6l4RcVYTtp5c"); //, { handlerTimeout: 1000 }
 
-    this.InitlizeWizards(bot);
-    this.InilizeBotEventsHandlers(bot);
+    this.InitlizeWizards(AppService.bot);
+    this.InilizeBotEventsHandlers(AppService.bot);
 
 
-    bot.launch();
+    AppService.bot.launch();
   }
   InilizeBotEventsHandlers(bot: Telegraf<BotContext>) {
     bot.command("start",
@@ -149,12 +149,11 @@ export class AppService implements OnModuleInit {
 
     bot.on("inline_query", async (ctx) => {
       try {
-        const user = await this.userRepository.findOne({ where: { Id: ctx.from.id } });
+        const user = await this.userRepository.getUser(ctx);
         if (user) {
-          const products = await this.productRepository.find();
-          // let products = await user.Products;
+          const category = await this.categoryRepository.findOne({ where: { CategoryKey: Like(ctx.inlineQuery.query) }, relations: ['Products'] });
           await ctx.answerInlineQuery(
-            products.map(product => <InlineQueryResultArticle>
+            category?.Products?.map(product => <InlineQueryResultArticle>
               ({
                 id: product.Id.toString(),
                 type: product.Type,
@@ -210,7 +209,7 @@ export class AppService implements OnModuleInit {
   }
   async EmptyBasket(ctx: Context) {
     try {
-      await this.orderRepository.delete({ userId: ctx.callbackQuery.from.id, Status: OrderStatus.InBasket })
+      await this.orderRepository.delete({ customerId: ctx.callbackQuery.from.id, OrderStatus: OrderStatus.InBasket })
       await ctx.answerCbQuery("Sepetiniz Boşaltılmıştır.");
     } catch (error) {
       //Loglama
@@ -222,8 +221,9 @@ export class AppService implements OnModuleInit {
 
   async SendOrder(ctx: BotContext) {
     try {
-      const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-      await this.orderRepository.update({ userId: userInfo.id, Status: OrderStatus.InBasket }, { Status: OrderStatus.UserConfirmed });
+      // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
+      const userInfo = await this.userRepository.getUser(ctx);
+      await this.orderRepository.update({ customerId: userInfo.Id, OrderStatus: OrderStatus.InBasket }, { OrderStatus: OrderStatus.UserConfirmed });
       await ctx.answerCbQuery("Siparişiniz Gönderilmiştir");
       await FirstMessageHandler.startOptions(ctx);
     } catch (error) {
@@ -277,7 +277,7 @@ export class AppService implements OnModuleInit {
             inline_keyboard:
               [
                 [{ text: `🛒 Sepete Ekle ve Alışverişe devam et 🛒`, callback_data: CallBackQueryResult.AddToBasket }],
-                [{ text: `🛒 Sepete Ekle ve Siarişimi Tamamla ✔️`, callback_data: CallBackQueryResult.AddProductAndCompleteOrder }],
+                [{ text: `🛒 Sepete Ekle ve Siparişimi Tamamla ✔️`, callback_data: CallBackQueryResult.AddProductAndCompleteOrder }],
                 [{ text: "🍛 Başka Ürün Seç 🍝", callback_data: CallBackQueryResult.StartOrdering }],
                 [{ text: "✔️ Siparişimi Tamamla ✔️", callback_data: CallBackQueryResult.CompleteOrder }],
                 [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
@@ -303,9 +303,10 @@ export class AppService implements OnModuleInit {
       console.log("AddNEwOrder")
       let selectedProducts: number[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
       if (selectedProducts.length > 0) {
-
-        let order: Order = await this.orderRepository.findOne({ where: { userId: user.Id, Status: OrderStatus.InBasket }, relations: ["OrderDetails"] });
+        const totalPrice = (await this.productRepository.findByIds(selectedProducts, { select: ['UnitPrice'] }))?.map(mp => mp.UnitPrice).reduce((prev, current) => prev + current);
+        let order: Order = await this.orderRepository.findOne({ where: { customerId: user.Id, OrderStatus: OrderStatus.InBasket }, relations: ["OrderDetails"] });
         if (order) {
+          order.TotalPrice = +order.TotalPrice + +totalPrice;
           selectedProducts.map((Id) => {
             const orderDetails = order.OrderDetails.find((fi) => fi.productId == Id);
             if (orderDetails) {
@@ -315,26 +316,25 @@ export class AppService implements OnModuleInit {
             }
           });
         } else {
-          const guid = Guid.create().toString();
           order = new Order();
-          order = { CreateDate: new Date(), Status: OrderStatus.InBasket, userId: user.Id, Id: guid };
+          order = { CreateDate: new Date(), OrderStatus: OrderStatus.InBasket, customerId: user.Id, OrderNo: new Date().valueOf().toString(), TotalPrice: totalPrice };
           order.OrderDetails = [];
           selectedProducts.map((Id) => {
-            order.OrderDetails.push({ productId: Id, Amount: 1, OrderId: guid, CreateDate: new Date() });
+            order.OrderDetails.push({ productId: Id, Amount: 1, CreateDate: new Date() });
           });
 
         }
         await this.orderRepository.save(order);
         await this.orderDetailsRepository.save(order.OrderDetails);
         user.SelectedProducts = null;
-        await this.userRepository.update({ Id: user.Id }, user);
+        await this.userRepository.update({ TelegramId: user.Id }, user);
       }
     }
   }
 
   async addNoteToOrder(ctx: BotContext) {
     const orderInBasket = await this.orderRepository.getOrdersInBasketByStatus(ctx, OrderStatus.InBasket, ['OrderDetails']);
-    if (orderInBasket.OrderDetails.length > 0) {
+    if (orderInBasket?.OrderDetails.length > 0) {
       ctx.scene.enter('AddNoteToOrder', ctx.reply("Lütfen Eklemek İstediğiniz notu giriniz... \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal"))
     } else {
       await ctx.answerCbQuery("Sepetiniz Boştur.");

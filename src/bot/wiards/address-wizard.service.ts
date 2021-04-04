@@ -1,15 +1,16 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { OrderStatus } from 'src/DB/enums/OrderStatus';
 import { Order } from 'src/DB/models/Order';
-import { TelegramUser } from 'src/DB/models/TelegramUser';
+import { Customer } from 'src/DB/models/Customer';
 import { Composer, Context, Scenes } from 'telegraf';
-import { getRepository, Repository } from 'typeorm';
+import { getCustomRepository, getRepository, Repository } from 'typeorm';
 import { BotContext } from '../interfaces/BotContext';
 import { CallBackQueryResult } from '../models/CallBackQueryResult';
+import { CustomerRepository } from '../custom-repositories/CustomerRepository';
 
 @Injectable()
 export class AddressWizardService {
-    userRepository: Repository<TelegramUser> = getRepository(TelegramUser);
+    customerRepository: CustomerRepository = getCustomRepository(CustomerRepository);
     constructor() {
 
     }
@@ -59,7 +60,7 @@ export class AddressWizardService {
         return address;
     }
     async SaveAddressToDBAndLeaveWizard(ctx: BotContext) {
-        let user = await this.userRepository.findOne(ctx.from.id);
+        let user = await this.customerRepository.getUser(ctx);
         if (user) {
             user.Address = ctx.scene.session?.address;
             if (ctx.scene.session.isLocation) {
@@ -68,7 +69,7 @@ export class AddressWizardService {
                     longitude: ctx.scene.session.longitude
                 });
             }
-            await this.userRepository.save(user);
+            await this.customerRepository.save(user);
         }
         await ctx.scene.leave();
         await this.AskIfUserWantsToAddNote(ctx);

@@ -1,12 +1,14 @@
-import { Entity, Column, PrimaryColumn, OneToMany } from "typeorm";
+import { Entity, Column, PrimaryColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Order } from "./Order";
 import { Product } from "./Product";
 
 @Entity()
-export class TelegramUser {
+export class Customer {
 
-    @PrimaryColumn()
-    Id: number;
+    @PrimaryGeneratedColumn()
+    Id?: number;
+    @Column({ nullable: true })
+    TelegramId?: number;
 
     @Column({ length: 30, nullable: true })
     Username?: string;
@@ -32,7 +34,7 @@ export class TelegramUser {
     @Column({ length: 1000, nullable: true })
     Location?: string;
 
-    @OneToMany(() => Order, order => order.user, { nullable: true })
+    @OneToMany(() => Order, order => order.customer, { nullable: true })
     Orders?: Promise<Order[]>;
     // @OneToMany(() => Product, product => product.user, { nullable: true })
     // Products?: Promise<Product[]>;
