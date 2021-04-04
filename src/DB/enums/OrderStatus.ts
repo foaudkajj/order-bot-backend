@@ -1,6 +1,9 @@
 export enum OrderStatus {
     InBasket = 0,
     UserConfirmed = 1,
-    Preparing = 2,
-    Delivered = 3
+    MerchantConfirmed = 2,
+    Preparing = 3,
+    OrderSent = 4,
+    Delivered = 5,
+    Canceled = 6
 }

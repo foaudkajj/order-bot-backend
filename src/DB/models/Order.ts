@@ -1,27 +1,31 @@
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, PrimaryColumn } from "typeorm";
 import { OrderDetails } from "./OrderDetails";
-import { TelegramUser } from "./TelegramUser";
+import { Customer } from "./Customer";
 
 @Entity()
 export class Order {
 
-    @PrimaryColumn({ type: 'uuid' })
-    Id: string;
+    @PrimaryGeneratedColumn()
+    Id?: number;
+    @Column({ type: 'nvarchar' })
+    OrderNo: string;
+    @Column({ type: 'decimal', precision: 8, scale: 2, default: 0 })
+    TotalPrice: number;
 
     @Column({ type: 'smallint', default: 0 })
-    Status?: number;
+    OrderStatus?: number;
 
     @Column({ type: 'datetime' })
     CreateDate: Date;
     @Column({ length: 4000, nullable: true })
     Description?: string;
-    @Column()
-    userId: number;
+    @Column({ nullable: true })
+    customerId: number;
 
-    @ManyToOne(() => TelegramUser, user => user.Orders)
-    user?: TelegramUser;
+    @ManyToOne(() => Customer, customer => customer.Orders, { cascade: ['insert'] })
+    customer?: Customer;
 
-    @OneToMany(() => OrderDetails, order => order.Order)
+    @OneToMany(() => OrderDetails, order => order.Order, { cascade: ['insert'] })
     OrderDetails?: OrderDetails[];
 
 }

@@ -1,7 +1,6 @@
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, OneToOne, JoinColumn, PrimaryColumn } from "typeorm";
 import { Order } from "./Order";
 import { Product } from "./Product";
-import { TelegramUser } from "./TelegramUser";
 
 @Entity()
 export class OrderDetails {
@@ -22,7 +21,7 @@ export class OrderDetails {
     Product?: Product;
 
     @Column({ name: 'orderId' })
-    OrderId?: string;
+    OrderId?: number;
 
     @ManyToOne(() => Order, order => order.OrderDetails)
     Order?: Order;
