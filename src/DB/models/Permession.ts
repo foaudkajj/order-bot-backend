@@ -11,7 +11,7 @@ export class Permession {
     PermessionKey: string;
     @Column({ type: 'nvarchar', length: 50, nullable: true })
     ParentKey: string;
-    @Column({ type: 'bit' })
+    @Column({ type: 'boolean' })
     IsParent: string;
     @Column({ name: 'menuId', nullable: true })
     MenuId: number;

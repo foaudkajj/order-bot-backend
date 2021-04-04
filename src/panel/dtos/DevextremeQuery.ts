@@ -46,7 +46,7 @@ export interface DataSourceLoadOptionsBase {
     //
     // Summary:
     //     A select expression.
-    Select: string[];
+    select: string;
     //
     // Summary:
     //     A group summary expression.
@@ -133,9 +133,9 @@ export interface SortingInfo {
     //
     // Summary:
     //     The data field to be used for sorting.
-    Selector: string;
+    selector: string;
     //
     // Summary:
     //     A flag indicating whether data should be sorted in a descending order.
-    Desc: boolean;
+    desc: boolean;
 }
