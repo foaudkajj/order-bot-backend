@@ -1,7 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn } from "typeorm";
+import { Category } from "./Category";
 import { Order } from "./Order";
 import { OrderDetails } from "./OrderDetails";
-import { TelegramUser } from "./TelegramUser";
 
 @Entity()
 export class Product {
@@ -24,14 +24,15 @@ export class Product {
     Caption: string;
     @Column({ length: 50 })
     ProductCode: string;
-    @Column({ type: 'decimal', nullable: true })
+    @Column({ type: 'decimal', default: 0 })
     UnitPrice?: number;
 
     @OneToMany(() => OrderDetails, orderDetails => orderDetails.Product)
-    OrderDetails: Promise<Order[]>;
+    OrderDetails: Order[];
 
-    // @Column()
-    // userId: number;
-    // @ManyToOne(() => TelegramUser, user => user.OrderDetails)
-    // user: Promise<TelegramUser>;
+    @Column()
+    categoryId: string;
+
+    @ManyToOne(() => Category, category => category.Products, { nullable: false, cascade: ['insert'] })
+    Category?: Category;
 }
