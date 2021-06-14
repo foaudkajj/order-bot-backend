@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserStatus } from "../enums/UserStatus";
+import { Merchant } from "./Merchant";
 import { Role } from "./Role";
 
 @Entity()
@@ -31,5 +32,10 @@ export class User {
     RoleId: number;
     @ManyToOne(() => Role, role => role.Users)
     Role: Role;
+    @Column({ name: 'merchantId' })
+    MerchantId: number;
+
+    @OneToOne(() => Merchant, merchant => merchant.User, { nullable: true })
+    Merchant: Merchant;
 
 }

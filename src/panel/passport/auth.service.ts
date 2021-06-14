@@ -20,7 +20,11 @@ export class AuthService {
 
   async validateUser(loginRequest: LoginRequest): Promise<any> {
     // let user: User = await this.userRepository.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('Role.RoleAndPermessions', 'RoleAndPermessions').getOne();
-    let user = await this.userRepository.findOne({ where: { UserName: loginRequest.UserName }, relations: ['Role', 'Role.RoleAndPermessions', 'Role.RoleAndPermessions.Permession', 'Role.RoleAndPermessions.Permession.Menu'] });
+    let user = await this.userRepository.findOne({ where: { UserName: loginRequest.UserName }, relations: ['Role', 'Merchant', 'Role.RoleAndPermessions', 'Role.RoleAndPermessions.Permession', 'Role.RoleAndPermessions.Permession.Menu'] });
+    if (!user) {
+      // TODO: return error
+      return;
+    }
     let Menus = user.Role.RoleAndPermessions.filter(fi => fi.Permession.Menu).map(fi => fi.Permession.Menu);
     let parentMenus = await this.menusRepository.find({ where: { IsParent: true } });
     Menus = Menus.concat(parentMenus);
@@ -35,8 +39,9 @@ export class AuthService {
       let loginReponse: UIResponseBase<LoginResponse> = {
         Result: {
           IsAuthenticated: true,
-          Token: this.jwtService.sign({ UserName: user.UserName, Permessions: permessions }),
+          Token: this.jwtService.sign({ UserName: user.UserName, Permessions: permessions, MerchantId: user.MerchantId }),
           UserId: user.Id,
+          MerchantId: user.MerchantId,
           UserName: user.UserName,
           UserStatus: user.UserStatus,
           Permessions: JSON.stringify(permessions),

@@ -3,6 +3,7 @@ import { NavigationItems } from "./navigationItems";
 
 export interface LoginResponse {
     UserId: number;
+    MerchantId: number;
     UserName: string;
     UserStatus: UserStatus;
     Token: string;
