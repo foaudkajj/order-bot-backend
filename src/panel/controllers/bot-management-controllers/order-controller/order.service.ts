@@ -67,9 +67,24 @@ export class OrderService {
                 await getRepository(Customer).update({ Id: userEntity.customer.Id }, customer);
             }
 
-            if (updateDetails.OrderStatus == OrderStatus.MerchantConfirmed) {
+            if (updateDetails.OrderStatus) {
+                switch (updateDetails.OrderStatus) {
+                    case OrderStatus.MerchantConfirmed:
+                        InformationMessages.SendInformationMessage(userEntity.customer.TelegramId, 'Siparişiniz Onaylandı');
+                        break;
+                    case OrderStatus.Preparing:
+                        InformationMessages.SendInformationMessage(userEntity.customer.TelegramId, 'Siparişiniz Hazırlanıyor');
+                        break;
+                    case OrderStatus.OrderSent:
+                        InformationMessages.SendInformationMessage(userEntity.customer.TelegramId, 'Siparişiniz Yola Çıkmıştır');
+                        break;
+                    case OrderStatus.Delivered:
+                        InformationMessages.SendInformationMessage(userEntity.customer.TelegramId, 'Siparişiniz Size Teslim Edilmiştir');
+                        break;
+                    default:
+                        break;
+                }
 
-                InformationMessages.SendInformationMessage(userEntity.customer.TelegramId, 'Siparişiniz Onaylandı');
             }
 
             await getRepository(Order).update({ Id: entity.Id }, updatedEntity);
