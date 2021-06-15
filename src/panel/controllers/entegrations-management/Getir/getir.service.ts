@@ -7,6 +7,7 @@ import { UIResponseBase } from 'src/panel/dtos/UIResponseBase';
 import { getCustomRepository, getRepository } from 'typeorm';
 import dayjs from 'dayjs'
 import { Endpoints } from './Getir-Enums/Endpoints';
+import GetirToken from 'src/panel/helpers/GetirTokenHelper';
 
 
 @Injectable()
@@ -19,7 +20,7 @@ export class GetirService {
     }
 
     // async AddOrDeletePaymentMethod(merchantId, body) {
-    //     const token = await this.CheckAndGetAccessToken(merchantId);
+    //     const token = await GetirToken.getToken(merchantId);
     //     let changePaymentMethodResponse;
     //     if (body.status == true) {
     //         changePaymentMethodResponse = await this.httpService.post<any[]>(process.env.GetirApi + Endpoints.AddRestaurantPaymentMethod, { paymentMethodId: body.paymentMethodId }, { headers: { 'token': token.Result, } }).toPromise();
@@ -36,7 +37,7 @@ export class GetirService {
     // }
 
     // async GetRestaurantPaymentMethods(merchantId: number) {
-    //     const token = await this.CheckAndGetAccessToken(merchantId);
+    //     const token = await GetirToken.getToken(merchantId);
     //     const restaurantPaymentMethods = await this.httpService.get<any[]>(process.env.GetirApi + Endpoints.GetRestaurantPaymentMethods, { headers: { 'token': token.Result } }).toPromise();
     //     const availablePaymentMethods = await this.httpService.get<any[]>(process.env.GetirApi + Endpoints.listPaymentMethods, { headers: { 'token': token.Result } }).toPromise();
 
@@ -55,7 +56,7 @@ export class GetirService {
     // }
 
     async GetRestaurantPaymentMethods(merchantId: number) {
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
         const restaurantPaymentMethods = await this.httpService.get<any[]>(process.env.GetirApi + Endpoints.GetRestaurantPaymentMethods, { headers: { 'token': token.Result } }).toPromise();
 
         return <UIResponseBase<any>>{ data: restaurantPaymentMethods.data, totalCount: restaurantPaymentMethods.data.length, IsError: false, StatusCode: 200 }
@@ -64,7 +65,7 @@ export class GetirService {
 
     async ActivateDeactivateRestaurantPaymentMethods(merchantId: number, body) {
         const { id, active } = body as { id, active };
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
 
         const activeRequest = this.httpService.post<any[]>(process.env.GetirApi + Endpoints.ActivateRestaurantPaymentMethod, { paymentMethodId: id }, { headers: { 'token': token.Result } });
         const deactiveRequest = this.httpService.post<any[]>(process.env.GetirApi + Endpoints.InactivateRestaurantPaymentMethod, { paymentMethodId: id }, { headers: { 'token': token.Result } });
@@ -79,7 +80,7 @@ export class GetirService {
 
     async ActivateDeactivateProductStatus(merchantId: number, body) {
         const { productId, status } = body as { productId, status };
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
         const updateProductStatusRequest = await this.httpService.put<any[]>(process.env.GetirApi + Endpoints.updateProductStatus.replace("{productId}", productId), { status: status }, { headers: { 'token': token.Result } }).toPromise();
 
         const result = updateProductStatusRequest.data['result'];
@@ -92,7 +93,7 @@ export class GetirService {
     // async ActivateDeactivateCategoryStatus(merchantId: number, body) {
     //     try {
     //         const { productId, status } = body as { productId, status };
-    //         const token = await this.CheckAndGetAccessToken(merchantId);
+    //         const token = await GetirToken.getToken(merchantId);
 
     //         const activeRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.ActiveProductCategory.replace("{categoryId}", productId), {}, { headers: { 'token': token.Result } });
     //         const deactiveRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.InActiveProductCategory.replace("{categoryId}", productId), {}, { headers: { 'token': token.Result } });
@@ -111,7 +112,7 @@ export class GetirService {
 
     async AddPaymentMethod(merchantId: number, values: string) {
         const { id } = JSON.parse(values) as { id };
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
 
         const restaurantAddPaymentMethods = await this.httpService.post<any[]>(process.env.GetirApi + Endpoints.AddRestaurantPaymentMethod, { paymentMethodId: id }, { headers: { 'token': token.Result } }).toPromise();
 
@@ -124,14 +125,14 @@ export class GetirService {
     }
 
     async DeleteRestaurantPaymentMethods(merchantId: number, paymentMethodId: number) {
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
         const restaurantPaymentMethods = await this.httpService.delete<any[]>(process.env.GetirApi + Endpoints.DeleteRestaurantPaymentMethod, { data: { paymentMethodId: paymentMethodId }, headers: { 'token': token.Result } }).toPromise();
 
         return <UIResponseBase<any>>{ data: restaurantPaymentMethods.data, totalCount: restaurantPaymentMethods.data.length, IsError: false, StatusCode: 200 }
     }
 
     async GetAllPaymentMethods(merchantId: number) {
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
         const availablePaymentMethods = await this.httpService.get<any[]>(process.env.GetirApi + Endpoints.listPaymentMethods, { headers: { 'token': token.Result } }).toPromise();
 
         return <UIResponseBase<any>>{ data: availablePaymentMethods.data, totalCount: availablePaymentMethods.data.length, IsError: false, StatusCode: 200 }
@@ -139,7 +140,7 @@ export class GetirService {
 
 
     async GetRestaurantDetails(merchantId: number) {
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
         const restaurantInformation = await this.httpService.get<any[]>(process.env.GetirApi + Endpoints.GetRestaurantInformation, { headers: { 'token': token.Result } }).toPromise();
         restaurantInformation.data['status'] = restaurantInformation.data['status'] == 100 ? true : false;
         return <UIResponseBase<any>>{ Result: restaurantInformation.data, IsError: false, StatusCode: 200 }
@@ -148,7 +149,7 @@ export class GetirService {
 
 
     async GetRestaurantMenusAndOptions(merchantId: number) {
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
         const restaurantMenusAndOptions = await this.httpService.get<any>(process.env.GetirApi + Endpoints.GetRestaurantMenuAndOptions, { headers: { 'token': token.Result } }).toPromise();
         // let responseData: RestaurantMenusAndOptionsType[] = [];
 
@@ -168,7 +169,7 @@ export class GetirService {
     }
 
     async GetOptionProdcuts(merchantId: number) {
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
         const optionProducts = await this.httpService.get<any>(process.env.GetirApi + Endpoints.GetRestaurantOptionProducts, { headers: { 'token': token.Result } }).toPromise();
         return <UIResponseBase<any>>{ data: optionProducts.data, totalCount: optionProducts.data.length, IsError: false, StatusCode: 200, MessageKey: '' }
     }
@@ -176,7 +177,7 @@ export class GetirService {
     async ActivateDeactivateOptionProduct(merchantId: number, body) {
         try {
             const { optionProductId, status } = body as { optionProductId, status };
-            const token = await this.CheckAndGetAccessToken(merchantId);
+            const token = await GetirToken.getToken(merchantId);
             const activeRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.activateRestaurantOptionsWithOptionProductId.replace("{optionProductId}", optionProductId), {}, { headers: { 'token': token.Result } });
             const inactiveRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.inactivateRestaurantOptionsWithOptionProductId.replace("{optionProductId}", optionProductId), {}, { headers: { 'token': token.Result } });
             const activateDeactivateResponse = status ? await activeRequest.toPromise() : await inactiveRequest.toPromise();
@@ -193,7 +194,7 @@ export class GetirService {
     }
 
     async UpdateRestaurantAndCourierInfo(merchantId: number, body: { status: boolean, averagePreparationTime: number, isCourierAvailable: boolean }) {
-        const token = await this.CheckAndGetAccessToken(merchantId);
+        const token = await GetirToken.getToken(merchantId);
 
         try {
 
@@ -227,7 +228,7 @@ export class GetirService {
 
     async ActivateInActiveProductsAsOptions(merchantId, body) {
         try {
-            const token = await this.CheckAndGetAccessToken(merchantId);
+            const token = await GetirToken.getToken(merchantId);
             const { productId, status } = body;
 
             let activateProduct;
@@ -246,7 +247,7 @@ export class GetirService {
 
     async ActivateInActiveOptions(merchantId, body) {
         try {
-            const token = await this.CheckAndGetAccessToken(merchantId);
+            const token = await GetirToken.getToken(merchantId);
             const { optionProductId, status } = body;
 
             let activateOption;
@@ -265,7 +266,7 @@ export class GetirService {
 
     async ActivateDeactivateAltOptions(merchantId, body) {
         try {
-            const token = await this.CheckAndGetAccessToken(merchantId);
+            const token = await GetirToken.getToken(merchantId);
             const { optionProductId, optionCategoryId, optionId, status } = body;
             var dd = process.env.GetirApi + Endpoints.UpdateOptionProductOptionStatus.replace("{optionProductId}", optionProductId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId);
             const result = await this.httpService.put<any[]>(process.env.GetirApi + Endpoints.UpdateOptionProductOptionStatus.replace("{optionProductId}", optionProductId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId), { status: status ? 100 : 200 }, { headers: { 'token': token.Result } }).toPromise();
