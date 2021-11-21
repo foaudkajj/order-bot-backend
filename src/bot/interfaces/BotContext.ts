@@ -1,5 +1,5 @@
-import { Context, Scenes } from "telegraf";
-import { WizardSession } from "./WizardSession";
+import {Context, Scenes} from 'telegraf';
+import {WizardSession} from './WizardSession';
 
 /**
  * We can define our own context object.
@@ -10,11 +10,11 @@ import { WizardSession } from "./WizardSession";
  * We also have to set the wizard object under the `wizard` property.
  */
 export interface BotContext extends Context {
-    // will be available under `ctx.myContextProp`
-    myContextProp: string
+  // will be available under `ctx.myContextProp`
+  myContextProp: string;
 
-    // declare scene type
-    scene: Scenes.SceneContextScene<BotContext, WizardSession>
-    // declare wizard type
-    wizard: Scenes.WizardContextWizard<BotContext>
+  // declare scene type
+  scene: Scenes.SceneContextScene<BotContext, WizardSession>;
+  // declare wizard type
+  wizard: Scenes.WizardContextWizard<BotContext>;
 }

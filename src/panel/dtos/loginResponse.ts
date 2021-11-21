@@ -1,13 +1,13 @@
-import { UserStatus } from "src/DB/enums/UserStatus";
-import { NavigationItems } from "./navigationItems";
+import {UserStatus} from 'src/DB/enums/UserStatus';
+import {NavigationItems} from './navigationItems';
 
 export interface LoginResponse {
-    UserId: number;
-    MerchantId: number;
-    UserName: string;
-    UserStatus: UserStatus;
-    Token: string;
-    IsAuthenticated: boolean;
-    Permessions?: string;
-    NavigationItems?: NavigationItems[];
+  UserId: number;
+  MerchantId: number;
+  UserName: string;
+  UserStatus: UserStatus;
+  Token: string;
+  IsAuthenticated: boolean;
+  Permessions?: string;
+  NavigationItems?: NavigationItems[];
 }

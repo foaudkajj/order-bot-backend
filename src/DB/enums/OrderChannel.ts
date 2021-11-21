@@ -1,6 +1,6 @@
 export enum OrderChannel {
-    Telegram = 'TELEGRAM',
-    YemekSepetei = 'YemekSepetei',
-    Getir = 'Getir',
-    Panel = 'PANEL'
+  Telegram = 'TELEGRAM',
+  YemekSepetei = 'YemekSepetei',
+  Getir = 'Getir',
+  Panel = 'PANEL',
 }

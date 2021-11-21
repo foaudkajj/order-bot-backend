@@ -1,4 +1,4 @@
 export interface RoleIdAndPermessions {
-    roleId: number;
-    rolePermessions: number[];
+  roleId: number;
+  rolePermessions: number[];
 }

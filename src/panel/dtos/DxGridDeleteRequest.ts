@@ -1,3 +1,3 @@
 export class DxGridDeleteRequest {
-    key: number;
+  key: number;
 }

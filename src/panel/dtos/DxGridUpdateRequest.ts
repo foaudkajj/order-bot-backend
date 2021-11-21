@@ -1,4 +1,4 @@
 export class DxGridUpdateRequest {
-    key: number;
-    values: string
+  key: number;
+  values: string;
 }

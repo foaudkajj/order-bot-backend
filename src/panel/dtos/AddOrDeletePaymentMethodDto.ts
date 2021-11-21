@@ -1,4 +1,4 @@
 export class AddOrDeletePaymentMethodDto {
-    paymentMethodId: string;
-    status: boolean;
+  paymentMethodId: string;
+  status: boolean;
 }

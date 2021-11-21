@@ -1,4 +1,4 @@
 export enum DeliveryTypes {
-    ByGetir = 1,
-    ByRestaurant = 2
+  ByGetir = 1,
+  ByRestaurant = 2,
 }
