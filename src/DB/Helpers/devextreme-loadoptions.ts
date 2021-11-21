@@ -1,18 +1,18 @@
-import {Injectable, OnModuleInit} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   DataSourceLoadOptionsBase,
-  SortingInfo,
+  SortingInfo
 } from 'src/panel/dtos/DevextremeQuery';
-import {FindManyOptions, MoreThan} from 'typeorm';
+import { FindManyOptions, MoreThan } from 'typeorm';
 
 @Injectable()
 export class DevextremeLoadOptionsService {
-  constructor() {}
+  constructor () {}
 
-  GetFindOptionsFromQuery<T>(
-    query: DataSourceLoadOptionsBase,
+  GetFindOptionsFromQuery<T> (
+    query: DataSourceLoadOptionsBase
   ): FindManyOptions<T> {
-    let findOptions: FindManyOptions<T> = {};
+    const findOptions: FindManyOptions<T> = {};
     if (query.take && query.skip) {
       findOptions.take = query.take;
       findOptions.skip = query.skip;
@@ -22,7 +22,7 @@ export class DevextremeLoadOptionsService {
       const filter = JSON.parse(query.filter);
       switch (filter[1]) {
         case '>':
-          findOptions.where = {[filter[0]]: MoreThan(filter[2])};
+          findOptions.where = { [filter[0]]: MoreThan(filter[2]) };
           break;
 
         default:
@@ -34,7 +34,7 @@ export class DevextremeLoadOptionsService {
       ? (JSON.parse(query.sort.toString()) as SortingInfo[])
       : undefined;
     if (sortByFields?.length > 0) {
-      let sortFields = {};
+      const sortFields = {};
       sortByFields.forEach(fe => {
         if (!fe.selector.includes('.')) {
           sortFields[fe.selector] = fe.desc ? 'DESC' : 'ASC';

@@ -58,7 +58,7 @@ export interface DataSourceLoadOptionsBase {
   //
   // Summary:
   //     A filter expression.
-  filter: string; //any[];
+  filter: string; // any[];
   //
   // Summary:
   //     A group expression.

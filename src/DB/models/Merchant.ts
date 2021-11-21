@@ -2,31 +2,37 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToOne,
-  PrimaryColumn,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm';
-import {User} from './User';
+import { User } from './User';
 
 @Entity()
 export class Merchant {
   @PrimaryGeneratedColumn()
   Id: number;
-  @Column({length: 50, nullable: true})
+
+  @Column({ length: 50, nullable: true })
   GetirAppSecretKey: string;
-  @Column({length: 50, nullable: true})
+
+  @Column({ length: 50, nullable: true })
   GetirRestaurantSecretKey: string;
-  @Column({nullable: true, length: 2000})
+
+  @Column({ nullable: true, length: 2000 })
   GetirAccessToken: string;
-  @Column({nullable: true})
+
+  @Column({ nullable: true })
   GetirTokenLastCreated: Date;
-  @Column({length: 50, nullable: true})
+
+  @Column({ length: 50, nullable: true })
   YemekSepetiAppSecretKey: string;
-  @Column({length: 50, nullable: true})
+
+  @Column({ length: 50, nullable: true })
   YemekSepetiRestaurantSecretKey: string;
-  @Column({name: 'userId'})
+
+  @Column({ name: 'userId' })
   UserId: number;
+
   @OneToOne(() => User, user => user.Merchant)
   @JoinColumn()
   User: User;

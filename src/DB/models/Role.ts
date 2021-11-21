@@ -1,26 +1,29 @@
 import {
   Column,
   Entity,
-  ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm';
-import {User} from './User';
-import {RoleAndPermession} from './RoleAndPermession';
+import { User } from './User';
+import { RoleAndPermession } from './RoleAndPermession';
 
 @Entity()
 export class Role {
   @PrimaryGeneratedColumn()
   Id: number;
+
   @Column()
   RoleName: string;
-  @Column({nullable: true})
+
+  @Column({ nullable: true })
   Description: string;
+
   @OneToMany(
     () => RoleAndPermession,
-    roleAndPermession => roleAndPermession.Role,
+    roleAndPermession => roleAndPermession.Role
   )
   RoleAndPermessions: RoleAndPermession[];
+
   @OneToMany(() => User, pnaleUser => pnaleUser.Role)
   Users: User[];
 }

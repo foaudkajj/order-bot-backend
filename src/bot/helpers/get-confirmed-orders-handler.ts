@@ -1,19 +1,19 @@
-import {OrderStatus} from 'src/DB/enums/OrderStatus';
-import {BotContext} from '../interfaces/BotContext';
-import {CallBackQueryResult} from '../models/CallBackQueryResult';
-import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
+import { OrderStatus } from 'src/DB/enums/OrderStatus';
+import { BotContext } from '../interfaces/BotContext';
+import { CallBackQueryResult } from '../models/CallBackQueryResult';
+import { OrdersInBasketCb } from './get-orders-in-basket-CB-handler';
 
 export abstract class GetConfirmedOrderCb {
-  public static async GetConfirmedOrders(ctx: BotContext) {
-    let orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
+  public static async GetConfirmedOrders (ctx: BotContext) {
+    const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
       ctx,
-      OrderStatus.UserConfirmed,
+      OrderStatus.UserConfirmed
     );
     if (orderDetails !== null) {
       const orders =
         orderDetails === null ? 'Lütfen bir ürün seçiniz' : orderDetails;
       await ctx.reply(
-        `<b>Sipariş Özeti</b>:\n` + orders, //'📍 Adresiniz Alınmıştır.📍 \n\n' +
+        '<b>Sipariş Özeti</b>:\n' + orders, // '📍 Adresiniz Alınmıştır.📍 \n\n' +
         {
           parse_mode: 'HTML',
           reply_markup: {
@@ -24,12 +24,12 @@ export abstract class GetConfirmedOrderCb {
               [
                 {
                   text: '◀️ Ana Menüye Dön ◀️',
-                  callback_data: CallBackQueryResult.MainMenu,
-                },
-              ],
-            ],
-          },
-        },
+                  callback_data: CallBackQueryResult.MainMenu
+                }
+              ]
+            ]
+          }
+        }
       );
     }
   }

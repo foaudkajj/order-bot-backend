@@ -1,5 +1,5 @@
-import {Context, Scenes} from 'telegraf';
-import {WizardSession} from './WizardSession';
+import { Context, Scenes } from 'telegraf';
+import { WizardSession } from './WizardSession';
 
 /**
  * We can define our own context object.
