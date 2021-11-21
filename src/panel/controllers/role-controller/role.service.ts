@@ -1,76 +1,76 @@
-import {Injectable} from '@nestjs/common';
-import {Permession} from 'src/DB/models/Permession';
-import {Role} from 'src/DB/models/Role';
-import {RoleAndPermession} from 'src/DB/models/RoleAndPermession';
-import {DataSourceLoadOptionsBase} from 'src/panel/dtos/DevextremeQuery';
-import {GetRolesDto} from 'src/panel/dtos/GetRolesDto';
-import {RoleIdAndPermessions} from 'src/panel/dtos/RoleIdAndPermessions';
-import {UIResponseBase} from 'src/panel/dtos/UIResponseBase';
-import {getManager, getRepository} from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { Permession } from 'src/DB/models/Permession';
+import { Role } from 'src/DB/models/Role';
+import { RoleAndPermession } from 'src/DB/models/RoleAndPermession';
+import { DataSourceLoadOptionsBase } from 'src/panel/dtos/DevextremeQuery';
+import { GetRolesDto } from 'src/panel/dtos/GetRolesDto';
+import { RoleIdAndPermessions } from 'src/panel/dtos/RoleIdAndPermessions';
+import { UIResponseBase } from 'src/panel/dtos/UIResponseBase';
+import { getManager, getRepository } from 'typeorm';
 
 @Injectable()
 export class RoleService {
-  constructor() {}
+  constructor () {}
 
-  async GetRoles(query: DataSourceLoadOptionsBase) {
+  async GetRoles (query: DataSourceLoadOptionsBase) {
     let roles: Role[];
     if (query.take && query.skip) {
       roles = await getRepository(Role).find({
         take: query.take,
         skip: query.skip,
-        relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession'],
+        relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession']
       });
     } else {
       roles = await getRepository(Role).find({
-        relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession'],
+        relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession']
       });
     }
-    let result = roles.map(
+    const result = roles.map(
       mp =>
         <GetRolesDto>{
           Id: mp.Id,
           Description: mp.Description,
           RoleName: mp.RoleName,
           RolePermessionsIds: mp.RoleAndPermessions.map(
-            mpp => mpp.Permession.PermessionKey,
-          ),
-        },
+            mpp => mpp.Permession.PermessionKey
+          )
+        }
     );
-    let response: UIResponseBase<GetRolesDto> = {
+    const response: UIResponseBase<GetRolesDto> = {
       IsError: false,
       data: result,
       totalCount: result.length,
       MessageKey: 'SUCCESS',
-      StatusCode: 200,
+      StatusCode: 200
     };
     return response;
   }
 
-  async GetPermessions(query: DataSourceLoadOptionsBase) {
+  async GetPermessions (query: DataSourceLoadOptionsBase) {
     let result;
     if (query.take && query.skip) {
       result = await getRepository(Permession).find({
         take: query.take,
-        skip: query.skip,
+        skip: query.skip
       });
     } else {
       result = await getRepository(Permession).find();
     }
-    let response: UIResponseBase<Permession> = {
+    const response: UIResponseBase<Permession> = {
       IsError: false,
       data: result,
       totalCount: result.length,
       MessageKey: 'SUCCESS',
-      StatusCode: 200,
+      StatusCode: 200
     };
     return response;
   }
 
-  async SaveRolePermessions(roleIdAndPermessions: RoleIdAndPermessions) {
+  async SaveRolePermessions (roleIdAndPermessions: RoleIdAndPermessions) {
     try {
       await getManager().transaction(async transactionalEntityManager => {
         await transactionalEntityManager.delete(RoleAndPermession, {
-          RoleId: roleIdAndPermessions.roleId,
+          RoleId: roleIdAndPermessions.roleId
         });
         await transactionalEntityManager.insert(
           RoleAndPermession,
@@ -78,33 +78,33 @@ export class RoleService {
             mp =>
               <RoleAndPermession>{
                 RoleId: roleIdAndPermessions.roleId,
-                PermessionId: mp,
-              },
-          ),
+                PermessionId: mp
+              }
+          )
         );
       });
       return <UIResponseBase<Permession>>{
         IsError: false,
         MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        StatusCode: 200
       };
     } catch (error) {
       console.log(error);
       return <UIResponseBase<Permession>>{
         IsError: true,
         MessageKey: 'ERROR',
-        StatusCode: 500,
+        StatusCode: 500
       };
     }
   }
 
-  async Insert(role: Role) {
+  async Insert (role: Role) {
     try {
-      let response: UIResponseBase<Role> = {
+      const response: UIResponseBase<Role> = {
         IsError: false,
         Result: role,
         MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        StatusCode: 200
       };
       await getRepository(Role).insert(role);
       return response;
@@ -113,48 +113,48 @@ export class RoleService {
       throw <UIResponseBase<Role>>{
         IsError: true,
         MessageKey: 'ERROR',
-        StatusCode: 500,
+        StatusCode: 500
       };
     }
   }
 
-  async Update(updateDetails: Role) {
+  async Update (updateDetails: Role) {
     try {
-      let role = await getRepository(Role).findOne({
-        where: {Id: updateDetails.Id},
+      const role = await getRepository(Role).findOne({
+        where: { Id: updateDetails.Id }
       });
-      let {Id, ...updatedRole} = {...role, ...updateDetails};
-      await getRepository(Role).update({Id: role.Id}, updatedRole);
+      const { Id, ...updatedRole } = { ...role, ...updateDetails };
+      await getRepository(Role).update({ Id: role.Id }, updatedRole);
       return <UIResponseBase<Role>>{
         IsError: false,
         Result: updatedRole,
         MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        StatusCode: 200
       };
     } catch (error) {
       console.log(error);
       throw <UIResponseBase<Role>>{
         IsError: true,
         MessageKey: 'ERROR',
-        StatusCode: 500,
+        StatusCode: 500
       };
     }
   }
 
-  async Delete(Id: number) {
+  async Delete (Id: number) {
     try {
-      await getRepository(Role).delete({Id: Id});
+      await getRepository(Role).delete({ Id: Id });
       return <UIResponseBase<Role>>{
         IsError: false,
         MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        StatusCode: 200
       };
     } catch (error) {
       console.log(error);
       throw <UIResponseBase<Role>>{
         IsError: true,
         MessageKey: 'ERROR',
-        StatusCode: 500,
+        StatusCode: 500
       };
     }
   }

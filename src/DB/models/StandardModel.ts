@@ -1,17 +1,22 @@
-import {Column, PrimaryGeneratedColumn} from 'typeorm';
-import {Status} from '../enums/Status';
+import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Status } from '../enums/Status';
 
 export class IStandardModel {
   @PrimaryGeneratedColumn()
   Id: number;
-  @Column({type: 'int'})
+
+  @Column({ type: 'int' })
   StatusId?: Status;
-  @Column({type: 'int'})
+
+  @Column({ type: 'int' })
   CreaUserId?: number;
-  @Column({type: 'datetime'})
+
+  @Column({ type: 'datetime' })
   CreaDate?: Date;
-  @Column({type: 'int'})
+
+  @Column({ type: 'int' })
   ModifUserId?: number;
-  @Column({type: 'datetime'})
+
+  @Column({ type: 'datetime' })
   ModifDate?: Date;
 }

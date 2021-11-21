@@ -1,5 +1,5 @@
-import {SetMetadata} from '@nestjs/common';
-import {PermessionEnum} from '../enums/PermessionsEnum';
+import { SetMetadata } from '@nestjs/common';
+import { PermessionEnum } from '../enums/PermessionsEnum';
 
 export const PERMESSIONS_KEY = 'permessions';
 export const PermessionsGuard = (...permessions: PermessionEnum[]) =>

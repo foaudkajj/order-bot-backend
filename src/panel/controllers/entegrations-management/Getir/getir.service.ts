@@ -1,29 +1,24 @@
-import {CACHE_MANAGER, HttpService, Inject, Injectable} from '@nestjs/common';
-import {Cache} from 'cache-manager';
-import {MerchantRepository} from 'src/bot/custom-repositories/MerchantRepository';
-import {DevextremeLoadOptionsService} from 'src/DB/Helpers/devextreme-loadoptions';
-import {Merchant} from 'src/DB/models/Merchant';
-import {UIResponseBase} from 'src/panel/dtos/UIResponseBase';
-import {getCustomRepository, getRepository} from 'typeorm';
-import dayjs from 'dayjs';
-import {Endpoints} from './Getir-Enums/Endpoints';
+import { HttpService, Injectable } from '@nestjs/common';
+import { MerchantRepository } from 'src/bot/custom-repositories/MerchantRepository';
+import { DevextremeLoadOptionsService } from 'src/DB/Helpers/devextreme-loadoptions';
+import { UIResponseBase } from 'src/panel/dtos/UIResponseBase';
+import { getCustomRepository, getRepository } from 'typeorm';
+import { Endpoints } from './Getir-Enums/Endpoints';
 import GetirToken from 'src/panel/helpers/GetirTokenHelper';
-import {GetirOrderDetails} from 'src/DB/models/GetirOrder';
-import {Order} from 'src/DB/models/Order';
-import {OrderChannel} from 'src/DB/enums/OrderChannel';
-import {OrderItem} from 'src/DB/models/OrderItem';
-import {FoodOrderDto} from './Getir-Dtos/foodOrderDto';
-import {Customer} from 'src/DB/models/Customer';
+import { GetirOrderDetails } from 'src/DB/models/GetirOrder';
+import { Order } from 'src/DB/models/Order';
+import { OrderChannel } from 'src/DB/enums/OrderChannel';
+import { FoodOrderDto } from './Getir-Dtos/foodOrderDto';
+import { Customer } from 'src/DB/models/Customer';
 
 @Injectable()
 export class GetirService {
   GetirAppSecretKey: string;
   GetirRestaurantSecretKey: string;
   merchantRepository = getCustomRepository(MerchantRepository);
-  constructor(
+  constructor (
     public devextremeLoadOptions: DevextremeLoadOptionsService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    public httpService: HttpService,
+    public httpService: HttpService
   ) {
     console.log('here constructor');
   }
@@ -64,12 +59,12 @@ export class GetirService {
   //     return <UIResponseBase<any>>{ data: paymentMethodsToReturn, totalCount: paymentMethodsToReturn.length, IsError: false, StatusCode: 200 }
   // }
 
-  async GetRestaurantPaymentMethods(merchantId: number) {
+  async GetRestaurantPaymentMethods (merchantId: number) {
     const token = await GetirToken.getToken(merchantId);
     const restaurantPaymentMethods = await this.httpService
       .get<any[]>(
         process.env.GetirApi + Endpoints.GetRestaurantPaymentMethods,
-        {headers: {token: token.Result}},
+        { headers: { token: token.Result } }
       )
       .toPromise();
 
@@ -77,72 +72,74 @@ export class GetirService {
       data: restaurantPaymentMethods.data,
       totalCount: restaurantPaymentMethods.data.length,
       IsError: false,
-      StatusCode: 200,
+      StatusCode: 200
     };
   }
 
-  async ActivateDeactivateRestaurantPaymentMethods(merchantId: number, body) {
-    const {id, active} = body as {id; active};
+  async ActivateDeactivateRestaurantPaymentMethods (merchantId: number, body) {
+    const { id, active } = body as {id; active};
     const token = await GetirToken.getToken(merchantId);
 
-    const activeRequest = this.httpService.post<any[]>(
+    const activeRequest = this.httpService.post<any>(
       process.env.GetirApi + Endpoints.ActivateRestaurantPaymentMethod,
-      {paymentMethodId: id},
-      {headers: {token: token.Result}},
+      { paymentMethodId: id },
+      { headers: { token: token.Result } }
     );
-    const deactiveRequest = this.httpService.post<any[]>(
+    const deactiveRequest = this.httpService.post<any>(
       process.env.GetirApi + Endpoints.InactivateRestaurantPaymentMethod,
-      {paymentMethodId: id},
-      {headers: {token: token.Result}},
+      { paymentMethodId: id },
+      { headers: { token: token.Result } }
     );
     const activateDeactivateResponse = active
       ? await activeRequest.toPromise()
       : await deactiveRequest.toPromise();
 
-    const result = activateDeactivateResponse.data['result'];
-    if (result)
+    const result = activateDeactivateResponse.data.result;
+    if (result) {
       return <UIResponseBase<any>>{
         data: activateDeactivateResponse.data,
         totalCount: activateDeactivateResponse.data.length,
         IsError: false,
-        StatusCode: 200,
+        StatusCode: 200
       };
-    else
+    } else {
       return <UIResponseBase<any>>{
         data: [],
         totalCount: 0,
         IsError: false,
-        StatusCode: 200,
+        StatusCode: 200
       };
+    }
   }
 
-  async ActivateDeactivateProductStatus(merchantId: number, body) {
-    const {productId, status} = body as {productId; status};
+  async ActivateDeactivateProductStatus (merchantId: number, body) {
+    const { productId, status } = body as {productId; status};
     const token = await GetirToken.getToken(merchantId);
     const updateProductStatusRequest = await this.httpService
-      .put<any[]>(
+      .put<any>(
         process.env.GetirApi +
           Endpoints.updateProductStatus.replace('{productId}', productId),
-        {status: status},
-        {headers: {token: token.Result}},
+        { status: status },
+        { headers: { token: token.Result } }
       )
       .toPromise();
 
-    const result = updateProductStatusRequest.data['result'];
-    if (result)
+    const result = updateProductStatusRequest.data.result;
+    if (result) {
       return <UIResponseBase<any>>{
         data: updateProductStatusRequest.data,
         totalCount: updateProductStatusRequest.data.length,
         IsError: false,
-        StatusCode: 200,
+        StatusCode: 200
       };
-    else
+    } else {
       return <UIResponseBase<any>>{
         data: [],
         totalCount: 0,
         IsError: false,
-        StatusCode: 200,
+        StatusCode: 200
       };
+    }
   }
 
   // async ActivateDeactivateCategoryStatus(merchantId: number, body) {
@@ -165,47 +162,48 @@ export class GetirService {
 
   // }
 
-  async AddPaymentMethod(merchantId: number, values: string) {
-    const {id} = JSON.parse(values) as {id};
+  async AddPaymentMethod (merchantId: number, values: string) {
+    const { id } = JSON.parse(values) as {id};
     const token = await GetirToken.getToken(merchantId);
 
     const restaurantAddPaymentMethods = await this.httpService
-      .post<any[]>(
+      .post<any>(
         process.env.GetirApi + Endpoints.AddRestaurantPaymentMethod,
-        {paymentMethodId: id},
-        {headers: {token: token.Result}},
+        { paymentMethodId: id },
+        { headers: { token: token.Result } }
       )
       .toPromise();
 
-    const result = restaurantAddPaymentMethods.data['result'];
-    if (result)
+    const result = restaurantAddPaymentMethods.data.result;
+    if (result) {
       return <UIResponseBase<any>>{
         data: restaurantAddPaymentMethods.data,
         totalCount: restaurantAddPaymentMethods.data.length,
         IsError: false,
-        StatusCode: 200,
+        StatusCode: 200
       };
-    else
+    } else {
       return <UIResponseBase<any>>{
         data: [],
         totalCount: 0,
         IsError: false,
-        StatusCode: 200,
+        StatusCode: 200
       };
+    }
   }
 
-  async DeleteRestaurantPaymentMethods(
+  async DeleteRestaurantPaymentMethods (
     merchantId: number,
-    paymentMethodId: number,
+    paymentMethodId: number
   ) {
     const token = await GetirToken.getToken(merchantId);
     const restaurantPaymentMethods = await this.httpService
       .delete<any[]>(
         process.env.GetirApi + Endpoints.DeleteRestaurantPaymentMethod,
         {
-          data: {paymentMethodId: paymentMethodId},
-          headers: {token: token.Result},
-        },
+          data: { paymentMethodId: paymentMethodId },
+          headers: { token: token.Result }
+        }
       )
       .toPromise();
 
@@ -213,15 +211,15 @@ export class GetirService {
       data: restaurantPaymentMethods.data,
       totalCount: restaurantPaymentMethods.data.length,
       IsError: false,
-      StatusCode: 200,
+      StatusCode: 200
     };
   }
 
-  async GetAllPaymentMethods(merchantId: number) {
+  async GetAllPaymentMethods (merchantId: number) {
     const token = await GetirToken.getToken(merchantId);
     const availablePaymentMethods = await this.httpService
       .get<any[]>(process.env.GetirApi + Endpoints.listPaymentMethods, {
-        headers: {token: token.Result},
+        headers: { token: token.Result }
       })
       .toPromise();
 
@@ -229,31 +227,31 @@ export class GetirService {
       data: availablePaymentMethods.data,
       totalCount: availablePaymentMethods.data.length,
       IsError: false,
-      StatusCode: 200,
+      StatusCode: 200
     };
   }
 
-  async GetRestaurantDetails(merchantId: number) {
+  async GetRestaurantDetails (merchantId: number) {
     const token = await GetirToken.getToken(merchantId);
     const restaurantInformation = await this.httpService
-      .get<any[]>(process.env.GetirApi + Endpoints.GetRestaurantInformation, {
-        headers: {token: token.Result},
+      .get<any>(process.env.GetirApi + Endpoints.GetRestaurantInformation, {
+        headers: { token: token.Result }
       })
       .toPromise();
-    restaurantInformation.data['status'] =
-      restaurantInformation.data['status'] == 100 ? true : false;
+    restaurantInformation.data.status =
+      restaurantInformation.data.status === 100;
     return <UIResponseBase<any>>{
       Result: restaurantInformation.data,
       IsError: false,
-      StatusCode: 200,
+      StatusCode: 200
     };
   }
 
-  async GetRestaurantMenusAndOptions(merchantId: number) {
+  async GetRestaurantMenusAndOptions (merchantId: number) {
     const token = await GetirToken.getToken(merchantId);
     const restaurantMenusAndOptions = await this.httpService
       .get<any>(process.env.GetirApi + Endpoints.GetRestaurantMenuAndOptions, {
-        headers: {token: token.Result},
+        headers: { token: token.Result }
       })
       .toPromise();
     // let responseData: RestaurantMenusAndOptionsType[] = [];
@@ -275,15 +273,15 @@ export class GetirService {
       totalCount: restaurantMenusAndOptions.data.productCategories.length,
       IsError: false,
       StatusCode: 200,
-      MessageKey: '',
+      MessageKey: ''
     };
   }
 
-  async GetOptionProdcuts(merchantId: number) {
+  async GetOptionProdcuts (merchantId: number) {
     const token = await GetirToken.getToken(merchantId);
     const optionProducts = await this.httpService
       .get<any>(process.env.GetirApi + Endpoints.GetRestaurantOptionProducts, {
-        headers: {token: token.Result},
+        headers: { token: token.Result }
       })
       .toPromise();
     return <UIResponseBase<any>>{
@@ -291,64 +289,65 @@ export class GetirService {
       totalCount: optionProducts.data.length,
       IsError: false,
       StatusCode: 200,
-      MessageKey: '',
+      MessageKey: ''
     };
   }
 
-  async ActivateDeactivateOptionProduct(merchantId: number, body) {
+  async ActivateDeactivateOptionProduct (merchantId: number, body) {
     try {
-      const {optionProductId, status} = body as {optionProductId; status};
+      const { optionProductId, status } = body as {optionProductId; status};
       const token = await GetirToken.getToken(merchantId);
       const activeRequest = this.httpService.post<any>(
         process.env.GetirApi +
           Endpoints.activateRestaurantOptionsWithOptionProductId.replace(
             '{optionProductId}',
-            optionProductId,
+            optionProductId
           ),
         {},
-        {headers: {token: token.Result}},
+        { headers: { token: token.Result } }
       );
       const inactiveRequest = this.httpService.post<any>(
         process.env.GetirApi +
           Endpoints.inactivateRestaurantOptionsWithOptionProductId.replace(
             '{optionProductId}',
-            optionProductId,
+            optionProductId
           ),
         {},
-        {headers: {token: token.Result}},
+        { headers: { token: token.Result } }
       );
       const activateDeactivateResponse =
         status === 100
           ? await activeRequest.toPromise()
           : await inactiveRequest.toPromise();
 
-      const result = activateDeactivateResponse.data['result'];
-      if (result)
+      const result = activateDeactivateResponse.data.result;
+      if (result) {
         return <UIResponseBase<any>>{
           data: activateDeactivateResponse.data,
           totalCount: activateDeactivateResponse.data.length,
           IsError: false,
-          StatusCode: 200,
+          StatusCode: 200
         };
-      else
+      } else {
         return <UIResponseBase<any>>{
           data: [],
           totalCount: 0,
           IsError: false,
-          StatusCode: 200,
+          StatusCode: 200
         };
+      }
     } catch (e) {
       console.log(e);
     }
   }
 
-  async UpdateRestaurantAndCourierInfo(
+  async UpdateRestaurantAndCourierInfo (
     merchantId: number,
     body: {
       status: boolean;
       averagePreparationTime: number;
       isCourierAvailable: boolean;
-    },
+    }
   ) {
     const token = await GetirToken.getToken(merchantId);
 
@@ -359,7 +358,7 @@ export class GetirService {
           .put<any[]>(
             process.env.GetirApi + Endpoints.OpenTheRestaurant,
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       } else {
@@ -367,7 +366,7 @@ export class GetirService {
           .put<any[]>(
             process.env.GetirApi + Endpoints.CloseTheRestaurant,
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       }
@@ -378,7 +377,7 @@ export class GetirService {
           .post<any[]>(
             process.env.GetirApi + Endpoints.EnableTheCourierService,
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       } else {
@@ -386,7 +385,7 @@ export class GetirService {
           .post<any[]>(
             process.env.GetirApi + Endpoints.DisableTheCourierService,
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       }
@@ -397,8 +396,8 @@ export class GetirService {
           .put<any[]>(
             process.env.GetirApi +
               Endpoints.UpdateRestaurantAveragePreparationTime,
-            {averagePreparationTime: body.averagePreparationTime},
-            {headers: {token: token.Result}},
+            { averagePreparationTime: body.averagePreparationTime },
+            { headers: { token: token.Result } }
           )
           .toPromise();
       }
@@ -407,22 +406,22 @@ export class GetirService {
         Result: {
           ...CourierResult.data,
           ...RestaurantStatus.data,
-          ...averagePreparationTimeResult.data,
+          ...averagePreparationTimeResult.data
         },
-        IsError: false,
+        IsError: false
       };
     } catch (e) {
       return <UIResponseBase<any>>{
         IsError: true,
-        MessageKey: (e as Error).message,
+        MessageKey: (e as Error).message
       };
     }
   }
 
-  async ActivateInActiveProductsAsOptions(merchantId, body) {
+  async ActivateInActiveProductsAsOptions (merchantId, body) {
     try {
       const token = await GetirToken.getToken(merchantId);
-      const {productId, status} = body;
+      const { productId, status } = body;
 
       let activateProduct;
       let inactivateProduct;
@@ -432,10 +431,10 @@ export class GetirService {
             process.env.GetirApi +
               Endpoints.activeRestaurantOptionsWithProductId.replace(
                 '{productId}',
-                productId,
+                productId
               ),
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       } else {
@@ -444,30 +443,30 @@ export class GetirService {
             process.env.GetirApi +
               Endpoints.inactivateRestaurantOptionsWithProductId.replace(
                 '{productId}',
-                productId,
+                productId
               ),
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       }
 
       return <UIResponseBase<any>>{
-        Result: {...activateProduct?.data, ...inactivateProduct?.data},
-        IsError: false,
+        Result: { ...activateProduct?.data, ...inactivateProduct?.data },
+        IsError: false
       };
     } catch (e) {
       return <UIResponseBase<any>>{
         IsError: true,
-        MessageKey: (e as Error).message,
+        MessageKey: (e as Error).message
       };
     }
   }
 
-  async ActivateInActiveOptionProducts(merchantId, body) {
+  async ActivateInActiveOptionProducts (merchantId, body) {
     try {
       const token = await GetirToken.getToken(merchantId);
-      const {optionProductId, status} = body;
+      const { optionProductId, status } = body;
 
       let activateOption;
       let inactivateOption;
@@ -477,10 +476,10 @@ export class GetirService {
             process.env.GetirApi +
               Endpoints.activateRestaurantOptionsWithOptionProductId.replace(
                 '{optionProductId}',
-                optionProductId,
+                optionProductId
               ),
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       } else {
@@ -489,22 +488,22 @@ export class GetirService {
             process.env.GetirApi +
               Endpoints.inactivateRestaurantOptionsWithOptionProductId.replace(
                 '{optionProductId}',
-                optionProductId,
+                optionProductId
               ),
             {},
-            {headers: {token: token.Result}},
+            { headers: { token: token.Result } }
           )
           .toPromise();
       }
 
       return <UIResponseBase<any>>{
-        Result: {...activateOption?.data, ...inactivateOption?.data},
-        IsError: false,
+        Result: { ...activateOption?.data, ...inactivateOption?.data },
+        IsError: false
       };
     } catch (e) {
       return <UIResponseBase<any>>{
         IsError: true,
-        MessageKey: (e as Error).message,
+        MessageKey: (e as Error).message
       };
     }
   }
@@ -520,10 +519,10 @@ export class GetirService {
   //     }
   // }
 
-  async UpdateOptionStatusInSpecificProductAndCategory(merchantId, body) {
+  async UpdateOptionStatusInSpecificProductAndCategory (merchantId, body) {
     try {
       const token = await GetirToken.getToken(merchantId);
-      const {productId, optionCategoryId, optionId, status} = body;
+      const { productId, optionCategoryId, optionId, status } = body;
       const result = await this.httpService
         .put<any[]>(
           process.env.GetirApi +
@@ -531,24 +530,24 @@ export class GetirService {
               .replace('{productId}', productId)
               .replace('{optionCategoryId}', optionCategoryId)
               .replace('{optionId}', optionId),
-          {status: status ? 100 : 200},
-          {headers: {token: token.Result}},
+          { status: status ? 100 : 200 },
+          { headers: { token: token.Result } }
         )
         .toPromise();
 
-      return <UIResponseBase<any>>{Result: {...result.data}, IsError: false};
+      return <UIResponseBase<any>>{ Result: { ...result.data }, IsError: false };
     } catch (e) {
       return <UIResponseBase<any>>{
         IsError: true,
-        MessageKey: (e as Error).message,
+        MessageKey: (e as Error).message
       };
     }
   }
 
-  async OrderReceived(merchantId, orderDetails: FoodOrderDto) {
-    let orderRepository = getRepository(Order);
+  async OrderReceived (merchantId, orderDetails: FoodOrderDto) {
+    const orderRepository = getRepository(Order);
     // console.log(JSON.stringify(orderDetails))
-    let order: Order = {
+    const order: Order = {
       CreateDate: new Date(),
       Note: orderDetails.foodOrder.clientNote,
       OrderChannel: OrderChannel.Getir,
@@ -563,7 +562,7 @@ export class GetirService {
         ContactPhoneNumber: orderDetails.foodOrder.client.contactPhoneNumber,
         FullName: orderDetails.foodOrder.client.name,
         TelegramId: null,
-        TelegramUserName: null,
+        TelegramUserName: null
       },
       GetirOrder: <GetirOrderDetails>{
         id: orderDetails.foodOrder.id,
@@ -586,7 +585,7 @@ export class GetirService {
         courierStatus: orderDetails.foodOrder.courier.status,
         courierName: orderDetails.foodOrder.courier.name,
         courierLocation: JSON.stringify(
-          orderDetails.foodOrder.courier.location,
+          orderDetails.foodOrder.courier.location
         ),
         clientNote: orderDetails.foodOrder.clientNote,
         doNotKnock: orderDetails.foodOrder.doNotKnock,
@@ -596,17 +595,17 @@ export class GetirService {
         deliveryType: orderDetails.foodOrder.deliveryType,
         isEcoFriendly: orderDetails.foodOrder.isEcoFriendly,
         paymentMethodText: JSON.stringify(
-          orderDetails.foodOrder.paymentMethodText,
+          orderDetails.foodOrder.paymentMethodText
         ),
         paymentMethodId: orderDetails.foodOrder.paymentMethod,
         restaurantId: orderDetails.foodOrder.restaurant.id,
-        productDetails: JSON.stringify(orderDetails.foodOrder.products),
-      },
+        productDetails: JSON.stringify(orderDetails.foodOrder.products)
+      }
     };
     // orderRepository.save(order)
   }
 
-  async OrderCanceled(merchantId, body) {
+  async OrderCanceled (merchantId, body) {
     console.log(body);
   }
 

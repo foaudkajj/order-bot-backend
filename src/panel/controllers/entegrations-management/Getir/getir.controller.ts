@@ -5,19 +5,17 @@ import {
   Delete,
   Post,
   Request,
-  Headers,
+  Headers
 } from '@nestjs/common';
-import {AllowAnonymous} from 'src/panel/decorators/public.decorator';
-import {AddOrDeletePaymentMethodDto} from 'src/panel/dtos/AddOrDeletePaymentMethodDto';
-import {DxGridDeleteRequest} from 'src/panel/dtos/DxGridDeleteRequest';
-import {UIResponseBase} from 'src/panel/dtos/UIResponseBase';
-import GetirToken from 'src/panel/helpers/GetirTokenHelper';
-import {FoodOrderDto} from './Getir-Dtos/foodOrderDto';
-import {GetirService} from './getir.service';
+import { AllowAnonymous } from 'src/panel/decorators/public.decorator';
+import { DxGridDeleteRequest } from 'src/panel/dtos/DxGridDeleteRequest';
+import { UIResponseBase } from 'src/panel/dtos/UIResponseBase';
+import { FoodOrderDto } from './Getir-Dtos/foodOrderDto';
+import { GetirService } from './getir.service';
 
 @Controller('api/Getir')
 export class GetirController {
-  constructor(public getirService: GetirService) {}
+  constructor (public getirService: GetirService) {}
 
   // @Post('AddOrDeletePaymentMethod')
   // async AddOrDeletePaymentMethod(@Body() body: AddOrDeletePaymentMethodDto, @Request() request): Promise<UIResponseBase<string>> {
@@ -26,68 +24,68 @@ export class GetirController {
   // }
 
   @Get('GetRestaurantPaymentMethods')
-  async GetRestaurantPaymentMethods(
-    @Request() request,
+  async GetRestaurantPaymentMethods (
+    @Request() request
   ): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     return await this.getirService.GetRestaurantPaymentMethods(MerchantId);
   }
 
   @Delete('DeleteRestaurantPaymentMethods')
-  async DeleteRestaurantPaymentMethods(
+  async DeleteRestaurantPaymentMethods (
     @Request() request,
-    @Body() deleteRequest: DxGridDeleteRequest,
+    @Body() deleteRequest: DxGridDeleteRequest
   ): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     return await this.getirService.DeleteRestaurantPaymentMethods(
       MerchantId,
-      deleteRequest.key,
+      deleteRequest.key
     );
   }
 
   @Get('GetAllPaymentMethods')
-  async GetAllPaymentMethods(
-    @Request() request,
+  async GetAllPaymentMethods (
+    @Request() request
   ): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     return await this.getirService.GetAllPaymentMethods(MerchantId);
   }
 
   @Post('AddPaymentMethod')
-  async AddPaymentMethod(
+  async AddPaymentMethod (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
-    let result = await this.getirService.AddPaymentMethod(
+    const { MerchantId } = request.user;
+    const result = await this.getirService.AddPaymentMethod(
       MerchantId,
-      body.values,
+      body.values
     );
     return result;
   }
 
   @Post('ActivateDeactivateRestaurantPaymentMethods')
-  async ActivateDeactivateRestaurantPaymentMethods(
+  async ActivateDeactivateRestaurantPaymentMethods (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
-    let result = await this.getirService.ActivateDeactivateRestaurantPaymentMethods(
+    const { MerchantId } = request.user;
+    const result = await this.getirService.ActivateDeactivateRestaurantPaymentMethods(
       MerchantId,
-      body,
+      body
     );
     return result;
   }
 
   @Post('ActivateDeactivateProductStatus')
-  async ActivateDeactivateProductStatus(
+  async ActivateDeactivateProductStatus (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
-    let result = await this.getirService.ActivateDeactivateProductStatus(
+    const { MerchantId } = request.user;
+    const result = await this.getirService.ActivateDeactivateProductStatus(
       MerchantId,
-      body,
+      body
     );
     return result;
   }
@@ -107,33 +105,33 @@ export class GetirController {
   // }
 
   @Get('GetOptionProdcuts')
-  async GetOptionProdcuts(@Request() request): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
+  async GetOptionProdcuts (@Request() request): Promise<UIResponseBase<string>> {
+    const { MerchantId } = request.user;
     return await this.getirService.GetOptionProdcuts(MerchantId);
   }
 
   @Post('ActivateDeactivateOptionProduct')
-  async ActivateDeactivateOptionProduct(
+  async ActivateDeactivateOptionProduct (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
-    let result = await this.getirService.ActivateDeactivateOptionProduct(
+    const { MerchantId } = request.user;
+    const result = await this.getirService.ActivateDeactivateOptionProduct(
       MerchantId,
-      body,
+      body
     );
     return result;
   }
 
   @Post('UpdateRestaurantAndCourierInfo')
-  async UpdateRestaurantAndCourierInfo(
+  async UpdateRestaurantAndCourierInfo (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     return await this.getirService.UpdateRestaurantAndCourierInfo(
       MerchantId,
-      body,
+      body
     );
   }
 
@@ -145,65 +143,66 @@ export class GetirController {
   // }
 
   @Post('ActivateInActiveOptionProducts')
-  async ActivateInActiveOptions(
+  async ActivateInActiveOptions (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
-    let result = await this.getirService.ActivateInActiveOptionProducts(
+    const { MerchantId } = request.user;
+    const result = await this.getirService.ActivateInActiveOptionProducts(
       MerchantId,
-      body,
+      body
     );
     return result;
   }
 
   @Post('ActivateInActiveProductsAsOptions')
-  async ActivateInActiveProductsAsOptions(
+  async ActivateInActiveProductsAsOptions (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
-    let result = await this.getirService.ActivateInActiveProductsAsOptions(
+    const { MerchantId } = request.user;
+    const result = await this.getirService.ActivateInActiveProductsAsOptions(
       MerchantId,
-      body,
+      body
     );
     return result;
   }
+
   @Post('UpdateOptionStatusInSpecificProductAndCategory')
-  async UpdateOptionStatusInSpecificProductAndCategory(
+  async UpdateOptionStatusInSpecificProductAndCategory (
     @Request() request,
-    @Body() body,
+    @Body() body
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
-    let result = await this.getirService.UpdateOptionStatusInSpecificProductAndCategory(
+    const { MerchantId } = request.user;
+    const result = await this.getirService.UpdateOptionStatusInSpecificProductAndCategory(
       MerchantId,
-      body,
+      body
     );
     return result;
   }
 
   @Post('OrderReceived')
   @AllowAnonymous()
-  async OrderReceived(
+  async OrderReceived (
     @Body() body: FoodOrderDto,
     @Request() request,
-    @Headers() Headers,
+    @Headers() headers
   ): Promise<string> {
     // const { MerchantId } = request.user;
-    console.log(Headers);
+    console.log(headers);
     await this.getirService.OrderReceived(1, body);
     return 'Ok';
   }
 
   @Post('OrderCanceled')
   @AllowAnonymous()
-  async OrderCanceled(
+  async OrderCanceled (
     @Request() request,
-    @Headers() Headers,
-    @Body() body,
+    @Headers() headers,
+    @Body() body
   ): Promise<string> {
     // const { MerchantId } = request.user;
-    console.log(Headers);
+    console.log(headers);
     await this.getirService.OrderCanceled(1, body);
     return 'Ok';
   }
