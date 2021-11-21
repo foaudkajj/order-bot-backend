@@ -1,3 +1,10 @@
+export enum OrderChannel {
+  Telegram = 'TELEGRAM',
+  YemekSepetei = 'YemekSepetei',
+  Getir = 'Getir',
+  Panel = 'PANEL',
+}
+
 export enum OrderStatus {
   New = 0,
   UserConfirmed = 1,
@@ -11,4 +18,14 @@ export enum OrderStatus {
 export enum ProductStatus {
   Selected = 'SELECTED',
   InBasket = 'INBASKET',
+}
+
+export enum Status {
+  Invalid = 0,
+  Valid = 1,
+}
+
+export enum UserStatus {
+  Passive,
+  Active,
 }

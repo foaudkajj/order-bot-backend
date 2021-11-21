@@ -3,11 +3,11 @@ import {
   Column,
   ManyToOne,
   PrimaryGeneratedColumn,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm';
-import { ProductStatus } from '../enums/OrderStatus';
-import { Order } from './Order';
-import { Product } from './Product';
+import {ProductStatus} from './enums';
+import {Order} from './order';
+import {Product} from './product';
 
 @Entity()
 export class OrderItem {
@@ -17,7 +17,7 @@ export class OrderItem {
   @Column()
   Amount: number;
 
-  @Column({ type: 'enum', enum: ProductStatus })
+  @Column({type: 'enum', enum: ProductStatus})
   ProductStatus?: string;
 
   @Column()
@@ -27,7 +27,7 @@ export class OrderItem {
   @JoinColumn()
   Product?: Product;
 
-  @Column({ name: 'orderId' })
+  @Column({name: 'orderId'})
   OrderId?: number;
 
   @ManyToOne(() => Order, order => order.orderItems)

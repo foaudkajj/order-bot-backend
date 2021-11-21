@@ -7,11 +7,11 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import {OrderItem} from './OrderItem';
-import {Customer} from './Customer';
-import {GetirOrderDetails} from './GetirOrder';
+import {OrderItem} from './order-item';
+import {Customer} from './customer';
+import {GetirOrderDetails} from './getir-prder';
 import {TelegramOrder} from './telegram-order';
-import {OrderChannel} from '../enums/OrderChannel';
+import {OrderChannel} from './enums';
 
 @Entity()
 export class Order {

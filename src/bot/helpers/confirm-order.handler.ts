@@ -1,13 +1,13 @@
-import { OrderStatus } from 'src/DB/enums/OrderStatus';
-import { BotContext } from '../interfaces/BotContext';
-import { CallBackQueryResult } from '../models/CallBackQueryResult';
-import { OrdersInBasketCb } from './get-orders-in-basket-CB-handler';
+import {OrderStatus} from 'src/DB/models';
+import {BotContext} from '../interfaces/BotContext';
+import {CallBackQueryResult} from '../models/CallBackQueryResult';
+import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
 
 export abstract class ConfirmOrderHandler {
-  public static async ConfirmOrder (ctx: BotContext) {
+  public static async ConfirmOrder(ctx: BotContext) {
     const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
       ctx,
-      OrderStatus.New
+      OrderStatus.New,
     );
     if (orderDetails !== null) {
       const orders =
@@ -22,24 +22,24 @@ export abstract class ConfirmOrderHandler {
               [
                 {
                   text: '👌 Siparişimi Onayla 👌',
-                  callback_data: CallBackQueryResult.SendOrder
-                }
+                  callback_data: CallBackQueryResult.SendOrder,
+                },
               ],
               [
                 {
                   text: '🗒 Siparişe Not Ekle 🗒',
-                  callback_data: CallBackQueryResult.AddNoteToOrder
-                }
+                  callback_data: CallBackQueryResult.AddNoteToOrder,
+                },
               ],
               [
                 {
                   text: '◀️ Ana Menüye Dön ◀️',
-                  callback_data: CallBackQueryResult.MainMenu
-                }
-              ]
-            ]
-          }
-        }
+                  callback_data: CallBackQueryResult.MainMenu,
+                },
+              ],
+            ],
+          },
+        },
       );
     }
   }

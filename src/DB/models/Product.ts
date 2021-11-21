@@ -3,35 +3,35 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  OneToMany
+  OneToMany,
 } from 'typeorm';
-import { Category } from './Category';
-import { OrderItem } from './OrderItem';
+import {Category} from './category';
+import {OrderItem} from './order-item';
 
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column({ length: 15 })
+  @Column({length: 15})
   Type: string;
 
   @Column()
   ThumbUrl: string;
 
-  @Column({ length: 50 })
+  @Column({length: 50})
   Title: string;
 
-  @Column({ length: 500 })
+  @Column({length: 500})
   Description: string;
 
-  @Column({ length: 50, nullable: true })
+  @Column({length: 50, nullable: true})
   Caption: string;
 
-  @Column({ length: 50 })
+  @Column({length: 50})
   ProductCode: string;
 
-  @Column({ type: 'decimal', default: 0 })
+  @Column({type: 'decimal', default: 0})
   UnitPrice?: number;
 
   @OneToMany(() => OrderItem, orderDetails => orderDetails.Product)
@@ -42,7 +42,7 @@ export class Product {
 
   @ManyToOne(() => Category, category => category.Products, {
     nullable: false,
-    cascade: ['insert']
+    cascade: ['insert'],
   })
   Category?: Category;
 }

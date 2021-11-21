@@ -1,4 +1,3 @@
-
 export class GetRolesDto {
   Id: number;
   RoleName: string;

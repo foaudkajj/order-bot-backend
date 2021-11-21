@@ -1,5 +1,5 @@
-import { UserStatus } from 'src/DB/enums/UserStatus';
-import { NavigationItems } from './navigationItems';
+import {UserStatus} from 'src/DB/models';
+import {NavigationItems} from './navigation-items';
 
 export interface LoginResponse {
   UserId: number;

@@ -4,10 +4,10 @@ import {
   JoinColumn,
   OneToMany,
   OneToOne,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Menu } from './Menu';
-import { RoleAndPermession } from './RoleAndPermession';
+import {Menu} from './Menu';
+import {RoleAndPermession} from './role-and-permession';
 
 @Entity()
 export class Permession {
@@ -17,22 +17,22 @@ export class Permession {
   @Column()
   PermessionKey: string;
 
-  @Column({ type: 'nvarchar', length: 50, nullable: true })
+  @Column({type: 'nvarchar', length: 50, nullable: true})
   ParentKey: string;
 
-  @Column({ type: 'boolean' })
+  @Column({type: 'boolean'})
   IsParent: string;
 
-  @Column({ name: 'menuId', nullable: true })
+  @Column({name: 'menuId', nullable: true})
   MenuId: number;
 
-  @OneToOne(() => Menu, { nullable: true })
+  @OneToOne(() => Menu, {nullable: true})
   @JoinColumn()
   Menu: Menu;
 
   @OneToMany(
     () => RoleAndPermession,
-    roleAndPermession => roleAndPermession.Permession
+    roleAndPermession => roleAndPermession.Permession,
   )
   RoleAndPermession: RoleAndPermession[];
 }

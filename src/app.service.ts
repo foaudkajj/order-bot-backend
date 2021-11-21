@@ -6,8 +6,7 @@ import {getCustomRepository, getRepository, Like, Repository} from 'typeorm';
 import {BotContext} from './bot/interfaces/BotContext';
 import {CallBackQueryResult} from './bot/models/CallBackQueryResult';
 import {AddressWizardService} from './bot/wiards/address-wizard.service';
-import {OrderStatus, ProductStatus} from './DB/enums/OrderStatus';
-import {Product} from './DB/models/Product';
+import {Product} from './DB/models/product';
 import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
 import {CustomerRepository} from './bot/custom-repositories/CustomerRepository';
 import {StartOrderingCb} from './bot/helpers/start-ordering-CB-handler';
@@ -16,12 +15,11 @@ import {FirstMessageHandler} from './bot/helpers/first-message-handler';
 import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
 import {OrderRepository} from './bot/custom-repositories/OrderRepository';
 import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
-import {OrderItem} from './DB/models/OrderItem';
+import {OrderItem} from './DB/models/order-item';
 import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
-import {Category} from './DB/models/Category';
-import {OrderChannel} from './DB/enums/OrderChannel';
 import {v4 as uuid} from 'uuid';
 import {TelegramUserRepository} from './bot/custom-repositories';
+import {Category, OrderChannel, OrderStatus, ProductStatus} from './DB/models';
 
 @Injectable()
 export class AppService implements OnModuleInit {

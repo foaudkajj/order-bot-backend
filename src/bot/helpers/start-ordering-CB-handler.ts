@@ -1,13 +1,13 @@
-import { OrderStatus } from 'src/DB/enums/OrderStatus';
-import { Category } from 'src/DB/models/Category';
-import { InlineKeyboardButton } from 'telegraf/typings/telegram-types';
-import { getRepository } from 'typeorm';
-import { BotContext } from '../interfaces/BotContext';
-import { CallBackQueryResult } from '../models/CallBackQueryResult';
-import { OrdersInBasketCb } from './get-orders-in-basket-CB-handler';
+import {Category} from 'src/DB/models';
+import {OrderStatus} from 'src/DB/models/enums';
+import {InlineKeyboardButton} from 'telegraf/typings/telegram-types';
+import {getRepository} from 'typeorm';
+import {BotContext} from '../interfaces/BotContext';
+import {CallBackQueryResult} from '../models/CallBackQueryResult';
+import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
 
 export abstract class StartOrderingCb {
-  public static async StartOrdering (ctx: BotContext) {
+  public static async StartOrdering(ctx: BotContext) {
     try {
       // const customerRepository = getCustomRepository(CustomerRepository);
       // let cutsomer = await customerRepository.getCustomer(ctx);
@@ -15,7 +15,7 @@ export abstract class StartOrderingCb {
       // await customerRepository.update({ TelegramId: cutsomer.TelegramId }, cutsomer);
       const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
         ctx,
-        OrderStatus.New
+        OrderStatus.New,
       );
       await this.ShowProductCategories(ctx, orderDetails);
     } catch (e) {
@@ -23,7 +23,7 @@ export abstract class StartOrderingCb {
     }
   }
 
-  static async ShowProductCategories (ctx: BotContext, orderDetails: string) {
+  static async ShowProductCategories(ctx: BotContext, orderDetails: string) {
     try {
       const orders =
         orderDetails === null ? 'Lütfen bir ürün seçiniz' : orderDetails;
@@ -38,18 +38,18 @@ export abstract class StartOrderingCb {
                 <InlineKeyboardButton[]>[
                   {
                     text: mp.Name,
-                    switch_inline_query_current_chat: mp.CategoryKey
-                  }
-                ]
+                    switch_inline_query_current_chat: mp.CategoryKey,
+                  },
+                ],
             ),
             [
               {
                 text: '◀️ Ana Menüye Dön ◀️',
-                callback_data: CallBackQueryResult.MainMenu
-              }
-            ]
-          ]
-        }
+                callback_data: CallBackQueryResult.MainMenu,
+              },
+            ],
+          ],
+        },
       });
     } catch (error) {
       // Loglama

@@ -1,13 +1,13 @@
-import { OrderStatus } from 'src/DB/enums/OrderStatus';
-import { BotContext } from '../interfaces/BotContext';
-import { CallBackQueryResult } from '../models/CallBackQueryResult';
-import { OrdersInBasketCb } from './get-orders-in-basket-CB-handler';
+import {OrderStatus} from 'src/DB/models';
+import {BotContext} from '../interfaces/BotContext';
+import {CallBackQueryResult} from '../models/CallBackQueryResult';
+import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
 
 export abstract class GetConfirmedOrderCb {
-  public static async GetConfirmedOrders (ctx: BotContext) {
+  public static async GetConfirmedOrders(ctx: BotContext) {
     const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
       ctx,
-      OrderStatus.UserConfirmed
+      OrderStatus.UserConfirmed,
     );
     if (orderDetails !== null) {
       const orders =
@@ -24,12 +24,12 @@ export abstract class GetConfirmedOrderCb {
               [
                 {
                   text: '◀️ Ana Menüye Dön ◀️',
-                  callback_data: CallBackQueryResult.MainMenu
-                }
-              ]
-            ]
-          }
-        }
+                  callback_data: CallBackQueryResult.MainMenu,
+                },
+              ],
+            ],
+          },
+        },
       );
     }
   }

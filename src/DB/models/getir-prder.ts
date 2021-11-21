@@ -1,10 +1,5 @@
-import {
-  Entity,
-  Column,
-  OneToOne,
-  PrimaryColumn
-} from 'typeorm';
-import { Order } from './Order';
+import {Entity, Column, OneToOne, PrimaryColumn} from 'typeorm';
+import {Order} from './order';
 
 @Entity()
 export class GetirOrderDetails {
@@ -89,10 +84,10 @@ export class GetirOrderDetails {
   @Column()
   restaurantId: string;
 
-  @Column({ type: 'text' })
+  @Column({type: 'text'})
   productDetails: string;
 
-  @Column({ name: 'orderId', nullable: true })
+  @Column({name: 'orderId', nullable: true})
   OrderId?: number;
 
   @OneToOne(() => Order, order => order.GetirOrder)
