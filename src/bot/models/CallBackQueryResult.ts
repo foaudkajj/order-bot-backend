@@ -1,6 +1,6 @@
 export enum CallBackQueryResult {
   StartOrdering = 'START_ORDERING',
-  AddToBasket = 'ADD_TO_BASKET',
+  AddToBasketAndContinueShopping = 'ADD_TO_BASKET',
   // AddToBasketAndCompleteOrder = "ADD_TO_BASKET_COMPLETE_ORDER",
   TrackOrder = 'ORDER_TRACKING',
   MyBasket = 'MY_ORDERS',
