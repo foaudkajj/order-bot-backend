@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn } from "typeorm";
 import { Category } from "./Category";
 import { Order } from "./Order";
-import { OrderDetails } from "./OrderDetails";
+import { OrderItem } from "./OrderItem";
 
 @Entity()
 export class Product {
@@ -27,8 +27,8 @@ export class Product {
     @Column({ type: 'decimal', default: 0 })
     UnitPrice?: number;
 
-    @OneToMany(() => OrderDetails, orderDetails => orderDetails.Product)
-    OrderDetails: Order[];
+    @OneToMany(() => OrderItem, orderDetails => orderDetails.Product)
+    OrderDetails: OrderItem[];
 
     @Column()
     categoryId: string;

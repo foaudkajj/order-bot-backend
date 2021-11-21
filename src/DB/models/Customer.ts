@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { OrderChannel } from "../enums/OrderChannel";
 import { Order } from "./Order";
 import { Product } from "./Product";
 
@@ -7,32 +8,21 @@ export class Customer {
 
     @PrimaryGeneratedColumn()
     Id?: number;
-    @Column({ nullable: true })
+
+    @Column({ length: 30})
+    FullName: string;
+
+    @Column({ length: 30,nullable: true})
+    TelegramUserName?: string;
+    
+    @Column({ nullable: true})
     TelegramId?: number;
-
-    @Column({ length: 30, nullable: true })
-    Username?: string;
-
-    @Column({ length: 30, nullable: true })
-    FirstName?: string;
-
-    @Column({ length: 30, nullable: true })
-    LastName?: string;
 
     @Column({ length: 30, nullable: true })
     PhoneNumber?: string;
 
-    @Column({ type: 'text', nullable: true })
-    SelectedProducts?: string;
-
-    @Column({ type: 'text', nullable: true })
-    OrderDetails?: string;
-
-    @Column({ length: 1000, nullable: true })
-    Address?: string;
-
-    @Column({ length: 1000, nullable: true })
-    Location?: string;
+    @Column({type:'enum', enum: OrderChannel, nullable :false})
+    CustomerChannel: string;
 
     @OneToMany(() => Order, order => order.customer, { nullable: true })
     Orders?: Promise<Order[]>;

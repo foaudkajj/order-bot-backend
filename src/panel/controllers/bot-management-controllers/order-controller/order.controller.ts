@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Query, Body } from '@nestjs/common';
-import { OrderDto } from 'src/DB/Dto/OrderDto';
 import { Order } from 'src/DB/models/Order';
 import { PermessionsGuard } from 'src/panel/decorators/permessions.decorator';
 import { DataSourceLoadOptionsBase } from 'src/panel/dtos/DevextremeQuery';
@@ -18,7 +17,7 @@ export class OrderController {
 
     @Get('Get')
     @PermessionsGuard(PermessionEnum.SHOW_ORDER)
-    async Get(@Query() query: DataSourceLoadOptionsBase): Promise<UIResponseBase<OrderDto>> {
+    async Get(@Query() query: DataSourceLoadOptionsBase): Promise<UIResponseBase<Order>> {
         let result = await this.orderService.Get(query);
         return result;
     }

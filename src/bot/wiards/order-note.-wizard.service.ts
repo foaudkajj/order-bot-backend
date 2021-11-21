@@ -28,8 +28,8 @@ export class AddnoteToOrderWizardService {
                     await ctx.reply("Kaydedilmiştir...");
                     console.log(ctx.message.text);
                     // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-                    const userInfo = await this.customerRepository.getUser(ctx);
-                    await this.orderRepository.update({ customerId: userInfo.Id, OrderStatus: OrderStatus.InBasket }, { Description: ctx.message.text });
+                    const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+                    await this.orderRepository.update({ customerId: customer.Id, OrderStatus: OrderStatus.New }, { Note: ctx.message.text });
                     await ConfirmOrderHandler.ConfirmOrder(ctx);
                     await ctx.scene.leave();
                 } else {

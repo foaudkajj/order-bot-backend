@@ -1,16 +1,15 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { OrderStatus } from 'src/DB/enums/OrderStatus';
-import { Order } from 'src/DB/models/Order';
-import { Customer } from 'src/DB/models/Customer';
-import { Composer, Context, Scenes } from 'telegraf';
+import { Injectable } from '@nestjs/common';
+import {  Scenes } from 'telegraf';
 import { getCustomRepository, getRepository, Repository } from 'typeorm';
 import { BotContext } from '../interfaces/BotContext';
 import { CallBackQueryResult } from '../models/CallBackQueryResult';
 import { CustomerRepository } from '../custom-repositories/CustomerRepository';
+import { OrderRepository } from '../custom-repositories/OrderRepository';
 
 @Injectable()
 export class AddressWizardService {
     customerRepository: CustomerRepository = getCustomRepository(CustomerRepository);
+    orderRepository = getCustomRepository(OrderRepository);
     constructor() {
 
     }
@@ -59,17 +58,18 @@ export class AddressWizardService {
         );
         return address;
     }
+    
     async SaveAddressToDBAndLeaveWizard(ctx: BotContext) {
-        let user = await this.customerRepository.getUser(ctx);
-        if (user) {
-            user.Address = ctx.scene.session?.address;
+        const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx,['TelegramOrder']);
+        if (order) {
+            order.TelegramOrder.Address = ctx.scene.session?.address;
             if (ctx.scene.session.isLocation) {
-                user.Location = JSON.stringify({
+                order.TelegramOrder.Location = JSON.stringify({
                     latitude: ctx.scene.session.latitude,
                     longitude: ctx.scene.session.longitude
                 });
             }
-            await this.customerRepository.save(user);
+            await this.orderRepository.save(order);
         }
         await ctx.scene.leave();
         await this.AskIfUserWantsToAddNote(ctx);

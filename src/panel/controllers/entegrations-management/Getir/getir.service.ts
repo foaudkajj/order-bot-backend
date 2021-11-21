@@ -8,6 +8,12 @@ import { getCustomRepository, getRepository } from 'typeorm';
 import dayjs from 'dayjs'
 import { Endpoints } from './Getir-Enums/Endpoints';
 import GetirToken from 'src/panel/helpers/GetirTokenHelper';
+import { GetirOrderDetails } from 'src/DB/models/GetirOrder';
+import { Order } from 'src/DB/models/Order';
+import { OrderChannel } from 'src/DB/enums/OrderChannel';
+import { OrderItem } from 'src/DB/models/OrderItem';
+import { FoodOrderDto } from './Getir-Dtos/foodOrderDto';
+import { Customer } from 'src/DB/models/Customer';
 
 
 @Injectable()
@@ -180,7 +186,7 @@ export class GetirService {
             const token = await GetirToken.getToken(merchantId);
             const activeRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.activateRestaurantOptionsWithOptionProductId.replace("{optionProductId}", optionProductId), {}, { headers: { 'token': token.Result } });
             const inactiveRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.inactivateRestaurantOptionsWithOptionProductId.replace("{optionProductId}", optionProductId), {}, { headers: { 'token': token.Result } });
-            const activateDeactivateResponse = status ? await activeRequest.toPromise() : await inactiveRequest.toPromise();
+            const activateDeactivateResponse = status === 100 ?await activeRequest.toPromise(): await inactiveRequest.toPromise();
 
             const result = activateDeactivateResponse.data['result'];
             if (result)
@@ -245,7 +251,7 @@ export class GetirService {
         }
     }
 
-    async ActivateInActiveOptions(merchantId, body) {
+    async ActivateInActiveOptionProducts(merchantId, body) {
         try {
             const token = await GetirToken.getToken(merchantId);
             const { optionProductId, status } = body;
@@ -264,52 +270,123 @@ export class GetirService {
         }
     }
 
-    async ActivateDeactivateAltOptions(merchantId, body) {
+    // async ActivateDeactivateAltOptions(merchantId, body) {
+    //     try {
+    //         const token = await GetirToken.getToken(merchantId);
+    //         const { optionProductId, optionCategoryId, optionId, status } = body;
+    //         const result = await this.httpService.put<any[]>(process.env.GetirApi + Endpoints.UpdateOptionProductOptionStatus.replace("{optionProductId}", optionProductId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId), { status: status ? 100 : 200 }, { headers: { 'token': token.Result } }).toPromise();
+    //         return <UIResponseBase<any>>{ Result: { ...result.data }, IsError: false };
+    //     } catch (e) {
+    //         return <UIResponseBase<any>>{ IsError: true, MessageKey: (e as Error).message }
+    //     }
+    // }
+
+    async UpdateOptionStatusInSpecificProductAndCategory(merchantId, body) {
         try {
             const token = await GetirToken.getToken(merchantId);
-            const { optionProductId, optionCategoryId, optionId, status } = body;
-            var dd = process.env.GetirApi + Endpoints.UpdateOptionProductOptionStatus.replace("{optionProductId}", optionProductId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId);
-            const result = await this.httpService.put<any[]>(process.env.GetirApi + Endpoints.UpdateOptionProductOptionStatus.replace("{optionProductId}", optionProductId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId), { status: status ? 100 : 200 }, { headers: { 'token': token.Result } }).toPromise();
-            //const deneme = process.env.GetirApi + Endpoints.UpdateOptionProductOptionStatus.replace("{optionProductId}", optionProductId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId);
-            //const deneme2 = { status: status ? 100 : 200 };
+            const { productId, optionCategoryId, optionId, status } = body;
+            const result = await this.httpService.put<any[]>(process.env.GetirApi + Endpoints.updateProductOptionStatus.replace("{productId}", productId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId), { status: status ? 100 : 200 }, { headers: { 'token': token.Result } }).toPromise();
+
             return <UIResponseBase<any>>{ Result: { ...result.data }, IsError: false };
         } catch (e) {
             return <UIResponseBase<any>>{ IsError: true, MessageKey: (e as Error).message }
         }
     }
 
-    async CheckAndGetAccessToken(merchantId: number) {
-        const merchant = await this.merchantRepository.findOne(merchantId);
-        let token = '';
-        if (merchant.GetirAccessToken) {
-            const TokenLastCreated = merchant.GetirTokenLastCreated;
-            const validityPeriod = parseInt(process.env.GetirAccessTokenLife);
-            const afterLifeTime = dayjs(TokenLastCreated).add(validityPeriod, 'minutes').toDate();
-
-            if (dayjs(afterLifeTime).isBefore(new Date())) {
-                token = await this.getAndUpdateToken(merchant);
-            } else {
-                token = merchant.GetirAccessToken;
+    async OrderReceived(merchantId, orderDetails: FoodOrderDto) {
+        let orderRepository = getRepository(Order);
+        // console.log(JSON.stringify(orderDetails))
+        let order: Order = {
+            CreateDate: new Date(),
+            Note: orderDetails.foodOrder.clientNote,
+            OrderChannel: OrderChannel.Getir,
+            OrderNo: orderDetails.foodOrder.id,
+            OrderStatus: orderDetails.foodOrder.status,
+            TotalPrice: orderDetails.foodOrder.totalPrice,
+            customer: <Customer>{
+                Address: "",
+                Location: JSON.stringify(orderDetails.foodOrder.courier.location),
+                CustomerChannel: OrderChannel.Getir,
+                PhoneNumber: orderDetails.foodOrder.client.clientPhoneNumber,
+                ContactPhoneNumber: orderDetails.foodOrder.client.contactPhoneNumber,
+                FullName: orderDetails.foodOrder.client.name,
+                TelegramId: null,
+                TelegramUserName:null,
+            },
+            GetirOrder: <GetirOrderDetails>{
+                id: orderDetails.foodOrder.id,
+                status: orderDetails.foodOrder.status,
+                isScheduled: orderDetails.foodOrder.isScheduled,
+                confirmationId: orderDetails.foodOrder.confirmationId,
+                clientId: orderDetails.foodOrder.client.id,
+                clientName: orderDetails.foodOrder.client.name,
+                clientContactPhoneNumber: orderDetails.foodOrder.client.contactPhoneNumber,
+                clientPhoneNumber: orderDetails.foodOrder.client.clientPhoneNumber,
+                clientDeliveryAddressId: orderDetails.foodOrder.client.deliveryAddress.id,
+                clientDistrict: orderDetails.foodOrder.client.deliveryAddress.district,
+                clientCity: orderDetails.foodOrder.client.deliveryAddress.city,
+                clientDeliveryAddress: orderDetails.foodOrder.client.deliveryAddress.address,
+                clientLocation: JSON.stringify(orderDetails.foodOrder.client.location),
+                courierId: orderDetails.foodOrder.courier.id,
+                courierStatus: orderDetails.foodOrder.courier.status,
+                courierName: orderDetails.foodOrder.courier.name,
+                courierLocation: JSON.stringify(orderDetails.foodOrder.courier.location),
+                clientNote: orderDetails.foodOrder.clientNote,
+                doNotKnock: orderDetails.foodOrder.doNotKnock,
+                dropOffAtDoor: orderDetails.foodOrder.dropOffAtDoor,
+                totalPrice: orderDetails.foodOrder.totalPrice,
+                checkoutDate: orderDetails.foodOrder.checkoutDate,
+                deliveryType: orderDetails.foodOrder.deliveryType,
+                isEcoFriendly: orderDetails.foodOrder.isEcoFriendly,
+                paymentMethodText: JSON.stringify(orderDetails.foodOrder.paymentMethodText),
+                paymentMethodId: orderDetails.foodOrder.paymentMethod,
+                restaurantId: orderDetails.foodOrder.restaurant.id,
+                productDetails: JSON.stringify(orderDetails.foodOrder.products)
             }
-        } else {
-            token = await this.getAndUpdateToken(merchant);
-        }
-        if (!token) {
-            return <UIResponseBase<string>>{ Result: token, IsError: true }
-        } else {
-            return <UIResponseBase<string>>{ Result: token, IsError: false }
-        }
+        };
+        // orderRepository.save(order)
+
 
     }
 
-    private async getAndUpdateToken(merchant: Merchant) {
-        const response = await this.httpService.post(process.env.GetirApi + Endpoints.auth, { appSecretKey: merchant.GetirAppSecretKey, restaurantSecretKey: merchant.GetirRestaurantSecretKey }).toPromise();
-        if (response.status == 200) {
-            this.merchantRepository.update({ Id: merchant.Id }, { GetirAccessToken: response.data.token, GetirTokenLastCreated: new Date() })
-            return response.data.token;
-        }
-        return null;
+    async OrderCanceled(merchantId, body) {
+        console.log(body)
     }
+
+
+
+    // async CheckAndGetAccessToken(merchantId: number) {
+    //     const merchant = await this.merchantRepository.findOne(merchantId);
+    //     let token = '';
+    //     if (merchant.GetirAccessToken) {
+    //         const TokenLastCreated = merchant.GetirTokenLastCreated;
+    //         const validityPeriod = parseInt(process.env.GetirAccessTokenLife);
+    //         const afterLifeTime = dayjs(TokenLastCreated).add(validityPeriod, 'minutes').toDate();
+
+    //         if (dayjs(afterLifeTime).isBefore(new Date())) {
+    //             token = await this.getAndUpdateToken(merchant);
+    //         } else {
+    //             token = merchant.GetirAccessToken;
+    //         }
+    //     } else {
+    //         token = await this.getAndUpdateToken(merchant);
+    //     }
+    //     if (!token) {
+    //         return <UIResponseBase<string>>{ Result: token, IsError: true }
+    //     } else {
+    //         return <UIResponseBase<string>>{ Result: token, IsError: false }
+    //     }
+
+    // }
+
+    // private async getAndUpdateToken(merchant: Merchant) {
+    //     const response = await this.httpService.post(process.env.GetirApi + Endpoints.auth, { appSecretKey: merchant.GetirAppSecretKey, restaurantSecretKey: merchant.GetirRestaurantSecretKey }).toPromise();
+    //     if (response.status == 200) {
+    //         this.merchantRepository.update({ Id: merchant.Id }, { GetirAccessToken: response.data.token, GetirTokenLastCreated: new Date() })
+    //         return response.data.token;
+    //     }
+    //     return null;
+    // }
 
 
 

@@ -9,12 +9,17 @@ import { OrdersInBasketCb } from "./get-orders-in-basket-CB-handler";
 
 export abstract class StartOrderingCb {
   public static async StartOrdering(ctx: BotContext) {
-    const userRepository = getCustomRepository(CustomerRepository);
-    let user = await userRepository.getUser(ctx);
-    user.SelectedProducts = null;
-    await userRepository.update({ TelegramId: user.TelegramId }, user);
-    let orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(ctx, OrderStatus.InBasket);
-    await this.ShowProductCategories(ctx, orderDetails);
+    try{
+    // const customerRepository = getCustomRepository(CustomerRepository);
+    // let cutsomer = await customerRepository.getCustomer(ctx);
+    // user.SelectedProducts = null;
+    // await customerRepository.update({ TelegramId: cutsomer.TelegramId }, cutsomer);
+      let orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(ctx, OrderStatus.New);
+      await this.ShowProductCategories(ctx, orderDetails);
+    }catch(e){
+      console.log(e)
+    }
+
 
 
   }

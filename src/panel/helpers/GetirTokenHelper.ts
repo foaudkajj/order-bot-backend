@@ -11,7 +11,7 @@ export default class GetirToken {
         const merchantRepository = getCustomRepository(MerchantRepository);
         const merchant = await merchantRepository.findOne(merchantId);
         let token = '';
-        if (merchant.GetirAccessToken) {
+        if (merchant?.GetirAccessToken) {
             const TokenLastCreated = merchant.GetirTokenLastCreated;
             const validityPeriod = parseInt(process.env.GetirAccessTokenLife);
             const afterLifeTime = dayjs(TokenLastCreated).add(validityPeriod, 'minutes').toDate();

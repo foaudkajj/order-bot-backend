@@ -6,7 +6,7 @@ import { OrdersInBasketCb } from "./get-orders-in-basket-CB-handler";
 export abstract class ConfirmOrderHandler {
 
     public static async ConfirmOrder(ctx: BotContext) {
-        let orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(ctx, OrderStatus.InBasket);
+        let orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(ctx, OrderStatus.New);
         if (orderDetails !== null) {
             const orders = orderDetails === null ? 'Lütfen bir ürün seçiniz' : orderDetails;
             await ctx.reply(`<b>Sipariş Özeti</b>:\n` + orders, //'📍 Adresiniz Alınmıştır.📍 \n\n' +

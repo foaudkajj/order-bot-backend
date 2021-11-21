@@ -6,7 +6,7 @@ import { getCustomRepository, getRepository, Like, Repository } from 'typeorm';
 import { BotContext } from './bot/interfaces/BotContext';
 import { CallBackQueryResult } from './bot/models/CallBackQueryResult';
 import { AddressWizardService } from './bot/wiards/address-wizard.service';
-import { OrderStatus } from './DB/enums/OrderStatus';
+import { OrderStatus, ProductStatus } from './DB/enums/OrderStatus';
 import { Order } from './DB/models/Order';
 import { Product } from './DB/models/Product';
 import { AddnoteToOrderWizardService } from './bot/wiards/order-note.-wizard.service';
@@ -17,15 +17,18 @@ import { FirstMessageHandler } from './bot/helpers/first-message-handler';
 import { CompleteOrderHandler } from './bot/helpers/complete-order-handler';
 import { OrderRepository } from './bot/custom-repositories/OrderRepository';
 import { ConfirmOrderHandler } from './bot/helpers/confirm-order.handler';
-import { OrderDetails } from './DB/models/OrderDetails';
+import { OrderItem } from './DB/models/OrderItem';
 import { GetConfirmedOrderCb } from './bot/helpers/get-confirmed-orders-handler';
 import { Category } from './DB/models/Category';
+import { OrderChannel } from './DB/enums/OrderChannel';
+import {v4 as uuid} from 'uuid';
+import { TelegramOrder } from './DB/models/TelegramOrder';
 
 @Injectable()
 export class AppService implements OnModuleInit {
-  userRepository = getCustomRepository(CustomerRepository);
+  customerRepository = getCustomRepository(CustomerRepository);
   orderRepository = getCustomRepository(OrderRepository);
-  orderDetailsRepository: Repository<OrderDetails> = getRepository(OrderDetails);
+  orderItemRepository: Repository<OrderItem> = getRepository(OrderItem);
   productRepository: Repository<Product> = getRepository(Product);
   categoryRepository: Repository<Category> = getRepository(Category);
   constructor(private addressWizard: AddressWizardService, private addNoteToOrderWizard: AddnoteToOrderWizardService) {
@@ -54,110 +57,116 @@ export class AppService implements OnModuleInit {
 
 
     bot.on("callback_query", async (ctx) => {
+      try{
+        if ("data" in ctx.callbackQuery && ctx.callbackQuery.data) {
+          // console.log(ctx.callbackQuery.data)
+          switch (ctx.callbackQuery.data) {
+  
+            case CallBackQueryResult.StartOrdering:
+              await ctx.answerCbQuery();
+              await StartOrderingCb.StartOrdering(ctx);
+              break;
+  
+            case CallBackQueryResult.AddProductAndCompleteOrder:
+              await ctx.answerCbQuery();
+              await this.AddProductAndCompleteOrder(ctx);
+              break;
+  
+            case CallBackQueryResult.CompleteOrder:
+              await CompleteOrderHandler.CompleteOrder(ctx);
+              break;
+  
+  
+            case CallBackQueryResult.AddToBasket:
+              await ctx.answerCbQuery();
+              await this.AddToBasket(ctx);
+              break;
+  
+            case CallBackQueryResult.EnterAddress:
+              await ctx.answerCbQuery();
+              await this.EnterAddress(ctx);
+              break;
+  
+            case CallBackQueryResult.SendOrder:
+              await this.SendOrder(ctx);
+              break;
+  
+            case CallBackQueryResult.MyBasket:
+              const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(ctx, OrderStatus.New);
+              if (orderDetails != null)
+                await ctx.editMessageText(orderDetails,
+                  {
+                    parse_mode: 'HTML',
+                    reply_markup: {
+                      // one_time_keyboard: true,
+                      inline_keyboard:
+                        [
+                          [{ text: "🥘 Sipariş Ver 🥘", callback_data: CallBackQueryResult.StartOrdering }],
+                          [{ text: "🚚 Siparişini Takip Et 🚚", callback_data: CallBackQueryResult.GetConfirmedOrders }],
+                          // [{ text: "🗑 Sepetem 🗑", callback_data: CallBackQueryResult.MyBasket }],
+                          [{ text: "🗑 Sepetemi Boşalt 🗑", callback_data: CallBackQueryResult.EmptyBakset }],
+                          [{ text: "✔️ Siparişimi Tamamla ✔️", callback_data: CallBackQueryResult.CompleteOrder }],
+                          [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
+                        ]
+                    }
+                  });
+              break;
+  
+            case CallBackQueryResult.ConfirmOrder:
+              await ConfirmOrderHandler.ConfirmOrder(ctx);
+              // await FirstMessageHandler.startOptions(ctx);
+              break;
+  
+  
+            case CallBackQueryResult.EmptyBakset:
+              await this.EmptyBasket(ctx);
+              break;
+  
+            case CallBackQueryResult.MainMenu:
+              await ctx.answerCbQuery();
+              await FirstMessageHandler.startOptions(ctx);
+              break;
+  
+            case CallBackQueryResult.TrackOrder:
+              await ctx.answerCbQuery("Bu Özellik Yapım Aşamasındadır");
+              break;
+  
+            case CallBackQueryResult.AddNoteToOrder:
+              await this.addNoteToOrder(ctx)
+              break;
+  
+            case CallBackQueryResult.GetConfirmedOrders:
+              await GetConfirmedOrderCb.GetConfirmedOrders(ctx);
+              // await FirstMessageHandler.startOptions(ctx);
+              break;
+  
+            default:
+              await ctx.answerCbQuery();
+              break;
+          }
+        }
+      }catch(e){
+        console.log(e)
+        await ctx.answerCbQuery();
+      }
       // if ("data" in ctx.callbackQuery && ctx.callbackQuery.data) {
       //   console.log(ctx.callbackQuery.from.id)
       // }
-      if ("data" in ctx.callbackQuery && ctx.callbackQuery.data) {
-        // console.log(ctx.callbackQuery.data)
-        switch (ctx.callbackQuery.data) {
-
-          case CallBackQueryResult.StartOrdering:
-            await ctx.answerCbQuery();
-            await StartOrderingCb.StartOrdering(ctx);
-            break;
-
-          case CallBackQueryResult.AddProductAndCompleteOrder:
-            await ctx.answerCbQuery();
-            await this.AddProductAndCompleteOrder(ctx);
-            break;
-
-          case CallBackQueryResult.CompleteOrder:
-            await CompleteOrderHandler.CompleteOrder(ctx);
-            break;
-
-
-          case CallBackQueryResult.AddToBasket:
-            await ctx.answerCbQuery();
-            await this.AddToBasket(ctx);
-            break;
-
-          case CallBackQueryResult.EnterAddress:
-            await ctx.answerCbQuery();
-            await this.EnterAddress(ctx);
-            break;
-
-          case CallBackQueryResult.SendOrder:
-            await this.SendOrder(ctx);
-            break;
-
-          case CallBackQueryResult.MyBasket:
-            const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(ctx, OrderStatus.InBasket);
-            if (orderDetails != null)
-              await ctx.editMessageText(orderDetails,
-                {
-                  parse_mode: 'HTML',
-                  reply_markup: {
-                    // one_time_keyboard: true,
-                    inline_keyboard:
-                      [
-                        [{ text: "🥘 Sipariş Ver 🥘", callback_data: CallBackQueryResult.StartOrdering }],
-                        [{ text: "🚚 Siparişini Takip Et 🚚", callback_data: CallBackQueryResult.GetConfirmedOrders }],
-                        // [{ text: "🗑 Sepetem 🗑", callback_data: CallBackQueryResult.MyBasket }],
-                        [{ text: "🗑 Sepetemi Boşalt 🗑", callback_data: CallBackQueryResult.EmptyBakset }],
-                        [{ text: "✔️ Siparişimi Tamamla ✔️", callback_data: CallBackQueryResult.CompleteOrder }],
-                        [{ text: "◀️ Ana Menüye Dön ◀️", callback_data: CallBackQueryResult.MainMenu }]
-                      ]
-                  }
-                });
-            break;
-
-          case CallBackQueryResult.ConfirmOrder:
-            await ConfirmOrderHandler.ConfirmOrder(ctx);
-            // await FirstMessageHandler.startOptions(ctx);
-            break;
-
-
-          case CallBackQueryResult.EmptyBakset:
-            await this.EmptyBasket(ctx);
-            break;
-
-          case CallBackQueryResult.MainMenu:
-            await ctx.answerCbQuery();
-            await FirstMessageHandler.startOptions(ctx);
-            break;
-
-          case CallBackQueryResult.TrackOrder:
-            await ctx.answerCbQuery("Bu Özellik Yapım Aşamasındadır");
-            break;
-
-          case CallBackQueryResult.AddNoteToOrder:
-            await this.addNoteToOrder(ctx)
-            break;
-
-          case CallBackQueryResult.GetConfirmedOrders:
-            await GetConfirmedOrderCb.GetConfirmedOrders(ctx);
-            // await FirstMessageHandler.startOptions(ctx);
-            break;
-
-          default:
-            await ctx.answerCbQuery();
-            break;
-        }
-      }
+      
 
     });
 
     bot.on("inline_query", async (ctx) => {
       try {
-        const user = await this.userRepository.getUser(ctx);
-        if (user) {
+        const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+        if (customer) {
           const category = await this.categoryRepository.findOne({ where: { CategoryKey: Like(ctx.inlineQuery.query) }, relations: ['Products'] });
           await ctx.answerInlineQuery(
             category?.Products?.map(product => <InlineQueryResultArticle>
               ({
                 id: product.Id.toString(),
                 type: product.Type,
-                // photo_url: "https://cdn.pixabay.com/photo/2015/12/01/20/28/road-1072823_1280.jpg",
+                photo_url: product.ThumbUrl,
                 thumb_url: product.ThumbUrl,
                 title: product.Title,
                 description: product.Description,
@@ -199,18 +208,28 @@ export class AppService implements OnModuleInit {
     });
 
 
-    bot.on("message", async ctx => {
-      if ("text" in ctx.message && ctx.message['via_bot']?.is_bot) {
-        if (parseInt(ctx.message.text, 10)) {
-          await this.AddToBasketAndComplteOrderOrContinueShopping(ctx);
+    bot.on("message", async (ctx: BotContext) => {
+      try{
+        if ("text" in ctx.message && ctx.message['via_bot']?.is_bot) {
+          if (parseInt(ctx.message.text, 10)) {
+            await this.AddToBasketAndComplteOrderOrContinueShopping(ctx);
+          }
         }
+      }catch(e){
+console.log(e)
       }
+
     });
   }
-  async EmptyBasket(ctx: Context) {
+  async EmptyBasket(ctx: BotContext) {
     try {
-      await this.orderRepository.delete({ customerId: ctx.callbackQuery.from.id, OrderStatus: OrderStatus.InBasket })
-      await ctx.answerCbQuery("Sepetiniz Boşaltılmıştır.");
+      const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx);
+      if(order){
+        await this.orderItemRepository.delete({OrderId: order.Id});
+        await ctx.answerCbQuery("Sepetiniz Boşaltılmıştır.");
+      }else{
+        await ctx.answerCbQuery("Sepetiniz Boştur.");
+      }
     } catch (error) {
       //Loglama
       console.log(error);
@@ -222,8 +241,8 @@ export class AppService implements OnModuleInit {
   async SendOrder(ctx: BotContext) {
     try {
       // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-      const userInfo = await this.userRepository.getUser(ctx);
-      await this.orderRepository.update({ customerId: userInfo.Id, OrderStatus: OrderStatus.InBasket }, { OrderStatus: OrderStatus.UserConfirmed });
+      const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+      await this.orderRepository.update({ customerId: customer.Id, OrderStatus: OrderStatus.New }, { OrderStatus: OrderStatus.UserConfirmed });
       await ctx.answerCbQuery("Siparişiniz Gönderilmiştir");
       await FirstMessageHandler.startOptions(ctx);
     } catch (error) {
@@ -254,17 +273,30 @@ export class AppService implements OnModuleInit {
   }
 
 
-  async AddToBasketAndComplteOrderOrContinueShopping(ctx) {
+  async AddToBasketAndComplteOrderOrContinueShopping(ctx:BotContext) {
     if ("text" in ctx.message) {
       const selectedProduct = ctx.message.text;
-
-      const user = await this.userRepository.getUser(ctx);
-      if (user) {
+      
+      const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+      const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx,['orderItems']);
+      if (order) {
         // let selectedProducts: string[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
-        let selectedProducts: string[] = [selectedProduct];
+        // let selectedProducts: string[] = [selectedProduct];
         // selectedProducts.push(ctx.message.text);
-        user.SelectedProducts = JSON.stringify(selectedProducts);
-        this.userRepository.save(user);
+        // order.SelectedProducts = JSON.stringify(selectedProducts);
+        await this.orderItemRepository.delete({OrderId: order.Id,ProductStatus: ProductStatus.Selected});
+        order.orderItems = order.orderItems.filter(oi=> oi.ProductStatus !== ProductStatus.Selected);
+        order.orderItems.push({productId: Number.parseInt(selectedProduct),Amount: 1,OrderId: order.Id})
+        await this.orderRepository.save(order);
+      }else{
+        await this.orderRepository.save({customerId:customer.Id, OrderNo: uuid(),CreateDate: new Date(),OrderChannel: OrderChannel.Telegram,
+        OrderStatus:OrderStatus.New,orderItems:[{Amount:1,productId:Number.parseInt(selectedProduct),ProductStatus: ProductStatus.Selected }],
+      TelegramOrder: {Username: ctx.from.username,FirstName: ctx.from.first_name,LastName: ctx.from.last_name,TelegramId: ctx.from.id,}})
+        
+        // ({OrderNo:uuid(), OrderChannel: OrderChannel.Telegram,CreateDate: new Date(),OrderStatus: OrderStatus.InBasket,
+        // orderItems:[{Amount: 1, productId: selectedProduct}]  });
+
+        // this.orderDetailsRepository.insert({Amount: 1, productId: selectedProduct, OrderId: newOrder.Id});
       }
 
       // Get Prodcut Details From DB and Show Them
@@ -298,43 +330,29 @@ export class AppService implements OnModuleInit {
 
 
   async AddNewOrder(ctx: BotContext) {
-    const user = await this.userRepository.getUser(ctx);
-    if (user) {
+    const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx,['orderItems','orderItems.Product']);
+    if (order) {
       console.log("AddNEwOrder")
-      let selectedProducts: number[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
-      if (selectedProducts.length > 0) {
-        const totalPrice = (await this.productRepository.findByIds(selectedProducts, { select: ['UnitPrice'] }))?.map(mp => mp.UnitPrice).reduce((prev, current) => prev + current);
-        let order: Order = await this.orderRepository.findOne({ where: { customerId: user.Id, OrderStatus: OrderStatus.InBasket }, relations: ["OrderDetails"] });
-        if (order) {
-          order.TotalPrice = +order.TotalPrice + +totalPrice;
-          selectedProducts.map((Id) => {
-            const orderDetails = order.OrderDetails.find((fi) => fi.productId == Id);
-            if (orderDetails) {
-              order.OrderDetails.find((fi) => fi.productId == Id).Amount += 1;
-            } else {
-              order.OrderDetails.push({ productId: Id, Amount: 1, OrderId: order.Id, CreateDate: new Date() });
-            }
-          });
-        } else {
-          order = new Order();
-          order = { CreateDate: new Date(), OrderStatus: OrderStatus.InBasket, customerId: user.Id, OrderNo: new Date().valueOf().toString(), TotalPrice: totalPrice };
-          order.OrderDetails = [];
-          selectedProducts.map((Id) => {
-            order.OrderDetails.push({ productId: Id, Amount: 1, CreateDate: new Date() });
-          });
+      const selectedProduct = order.orderItems.find(fi=> fi.ProductStatus === ProductStatus.Selected);
+      if (selectedProduct) {
+        const totalPrice = order.orderItems.map(product=> product.Product)?.map(mp => mp.UnitPrice).reduce((prev, current) => prev + current);
+        order.TotalPrice = +order.TotalPrice + +totalPrice;
 
+        const productExists = order.orderItems.find((fi) => fi.productId == selectedProduct.productId && fi.ProductStatus !== ProductStatus.Selected);
+        if (productExists) {
+          await this.orderItemRepository.delete({Id: selectedProduct.Id});
+          order.orderItems = order.orderItems.filter(fi=> fi.Id !== selectedProduct.Id);
+          productExists.Amount +=1;
         }
+        selectedProduct.ProductStatus = ProductStatus.InBasket;
         await this.orderRepository.save(order);
-        await this.orderDetailsRepository.save(order.OrderDetails);
-        user.SelectedProducts = null;
-        await this.userRepository.update({ TelegramId: user.Id }, user);
       }
     }
   }
 
   async addNoteToOrder(ctx: BotContext) {
-    const orderInBasket = await this.orderRepository.getOrdersInBasketByStatus(ctx, OrderStatus.InBasket, ['OrderDetails']);
-    if (orderInBasket?.OrderDetails.length > 0) {
+    const order = await this.orderRepository.getOrdersInBasketByStatus(ctx, OrderStatus.New);
+    if (order) {
       ctx.scene.enter('AddNoteToOrder', ctx.reply("Lütfen Eklemek İstediğiniz notu giriniz... \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal"))
     } else {
       await ctx.answerCbQuery("Sepetiniz Boştur.");

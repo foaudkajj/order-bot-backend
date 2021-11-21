@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { OrderDto } from 'src/DB/Dto/OrderDto';
 import { OrderStatus } from 'src/DB/enums/OrderStatus';
 import { DevextremeLoadOptionsService } from 'src/DB/Helpers/devextreme-loadoptions';
 import { Order } from 'src/DB/models/Order';
@@ -8,6 +7,7 @@ import { DataSourceLoadOptionsBase, SortingInfo } from 'src/panel/dtos/Devextrem
 import { UIResponseBase } from 'src/panel/dtos/UIResponseBase';
 import { FindManyOptions, getRepository, QueryFailedError } from 'typeorm';
 import { InformationMessages } from 'src/bot/helpers/informtaion-msgs';
+import { OrderChannel } from 'src/DB/enums/OrderChannel';
 
 @Injectable()
 export class OrderService {
@@ -15,23 +15,23 @@ export class OrderService {
 
     }
 
-    items = [{ Value: 2, Text: 'ORDER.MERCHANT_CONFIRMED', disabled: false }, { Value: 3, Text: 'ORDER.BEING_PREPARING', disabled: false }, { Value: 4, Text: 'ORDER.SENT', disabled: false }, { Value: 5, Text: 'ORDER.DELIVERED', disabled: false }];
+    items = [{ Value: 2, Text: 'ORDER.MERCHANT_CONFIRMED' }, { Value: 3, Text: 'ORDER.BEING_PREPARING' }, { Value: 4, Text: 'ORDER.SENT'}, { Value: 5, Text: 'ORDER.DELIVERED' }];
     async Get(query: DataSourceLoadOptionsBase) {
-        let entities: OrderDto[];
+        let entities: Order[];
         let findOptions: FindManyOptions<Order> = this.devextremeLoadOptions.GetFindOptionsFromQuery(query);
-        findOptions.relations = ['customer'];
-        entities = await getRepository(Order).find(findOptions) as OrderDto[];
+        findOptions.relations = ['customer','TelegramOrder','GetirOrder','orderItems','orderItems.Product'];
+        entities = await getRepository(Order).find(findOptions);
         entities = entities.map(order => {
             if (order.OrderStatus != OrderStatus.Canceled) {
                 order.OperationItems = this.items.filter(fi => fi.Value > order.OrderStatus);
                 if (order.OrderStatus != OrderStatus.Delivered) {
-                    order.OperationItems.push({ Value: 6, Text: 'ORDER.CANCELED', disabled: false })
+                    order.OperationItems.push({ Value: 6, Text: 'ORDER.CANCELED' })
                 }
             }
 
             return order;
         });
-        let response: UIResponseBase<OrderDto> = { IsError: false, data: entities, totalCount: entities.length, MessageKey: 'SUCCESS', StatusCode: 200 };
+        let response: UIResponseBase<Order> = { IsError: false, data: entities, totalCount: entities.length, MessageKey: 'SUCCESS', StatusCode: 200 };
         return response;
     }
 
@@ -40,7 +40,8 @@ export class OrderService {
             let response: UIResponseBase<Order> = { IsError: false, Result: entity, MessageKey: 'SUCCESS', StatusCode: 200 };
             console.log(entity)
             if (entity.customer) {
-                const NewCustomer: Customer = { Address: entity.customer.Address, FirstName: entity.customer.FirstName, LastName: entity.customer.LastName, Location: entity.customer.Location, PhoneNumber: entity.customer.PhoneNumber, Username: entity.customer.Username };
+                // Address: entity.customer.Address, FirstName: entity.customer.FirstName,LastName: entity.customer.LastName,Location: entity.customer.Location,, Username: entity.customer.Username
+                const NewCustomer: Customer = { CustomerChannel:OrderChannel.Panel, PhoneNumber: entity.customer.PhoneNumber,FullName: entity.customer.FullName};
                 entity.customer = NewCustomer;
             }
             if (!entity.OrderNo)
