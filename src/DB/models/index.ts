@@ -1,6 +1,6 @@
 export * from './category';
 export * from './customer';
-export * from './getir-prder';
+export * from './getir-order';
 export * from './menu';
 export * from './merchant';
 export * from './order';

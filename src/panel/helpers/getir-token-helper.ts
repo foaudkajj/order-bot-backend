@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import {MerchantRepository} from 'src/bot/custom-repositories/MerchantRepository';
 import {Merchant} from 'src/DB/models/merchant';
 import {getCustomRepository} from 'typeorm';
-import {Endpoints} from '../controllers/entegrations-management/Getir/Getir-Enums/Endpoints';
+import {Endpoints} from '../controllers/entegrations-management/getir/getir.enums';
 import {UIResponseBase} from '../dtos/ui-response-base';
 
 export default class GetirToken {
@@ -41,7 +41,7 @@ export default class GetirToken {
         restaurantSecretKey: merchant.GetirRestaurantSecretKey,
       })
       .toPromise();
-    if (response.status == 200) {
+    if (response.status === 200) {
       const merchantRepository = getCustomRepository(MerchantRepository);
       merchantRepository.update(
         {Id: merchant.Id},

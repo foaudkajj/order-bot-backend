@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { GetirModule } from './Getir/getir.module';
-import { YemekSepetiModule } from './YemekSepeti/yemeksepeti.module';
+import {Module} from '@nestjs/common';
+import {GetirModule} from './getir/getir.module';
+import {YemekSepetiModule} from './yemek-sepeti/yemeksepeti.module';
 
 @Module({
   imports: [GetirModule, YemekSepetiModule],
   controllers: [],
-  providers: []
+  providers: [],
 })
 export class EntegrationsModule {}

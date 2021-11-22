@@ -3,13 +3,13 @@ import {MerchantRepository} from 'src/bot/custom-repositories/MerchantRepository
 import {DevextremeLoadOptionsService} from 'src/DB/Helpers/devextreme-loadoptions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {getCustomRepository, getRepository} from 'typeorm';
-import {Endpoints} from './Getir-Enums/Endpoints';
-import GetirToken from 'src/panel/helpers/GetirTokenHelper';
-import {GetirOrderDetails} from 'src/DB/models/getir-prder';
+import GetirToken from 'src/panel/helpers/getir-token-helper';
+import {GetirOrderDetails} from 'src/DB/models/getir-order';
 import {Order} from 'src/DB/models/order';
-import {FoodOrderDto} from './Getir-Dtos/foodOrderDto';
+import {FoodOrderDto} from './getir-dtos/food-order-dto';
 import {Customer} from 'src/DB/models/customer';
 import {OrderChannel} from 'src/DB/models';
+import {Endpoints} from './getir.enums';
 
 @Injectable()
 export class GetirService {

@@ -10,7 +10,7 @@ import {
 import {AllowAnonymous} from 'src/panel/decorators/public.decorator';
 import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {FoodOrderDto} from './Getir-Dtos/foodOrderDto';
+import {FoodOrderDto} from './getir-dtos/food-order-dto';
 import {GetirService} from './getir.service';
 
 @Controller('api/Getir')
