@@ -1,4 +1,11 @@
-import {Entity, Column, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+} from 'typeorm';
+import {Merchant} from '.';
 import {OrderChannel} from './enums';
 import {Order} from './order';
 
@@ -26,4 +33,12 @@ export class Customer {
   Orders?: Promise<Order[]>;
   // @OneToMany(() => Product, product => product.user, { nullable: true })
   // Products?: Promise<Product[]>;
+
+  @Column()
+  merchantId: number;
+
+  @ManyToOne(() => Merchant, merchant => merchant.customers, {
+    cascade: ['insert'],
+  })
+  merchant?: Merchant;
 }

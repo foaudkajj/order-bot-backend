@@ -2,6 +2,7 @@ import {OrderChannel} from 'src/db/models';
 import {Customer} from 'src/db/models/customer';
 import {InlineKeyboardButton} from 'telegraf/typings/telegram-types';
 import {getCustomRepository} from 'typeorm';
+import {MerchantRepository} from '../custom-repositories';
 import {CustomerRepository} from '../custom-repositories/customer-repository';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/call-back-query-result';
@@ -66,9 +67,16 @@ export abstract class FirstMessageHandler {
 
   private static async createNewUserIfUserDoesnitExist(ctx: BotContext) {
     const customerRepository = getCustomRepository(CustomerRepository);
+
     const customer = await customerRepository.getCustomerByTelegramId(ctx);
     if (!customer) {
+      const merchantRepository = getCustomRepository(MerchantRepository);
+      const merchant = await merchantRepository.getMerchantIdByBotUserName(
+        ctx.botInfo.username,
+      );
+
       const newCustomer: Customer = {
+        merchantId: merchant.Id,
         CustomerChannel: OrderChannel.Telegram,
         FullName: ctx.from.first_name + ' ' + ctx.from.last_name,
         TelegramId: ctx.from.id,

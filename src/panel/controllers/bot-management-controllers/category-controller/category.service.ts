@@ -12,15 +12,18 @@ export class CategoryService {
     private categoryRepository: Repository<Category>,
   ) {}
 
-  async Get(query: DataSourceLoadOptionsBase) {
+  async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let categories: Category[];
     if (query.take && query.skip) {
       categories = await this.categoryRepository.find({
         take: query.take,
         skip: query.skip,
+        where: {merchantId: merchantId},
       });
     } else {
-      categories = await this.categoryRepository.find();
+      categories = await this.categoryRepository.find({
+        where: {merchantId: merchantId},
+      });
     }
     const response: UIResponseBase<Category> = {
       IsError: false,
@@ -44,22 +47,24 @@ export class CategoryService {
         where: {CategoryKey: category.CategoryKey},
       });
       if (SameCategory) {
-        throw <UIResponseBase<Category>>{
+        const err = <UIResponseBase<Category>>{
           IsError: true,
           MessageKey: 'CATEGORY_KEY_EXISTS',
           StatusCode: 500,
         };
+        throw new Error(JSON.stringify(err));
       } else {
         await this.categoryRepository.insert(category);
       }
       return response;
     } catch (error) {
       console.log((error as QueryFailedError).message);
-      throw <UIResponseBase<Category>>{
+      const err = <UIResponseBase<Category>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 
@@ -69,8 +74,10 @@ export class CategoryService {
         where: {Id: updateDetails.Id},
       });
       const {Id, ...updatedEntity} = {...category, ...updateDetails};
-      console.log(updatedEntity);
-      await this.categoryRepository.update({Id: category.Id}, updatedEntity);
+      await this.categoryRepository.update(
+        {Id: category.Id, merchantId: updateDetails.merchantId},
+        updatedEntity,
+      );
       return <UIResponseBase<Category>>{
         IsError: false,
         Result: updatedEntity,
@@ -79,17 +86,18 @@ export class CategoryService {
       };
     } catch (error) {
       console.log(error);
-      throw <UIResponseBase<Category>>{
+      const err = <UIResponseBase<Category>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 
-  async Delete(Id: number) {
+  async Delete(Id: number, MerchantId: number) {
     try {
-      await this.categoryRepository.delete({Id: Id});
+      await this.categoryRepository.delete({Id: Id, merchantId: MerchantId});
       return <UIResponseBase<Category>>{
         IsError: false,
         MessageKey: 'SUCCESS',
@@ -97,11 +105,12 @@ export class CategoryService {
       };
     } catch (error) {
       console.log(error);
-      throw <UIResponseBase<Category>>{
+      const err = <UIResponseBase<Category>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 }

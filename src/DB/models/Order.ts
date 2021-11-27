@@ -12,6 +12,7 @@ import {Customer} from './customer';
 import {GetirOrderDetails} from './getir-order';
 import {TelegramOrder} from './telegram-order';
 import {OrderChannel} from './enums';
+import {Merchant} from './merchant';
 
 @Entity()
 export class Order {
@@ -71,6 +72,14 @@ export class Order {
     onDelete: 'CASCADE',
   })
   TelegramOrder?: TelegramOrder;
+
+  @Column()
+  merchantId: number;
+
+  @ManyToOne(() => Merchant, merchant => merchant.orders, {
+    cascade: ['insert'],
+  })
+  merchant?: Merchant;
 
   OperationItems?: {
     Value: number;

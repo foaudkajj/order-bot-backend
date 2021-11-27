@@ -5,6 +5,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
+import {Merchant} from '.';
 import {Category} from './category';
 import {OrderItem} from './order-item';
 
@@ -45,4 +46,12 @@ export class Product {
     cascade: ['insert'],
   })
   Category?: Category;
+
+  @Column({nullable: true})
+  merchantId: number;
+
+  @ManyToOne(() => Merchant, merchant => merchant.products, {
+    cascade: ['insert'],
+  })
+  merchant?: Merchant;
 }

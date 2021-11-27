@@ -11,4 +11,8 @@ export class MerchantRepository extends Repository<Merchant> {
       return null;
     }
   }
+
+  async getMerchantIdByBotUserName(botUserName: string): Promise<Merchant> {
+    return await this.findOne({where: {botUserName: botUserName}});
+  }
 }

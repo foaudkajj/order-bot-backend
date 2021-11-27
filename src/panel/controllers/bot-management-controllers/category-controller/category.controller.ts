@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Query, Body} from '@nestjs/common';
+import {Controller, Get, Post, Query, Body, Request} from '@nestjs/common';
 import {Category} from 'src/db/models';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
@@ -16,15 +16,24 @@ export class CategoryController {
   @PermessionsGuard(PermessionEnum.SHOW_CATEGORY)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
+    @Request() request,
   ): Promise<UIResponseBase<Category>> {
-    const result = await this.categoryService.Get(query);
+    const {MerchantId} = request.user;
+    const result = await this.categoryService.Get(query, MerchantId);
     return result;
   }
 
   @Post('Insert')
   @PermessionsGuard(PermessionEnum.ADD_CATEGORY)
-  async Insert(@Body() request): Promise<UIResponseBase<Category>> {
-    const entity = JSON.parse(request.values) as Category;
+  async Insert(
+    @Body() body,
+    @Request() request,
+  ): Promise<UIResponseBase<Category>> {
+    const {MerchantId} = request.user;
+    const entity = JSON.parse(body.values) as Category;
+    if (entity) {
+      entity.merchantId = MerchantId;
+    }
     const result = await this.categoryService.Insert(entity);
     return result;
   }
@@ -32,10 +41,14 @@ export class CategoryController {
   @Post('Update')
   @PermessionsGuard(PermessionEnum.UPDATE_CATEGORY)
   async Update(
-    @Body() request: DxGridUpdateRequest,
+    @Body() body: DxGridUpdateRequest,
+    @Request() request,
   ): Promise<UIResponseBase<Category>> {
-    const entity = {...JSON.parse(request.values)} as Category;
-    entity.Id = request.key;
+    const entity = {...JSON.parse(body.values)} as Category;
+    entity.Id = body.key;
+
+    const {MerchantId} = request.user;
+    entity.merchantId = MerchantId;
     const result = await this.categoryService.Update(entity);
     return result;
   }
@@ -44,8 +57,13 @@ export class CategoryController {
   @PermessionsGuard(PermessionEnum.DELETE_CATEGORY)
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
+    @Request() request,
   ): Promise<UIResponseBase<Category>> {
-    const result = await this.categoryService.Delete(deleteRequest.key);
+    const {MerchantId} = request.user;
+    const result = await this.categoryService.Delete(
+      deleteRequest.key,
+      MerchantId,
+    );
     return result;
   }
 }

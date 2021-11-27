@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Query, Body} from '@nestjs/common';
+import {Controller, Get, Post, Query, Body, Request} from '@nestjs/common';
 import {Order} from 'src/db/models/order';
 import {PermessionsGuard} from 'src/panel/decorators/permessions.decorator';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
@@ -16,26 +16,32 @@ export class OrderController {
   @PermessionsGuard(PermessionEnum.SHOW_ORDER)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
+    @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const result = await this.orderService.Get(query);
+    const {MerchantId} = request.user;
+    const result = await this.orderService.Get(query, MerchantId);
     return result;
   }
 
   @Post('Insert')
   @PermessionsGuard(PermessionEnum.ADD_ORDER)
-  async Insert(@Body() request): Promise<UIResponseBase<Order>> {
-    const entity = JSON.parse(request.values) as Order;
-    const result = await this.orderService.Insert(entity);
+  async Insert(@Body() body): Promise<UIResponseBase<Order>> {
+    const {MerchantId} = body.user;
+    const entity = JSON.parse(body.values) as Order;
+    const result = await this.orderService.Insert(MerchantId, entity);
     return result;
   }
 
   @Post('Update')
   @PermessionsGuard(PermessionEnum.UPDATE_ORDER)
   async Update(
-    @Body() request: DxGridUpdateRequest,
+    @Body() body: DxGridUpdateRequest,
+    @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const entity = {...JSON.parse(request.values)} as Order;
-    entity.Id = request.key;
+    const {MerchantId} = request.user;
+    const entity = {...JSON.parse(body.values)} as Order;
+    entity.Id = body.key;
+    entity.merchantId = MerchantId;
     const result = await this.orderService.Update(entity);
     return result;
   }
@@ -44,8 +50,13 @@ export class OrderController {
   @PermessionsGuard(PermessionEnum.DELETE_ORDER)
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
+    @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const result = await this.orderService.Delete(deleteRequest.key);
+    const {MerchantId} = request.user;
+    const result = await this.orderService.Delete(
+      deleteRequest.key,
+      MerchantId,
+    );
     return result;
   }
 }

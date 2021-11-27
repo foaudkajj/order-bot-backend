@@ -12,15 +12,18 @@ export class ProductService {
     private productRepository: Repository<Product>,
   ) {}
 
-  async Get(query: DataSourceLoadOptionsBase) {
+  async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let entities: Product[];
     if (query.take && query.skip) {
       entities = await this.productRepository.find({
         take: query.take,
         skip: query.skip,
+        where: {merchantId: merchantId},
       });
     } else {
-      entities = await this.productRepository.find();
+      entities = await this.productRepository.find({
+        where: {merchantId: merchantId},
+      });
     }
     const response: UIResponseBase<Product> = {
       IsError: false,
@@ -44,11 +47,12 @@ export class ProductService {
       return response;
     } catch (error) {
       console.log((error as QueryFailedError).message);
-      throw <UIResponseBase<Product>>{
+      const err = <UIResponseBase<Product>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 
@@ -67,17 +71,18 @@ export class ProductService {
       };
     } catch (error) {
       console.log(error);
-      throw <UIResponseBase<Product>>{
+      const err = <UIResponseBase<Product>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 
-  async Delete(Id: number) {
+  async Delete(Id: number, MerchantId: number) {
     try {
-      await this.productRepository.delete({Id: Id});
+      await this.productRepository.delete({Id: Id, merchantId: MerchantId});
       return <UIResponseBase<Product>>{
         IsError: false,
         MessageKey: 'SUCCESS',
@@ -85,11 +90,12 @@ export class ProductService {
       };
     } catch (error) {
       console.log(error);
-      throw <UIResponseBase<Product>>{
+      const err = <UIResponseBase<Product>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 }

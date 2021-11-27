@@ -26,7 +26,7 @@ export class OrderService {
     {Value: 5, Text: 'ORDER.DELIVERED'},
   ];
 
-  async Get(query: DataSourceLoadOptionsBase) {
+  async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let entities: Order[];
     const findOptions: FindManyOptions<Order> = this.devextremeLoadOptions.GetFindOptionsFromQuery(
       query,
@@ -38,6 +38,8 @@ export class OrderService {
       'orderItems',
       'orderItems.Product',
     ];
+
+    findOptions.where = {merchantId: merchantId};
     entities = await this.orderRepository.find(findOptions);
     entities = entities.map(order => {
       if (order.OrderStatus !== OrderStatus.Canceled) {
@@ -61,7 +63,7 @@ export class OrderService {
     return response;
   }
 
-  async Insert(entity: Order) {
+  async Insert(MerchantId: number, entity: Order) {
     try {
       const response: UIResponseBase<Order> = {
         IsError: false,
@@ -73,6 +75,7 @@ export class OrderService {
       if (entity.customer) {
         // Address: entity.customer.Address, FirstName: entity.customer.FirstName,LastName: entity.customer.LastName,Location: entity.customer.Location,, Username: entity.customer.Username
         const NewCustomer: Customer = {
+          merchantId: MerchantId,
           CustomerChannel: OrderChannel.Panel,
           PhoneNumber: entity.customer.PhoneNumber,
           FullName: entity.customer.FullName,
@@ -87,11 +90,12 @@ export class OrderService {
       return response;
     } catch (error) {
       console.log((error as QueryFailedError).message);
-      throw <UIResponseBase<Order>>{
+      const err = <UIResponseBase<Order>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 
@@ -153,17 +157,18 @@ export class OrderService {
       };
     } catch (error) {
       console.log(error);
-      throw <UIResponseBase<Order>>{
+      const err = <UIResponseBase<Order>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 
-  async Delete(Id: number) {
+  async Delete(Id: number, merchantId: number) {
     try {
-      await this.orderRepository.delete({Id: Id});
+      await this.orderRepository.delete({Id: Id, merchantId: merchantId});
       return <UIResponseBase<Order>>{
         IsError: false,
         MessageKey: 'SUCCESS',
@@ -171,11 +176,12 @@ export class OrderService {
       };
     } catch (error) {
       console.log(error);
-      throw <UIResponseBase<Order>>{
+      const err = <UIResponseBase<Order>>{
         IsError: true,
         MessageKey: 'ERROR',
         StatusCode: 500,
       };
+      throw new Error(JSON.stringify(err));
     }
   }
 }

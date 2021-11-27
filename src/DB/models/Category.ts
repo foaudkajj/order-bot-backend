@@ -1,4 +1,11 @@
-import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
+import {Merchant} from './merchant';
 import {Product} from './product';
 
 @Entity()
@@ -14,4 +21,12 @@ export class Category {
 
   @OneToMany(() => Product, product => product.Category)
   Products: Product[];
+
+  @Column()
+  merchantId: number;
+
+  @ManyToOne(() => Merchant, merchant => merchant.categories, {
+    cascade: ['insert'],
+  })
+  merchant?: Merchant;
 }
