@@ -1,22 +1,26 @@
 import {Injectable} from '@nestjs/common';
-import {Category} from 'src/DB/models';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Category} from 'src/db/models';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {getRepository, QueryFailedError} from 'typeorm';
+import {QueryFailedError, Repository} from 'typeorm';
 
 @Injectable()
 export class CategoryService {
-  constructor() {}
+  constructor(
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+  ) {}
 
   async Get(query: DataSourceLoadOptionsBase) {
     let categories: Category[];
     if (query.take && query.skip) {
-      categories = await getRepository(Category).find({
+      categories = await this.categoryRepository.find({
         take: query.take,
         skip: query.skip,
       });
     } else {
-      categories = await getRepository(Category).find();
+      categories = await this.categoryRepository.find();
     }
     const response: UIResponseBase<Category> = {
       IsError: false,
@@ -36,7 +40,7 @@ export class CategoryService {
         MessageKey: 'SUCCESS',
         StatusCode: 200,
       };
-      const SameCategory = await getRepository(Category).findOne({
+      const SameCategory = await this.categoryRepository.findOne({
         where: {CategoryKey: category.CategoryKey},
       });
       if (SameCategory) {
@@ -46,7 +50,7 @@ export class CategoryService {
           StatusCode: 500,
         };
       } else {
-        await getRepository(Category).insert(category);
+        await this.categoryRepository.insert(category);
       }
       return response;
     } catch (error) {
@@ -61,12 +65,12 @@ export class CategoryService {
 
   async Update(updateDetails: Category) {
     try {
-      const category = await getRepository(Category).findOne({
+      const category = await this.categoryRepository.findOne({
         where: {Id: updateDetails.Id},
       });
       const {Id, ...updatedEntity} = {...category, ...updateDetails};
       console.log(updatedEntity);
-      await getRepository(Category).update({Id: category.Id}, updatedEntity);
+      await this.categoryRepository.update({Id: category.Id}, updatedEntity);
       return <UIResponseBase<Category>>{
         IsError: false,
         Result: updatedEntity,
@@ -85,7 +89,7 @@ export class CategoryService {
 
   async Delete(Id: number) {
     try {
-      await getRepository(Category).delete({Id: Id});
+      await this.categoryRepository.delete({Id: Id});
       return <UIResponseBase<Category>>{
         IsError: false,
         MessageKey: 'SUCCESS',

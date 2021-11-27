@@ -1,9 +1,9 @@
-import {Category} from 'src/DB/models';
-import {OrderStatus} from 'src/DB/models/enums';
+import {Category} from 'src/db/models';
+import {OrderStatus} from 'src/db/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/telegram-types';
 import {getRepository} from 'typeorm';
-import {BotContext} from '../interfaces/BotContext';
-import {CallBackQueryResult} from '../models/CallBackQueryResult';
+import {BotContext} from '../interfaces/bot-context';
+import {CallBackQueryResult} from '../models/call-back-query-result';
 import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
 
 export abstract class StartOrderingCb {

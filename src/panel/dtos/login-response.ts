@@ -1,4 +1,4 @@
-import {UserStatus} from 'src/DB/models';
+import {UserStatus} from 'src/db/models';
 import {NavigationItems} from './navigation-items';
 
 export interface LoginResponse {

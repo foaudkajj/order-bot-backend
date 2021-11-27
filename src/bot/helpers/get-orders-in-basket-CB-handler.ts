@@ -1,11 +1,12 @@
-import {OrderStatus} from 'src/DB/models';
+import {OrderStatus} from 'src/db/models';
 import {getCustomRepository} from 'typeorm';
-import {OrderRepository} from '../custom-repositories/OrderRepository';
-import {BotContext} from '../interfaces/BotContext';
+import {OrderRepository} from '../custom-repositories/order-repository';
+import {BotContext} from '../interfaces/bot-context';
 
 export abstract class OrdersInBasketCb {
   public static async GetOrdersInBasketByStatus(
     ctx: BotContext,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     orderStatus: OrderStatus,
   ) {
     try {
@@ -19,7 +20,7 @@ export abstract class OrdersInBasketCb {
         'orderItems',
         'orderItems.Product',
       ]);
-      if (!order || order?.orderItems?.length == 0) {
+      if (!order || order?.orderItems?.length === 0) {
         orderDetailsMessage = null; // 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';
 
         if (isCbQuyer) {

@@ -1,4 +1,4 @@
-import {Merchant} from 'src/DB/models/merchant';
+import {Merchant} from 'src/db/models/merchant';
 import {EntityRepository, Repository} from 'typeorm';
 
 @EntityRepository(Merchant)

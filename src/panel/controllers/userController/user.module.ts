@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
-import { AuthModule } from '../../passport/auth.module';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
+import {Module} from '@nestjs/common';
+import {SharedModule} from 'src/shared.module';
+import {AuthModule} from '../../passport/auth.module';
+import {UserController} from './user.controller';
+import {UserService} from './user.service';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, SharedModule],
   controllers: [UserController],
   providers: [UserService],
-  exports: []
+  exports: [],
 })
 export class LoginModule {}

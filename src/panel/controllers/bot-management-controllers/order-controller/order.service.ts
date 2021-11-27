@@ -1,16 +1,23 @@
 import {Injectable} from '@nestjs/common';
-import {DevextremeLoadOptionsService} from 'src/DB/Helpers/devextreme-loadoptions';
-import {Order} from 'src/DB/models/order';
-import {Customer} from 'src/DB/models/customer';
+import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
+import {Order} from 'src/db/models/order';
+import {Customer} from 'src/db/models/customer';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {FindManyOptions, getRepository, QueryFailedError} from 'typeorm';
+import {FindManyOptions, QueryFailedError, Repository} from 'typeorm';
 import {InformationMessages} from 'src/bot/helpers/informtaion-msgs';
-import {OrderChannel, OrderStatus} from 'src/DB/models';
+import {OrderChannel, OrderStatus} from 'src/db/models';
+import {InjectRepository} from '@nestjs/typeorm';
 
 @Injectable()
 export class OrderService {
-  constructor(private devextremeLoadOptions: DevextremeLoadOptionsService) {}
+  constructor(
+    private devextremeLoadOptions: DevextremeLoadOptionsService,
+    @InjectRepository(Order)
+    private orderRepository: Repository<Order>,
+    @InjectRepository(Customer)
+    private customerRepository: Repository<Customer>,
+  ) {}
 
   items = [
     {Value: 2, Text: 'ORDER.MERCHANT_CONFIRMED'},
@@ -31,7 +38,7 @@ export class OrderService {
       'orderItems',
       'orderItems.Product',
     ];
-    entities = await getRepository(Order).find(findOptions);
+    entities = await this.orderRepository.find(findOptions);
     entities = entities.map(order => {
       if (order.OrderStatus !== OrderStatus.Canceled) {
         order.OperationItems = this.items.filter(
@@ -76,7 +83,7 @@ export class OrderService {
       entity.CreateDate = new Date();
 
       console.log(entity);
-      await getRepository(Order).insert(entity);
+      await this.orderRepository.insert(entity);
       return response;
     } catch (error) {
       console.log((error as QueryFailedError).message);
@@ -90,17 +97,17 @@ export class OrderService {
 
   async Update(updateDetails: Order) {
     try {
-      const entity = await getRepository(Order).findOne({
+      const entity = await this.orderRepository.findOne({
         where: {Id: updateDetails.Id},
       });
       const {Id, customer, ...updatedEntity} = {...entity, ...updateDetails};
 
-      const userEntity: Order = await getRepository(Order).findOne(
+      const userEntity: Order = await this.orderRepository.findOne(
         {Id: entity.Id},
         {relations: ['customer']},
       );
       if (customer) {
-        await getRepository(Customer).update(
+        await this.customerRepository.update(
           {Id: userEntity.customer.Id},
           customer,
         );
@@ -137,7 +144,7 @@ export class OrderService {
         }
       }
 
-      await getRepository(Order).update({Id: entity.Id}, updatedEntity);
+      await this.orderRepository.update({Id: entity.Id}, updatedEntity);
       return <UIResponseBase<Order>>{
         IsError: false,
         Result: updatedEntity,
@@ -156,7 +163,7 @@ export class OrderService {
 
   async Delete(Id: number) {
     try {
-      await getRepository(Order).delete({Id: Id});
+      await this.orderRepository.delete({Id: Id});
       return <UIResponseBase<Order>>{
         IsError: false,
         MessageKey: 'SUCCESS',

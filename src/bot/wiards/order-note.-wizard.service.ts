@@ -1,17 +1,21 @@
 import {Injectable} from '@nestjs/common';
-import {OrderStatus} from 'src/DB/models';
-import {Order} from 'src/DB/models/order';
+import {InjectRepository} from '@nestjs/typeorm';
+import {OrderStatus} from 'src/db/models';
+import {Order} from 'src/db/models/order';
 import {Scenes} from 'telegraf';
-import {getCustomRepository, getRepository, Repository} from 'typeorm';
-import {CustomerRepository} from '../custom-repositories/CustomerRepository';
+import {Repository} from 'typeorm';
+import {CustomerRepository} from '../custom-repositories/customer-repository';
 import {ConfirmOrderHandler} from '../helpers/confirm-order.handler';
-import {BotContext} from '../interfaces/BotContext';
+import {BotContext} from '../interfaces/bot-context';
 
 @Injectable()
 export class AddnoteToOrderWizardService {
-  orderRepository: Repository<Order> = getRepository(Order);
-  customerRepository = getCustomRepository(CustomerRepository);
-  constructor() {}
+  constructor(
+    @InjectRepository(Order)
+    private orderRepository: Repository<Order>,
+    private customerRepository: CustomerRepository,
+  ) {}
+
   InitilizeAddnoteToOrderWizard() {
     const AddnoteToOrderWizard = new Scenes.WizardScene(
       'AddNoteToOrder',

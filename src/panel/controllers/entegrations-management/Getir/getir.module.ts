@@ -1,12 +1,12 @@
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
-import { SharedModule } from 'src/shared.module';
-import { GetirService } from './getir.service';
-import { GetirRestaurantEndPointsController } from './restaurants-controller';
+import {HttpModule, Module} from '@nestjs/common';
+import {SharedModule} from 'src/shared.module';
+import {GetirService} from './getir.service';
+import {GetirRestaurantEndPointsController} from './restaurants-controller';
 
 @Module({
-  imports: [SharedModule, CacheModule.register(), HttpModule],
+  imports: [SharedModule, HttpModule],
   controllers: [GetirRestaurantEndPointsController],
   providers: [GetirService],
-  exports: []
+  exports: [],
 })
 export class GetirModule {}

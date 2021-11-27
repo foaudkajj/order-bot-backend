@@ -1,5 +1,5 @@
 import {Controller, Get, Post, Query, Body} from '@nestjs/common';
-import {Product} from 'src/DB/models/product';
+import {Product} from 'src/db/models/product';
 import {PermessionsGuard} from 'src/panel/decorators/permessions.decorator';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';

@@ -1,6 +1,6 @@
-import {Customer} from 'src/DB/models/customer';
+import {Customer} from 'src/db/models/customer';
 import {EntityRepository, Repository} from 'typeorm';
-import {BotContext} from '../interfaces/BotContext';
+import {BotContext} from '../interfaces/bot-context';
 
 @EntityRepository(Customer)
 export class CustomerRepository extends Repository<Customer> {

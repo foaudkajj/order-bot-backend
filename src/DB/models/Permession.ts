@@ -6,7 +6,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import {Menu} from './Menu';
+import {Menu} from './menu';
 import {RoleAndPermession} from './role-and-permession';
 
 @Entity()

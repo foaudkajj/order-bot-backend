@@ -1,27 +1,33 @@
 import {Injectable} from '@nestjs/common';
-import {Permession} from 'src/DB/models/permession';
-import {Role} from 'src/DB/models/role';
-import {RoleAndPermession} from 'src/DB/models/role-and-permession';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Permession} from 'src/db/models/permession';
+import {Role} from 'src/db/models/role';
+import {RoleAndPermession} from 'src/db/models/role-and-permession';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
 import {RoleIdAndPermessions} from 'src/panel/dtos/role-id-and-permessions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {getManager, getRepository} from 'typeorm';
+import {getManager, Repository} from 'typeorm';
 
 @Injectable()
 export class RoleService {
-  constructor() {}
+  constructor(
+    @InjectRepository(Permession)
+    private permessionRepository: Repository<Permession>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
+  ) {}
 
   async GetRoles(query: DataSourceLoadOptionsBase) {
     let roles: Role[];
     if (query.take && query.skip) {
-      roles = await getRepository(Role).find({
+      roles = await this.roleRepository.find({
         take: query.take,
         skip: query.skip,
         relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession'],
       });
     } else {
-      roles = await getRepository(Role).find({
+      roles = await this.roleRepository.find({
         relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession'],
       });
     }
@@ -49,12 +55,12 @@ export class RoleService {
   async GetPermessions(query: DataSourceLoadOptionsBase) {
     let result;
     if (query.take && query.skip) {
-      result = await getRepository(Permession).find({
+      result = await this.permessionRepository.find({
         take: query.take,
         skip: query.skip,
       });
     } else {
-      result = await getRepository(Permession).find();
+      result = await this.permessionRepository.find();
     }
     const response: UIResponseBase<Permession> = {
       IsError: false,
@@ -106,7 +112,7 @@ export class RoleService {
         MessageKey: 'SUCCESS',
         StatusCode: 200,
       };
-      await getRepository(Role).insert(role);
+      await this.roleRepository.insert(role);
       return response;
     } catch (error) {
       console.log(error);
@@ -120,11 +126,11 @@ export class RoleService {
 
   async Update(updateDetails: Role) {
     try {
-      const role = await getRepository(Role).findOne({
+      const role = await this.roleRepository.findOne({
         where: {Id: updateDetails.Id},
       });
       const {Id, ...updatedRole} = {...role, ...updateDetails};
-      await getRepository(Role).update({Id: role.Id}, updatedRole);
+      await this.roleRepository.update({Id: role.Id}, updatedRole);
       return <UIResponseBase<Role>>{
         IsError: false,
         Result: updatedRole,
@@ -143,7 +149,7 @@ export class RoleService {
 
   async Delete(Id: number) {
     try {
-      await getRepository(Role).delete({Id: Id});
+      await this.roleRepository.delete({Id: Id});
       return <UIResponseBase<Role>>{
         IsError: false,
         MessageKey: 'SUCCESS',

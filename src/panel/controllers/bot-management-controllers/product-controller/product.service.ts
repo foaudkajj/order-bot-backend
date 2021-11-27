@@ -1,22 +1,26 @@
 import {Injectable} from '@nestjs/common';
-import {Product} from 'src/DB/models/product';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Product} from 'src/db/models/product';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {getRepository, QueryFailedError} from 'typeorm';
+import {QueryFailedError, Repository} from 'typeorm';
 
 @Injectable()
 export class ProductService {
-  constructor() {}
+  constructor(
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+  ) {}
 
   async Get(query: DataSourceLoadOptionsBase) {
     let entities: Product[];
     if (query.take && query.skip) {
-      entities = await getRepository(Product).find({
+      entities = await this.productRepository.find({
         take: query.take,
         skip: query.skip,
       });
     } else {
-      entities = await getRepository(Product).find();
+      entities = await this.productRepository.find();
     }
     const response: UIResponseBase<Product> = {
       IsError: false,
@@ -36,7 +40,7 @@ export class ProductService {
         MessageKey: 'SUCCESS',
         StatusCode: 200,
       };
-      await getRepository(Product).insert(product);
+      await this.productRepository.insert(product);
       return response;
     } catch (error) {
       console.log((error as QueryFailedError).message);
@@ -50,11 +54,11 @@ export class ProductService {
 
   async Update(updateDetails: Product) {
     try {
-      const product = await getRepository(Product).findOne({
+      const product = await this.productRepository.findOne({
         where: {Id: updateDetails.Id},
       });
       const {Id, ...updatedEntity} = {...product, ...updateDetails};
-      await getRepository(Product).update({Id: product.Id}, updatedEntity);
+      await this.productRepository.update({Id: product.Id}, updatedEntity);
       return <UIResponseBase<Product>>{
         IsError: false,
         Result: updatedEntity,
@@ -73,7 +77,7 @@ export class ProductService {
 
   async Delete(Id: number) {
     try {
-      await getRepository(Product).delete({Id: Id});
+      await this.productRepository.delete({Id: Id});
       return <UIResponseBase<Product>>{
         IsError: false,
         MessageKey: 'SUCCESS',

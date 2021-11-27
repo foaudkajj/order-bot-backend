@@ -1,15 +1,15 @@
-import { getCustomRepository } from 'typeorm';
-import { OrderRepository } from '../custom-repositories/OrderRepository';
-import { BotContext } from '../interfaces/BotContext';
-import { CallBackQueryResult } from '../models/CallBackQueryResult';
+import {getCustomRepository} from 'typeorm';
+import {OrderRepository} from '../custom-repositories/order-repository';
+import {BotContext} from '../interfaces/bot-context';
+import {CallBackQueryResult} from '../models/call-back-query-result';
 
 export abstract class CompleteOrderHandler {
-  static async CompleteOrder (ctx: BotContext) {
+  static async CompleteOrder(ctx: BotContext) {
     const orderRepository = getCustomRepository(OrderRepository);
     try {
       const ordersInBasket = await orderRepository.getOrderInBasketByTelegramId(
         ctx,
-        ['TelegramOrder']
+        ['TelegramOrder'],
       );
       if (ordersInBasket) {
         const telegramOrder = ordersInBasket.TelegramOrder;
@@ -31,23 +31,23 @@ export abstract class CompleteOrderHandler {
                   [
                     {
                       text: 'Evet',
-                      callback_data: CallBackQueryResult.ConfirmOrder
+                      callback_data: CallBackQueryResult.ConfirmOrder,
                     },
                     {
                       text: 'Hayır',
-                      callback_data: CallBackQueryResult.EnterAddress
-                    }
-                  ]
-                ]
-              }
-            }
+                      callback_data: CallBackQueryResult.EnterAddress,
+                    },
+                  ],
+                ],
+              },
+            },
           );
         } else {
           await ctx.scene.enter(
             'address',
             ctx.reply(
-              'Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal'
-            )
+              'Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
+            ),
           );
         }
       } else {
@@ -57,7 +57,7 @@ export abstract class CompleteOrderHandler {
       // Loglama
       console.log(error);
       await ctx.answerCbQuery(
-        'Bir hata oluştu. Lütfen tekrar deneyiniz. /start'
+        'Bir hata oluştu. Lütfen tekrar deneyiniz. /start',
       );
     }
   }

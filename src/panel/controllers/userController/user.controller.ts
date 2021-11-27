@@ -7,7 +7,7 @@ import {
   Query,
   Body,
 } from '@nestjs/common';
-import {User} from 'src/DB/models/user';
+import {User} from 'src/db/models/user';
 import {PermessionsGuard} from 'src/panel/decorators/permessions.decorator';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';

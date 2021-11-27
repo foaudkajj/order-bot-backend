@@ -1,6 +1,6 @@
-import {TelegramOrder} from 'src/DB/models';
+import {TelegramOrder} from 'src/db/models';
 import {EntityRepository, Repository} from 'typeorm';
-import {BotContext} from '../interfaces/BotContext';
+import {BotContext} from '../interfaces/bot-context';
 
 @EntityRepository(TelegramOrder)
 export class TelegramUserRepository extends Repository<TelegramOrder> {

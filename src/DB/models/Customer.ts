@@ -1,6 +1,6 @@
 import {Entity, Column, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {OrderChannel} from './enums';
-import {Order} from './Order';
+import {Order} from './order';
 
 @Entity()
 export class Customer {

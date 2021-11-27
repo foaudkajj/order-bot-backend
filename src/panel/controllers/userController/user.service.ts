@@ -1,23 +1,27 @@
 import {Injectable} from '@nestjs/common';
-import {User} from 'src/DB/models/user';
+import {User} from 'src/db/models/user';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {getRepository} from 'typeorm';
+import {Repository} from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import {InjectRepository} from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
-  constructor() {}
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
   async Get(query: DataSourceLoadOptionsBase) {
     let users: User[];
     if (query.take && query.skip) {
-      users = await getRepository(User).find({
+      users = await this.userRepository.find({
         take: query.take,
         skip: query.skip,
       });
     } else {
-      users = await getRepository(User).find();
+      users = await this.userRepository.find();
     }
     const response: UIResponseBase<User> = {
       IsError: false,
@@ -41,7 +45,7 @@ export class UserService {
       const hash = await bcrypt.hash(user.Password, salt);
       user.Salt = salt;
       user.Password = hash;
-      await getRepository(User).insert(user);
+      await this.userRepository.insert(user);
       return response;
     } catch (error) {
       throw <UIResponseBase<User>>{
@@ -54,7 +58,7 @@ export class UserService {
 
   async Update(updateDetails: User) {
     try {
-      const user = await getRepository(User).findOne({
+      const user = await this.userRepository.findOne({
         where: {Id: updateDetails.Id},
       });
       if (updateDetails.Password) {
@@ -64,7 +68,7 @@ export class UserService {
         updateDetails.Password = hash;
       }
       const {Id, ...updatedUser} = {...user, ...updateDetails};
-      await getRepository(User).update({Id: user.Id}, updatedUser);
+      await this.userRepository.update({Id: user.Id}, updatedUser);
       return <UIResponseBase<User>>{
         IsError: false,
         Result: updatedUser,
@@ -82,7 +86,7 @@ export class UserService {
 
   async Delete(Id: number) {
     try {
-      await getRepository(User).delete({Id: Id});
+      await this.userRepository.delete({Id: Id});
       return <UIResponseBase<User>>{
         IsError: false,
         MessageKey: 'SUCCESS',

@@ -1,17 +1,17 @@
-import {OrderChannel} from 'src/DB/models';
-import {Customer} from 'src/DB/models/customer';
+import {OrderChannel} from 'src/db/models';
+import {Customer} from 'src/db/models/customer';
 import {InlineKeyboardButton} from 'telegraf/typings/telegram-types';
 import {getCustomRepository} from 'typeorm';
-import {CustomerRepository} from '../custom-repositories/CustomerRepository';
-import {BotContext} from '../interfaces/BotContext';
-import {CallBackQueryResult} from '../models/CallBackQueryResult';
+import {CustomerRepository} from '../custom-repositories/customer-repository';
+import {BotContext} from '../interfaces/bot-context';
+import {CallBackQueryResult} from '../models/call-back-query-result';
 
 export abstract class FirstMessageHandler {
   static async startOptions(
     ctx: BotContext,
     messageToShow: null | string = null,
   ) {
-    const inline_keyboard: InlineKeyboardButton[][] = [
+    const inlineKeyboard: InlineKeyboardButton[][] = [
       [
         {
           text: '🥘 Sipariş Ver 🥘',
@@ -46,7 +46,7 @@ export abstract class FirstMessageHandler {
         {
           reply_markup: {
             one_time_keyboard: true,
-            inline_keyboard: inline_keyboard,
+            inline_keyboard: inlineKeyboard,
           },
         },
       );
@@ -57,7 +57,7 @@ export abstract class FirstMessageHandler {
         {
           reply_markup: {
             // one_time_keyboard: true,
-            inline_keyboard: inline_keyboard,
+            inline_keyboard: inlineKeyboard,
           },
         },
       );

@@ -1,11 +1,12 @@
-import { Module } from '@nestjs/common';
-import { RoleController } from './role.controller';
-import { RoleService } from './role.service';
+import {Module} from '@nestjs/common';
+import {SharedModule} from 'src/shared.module';
+import {RoleController} from './role.controller';
+import {RoleService} from './role.service';
 
 @Module({
-  imports: [],
+  imports: [SharedModule],
   controllers: [RoleController],
   providers: [RoleService],
-  exports: []
+  exports: [],
 })
 export class RoleModule {}

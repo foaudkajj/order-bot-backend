@@ -1,20 +1,25 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
-import {User} from 'src/DB/models/user';
-import {getRepository, Repository} from 'typeorm';
+import {User} from 'src/db/models/user';
+import {Repository} from 'typeorm';
 import {LoginRequest} from '../dtos/login-request-dto';
 import {LoginResponse} from '../dtos/login-response';
 import {UIResponseBase} from '../dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
-import {Menu} from 'src/DB/models/menu';
+import {Menu} from 'src/db/models/menu';
 import {sortBy} from 'underscore';
 import {NavigationItems} from '../dtos/navigation-items';
+import {InjectRepository} from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
-  userRepository: Repository<User> = getRepository(User);
-  menusRepository: Repository<Menu> = getRepository(Menu);
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(Menu)
+    private menusRepository: Repository<Menu>,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async validateUser(loginRequest: LoginRequest): Promise<any> {
     // let user: User = await this.userRepository.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('Role.RoleAndPermessions', 'RoleAndPermessions').getOne();
@@ -41,7 +46,7 @@ export class AuthService {
     Menus = Menus.concat(parentMenus);
     const sortedMenus = sortBy(Menus, 'Priority');
     let NavigationItems = this.CreateMenus(sortedMenus);
-    NavigationItems = NavigationItems.filter(fi => fi.children.length != 0);
+    NavigationItems = NavigationItems.filter(fi => fi.children.length !== 0);
 
     const permessions = user.Role.RoleAndPermessions.map(
       mp => mp.Permession.PermessionKey,
@@ -101,7 +106,7 @@ export class AuthService {
       children: [],
     };
     const parentChildren = UserPermessions.filter(
-      wh => wh.ParentId == ParentMenue.MenuKey,
+      wh => wh.ParentId === ParentMenue.MenuKey,
     );
     parentChildren.forEach(child => {
       if (child.IsParent) {

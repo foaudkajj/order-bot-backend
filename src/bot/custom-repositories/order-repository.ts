@@ -1,8 +1,8 @@
-import {OrderStatus} from 'src/DB/models';
-import {Order} from 'src/DB/models/order';
+import {OrderStatus} from 'src/db/models';
+import {Order} from 'src/db/models/order';
 import {EntityRepository, getCustomRepository, Repository} from 'typeorm';
-import {BotContext} from '../interfaces/BotContext';
-import {CustomerRepository} from './CustomerRepository';
+import {BotContext} from '../interfaces/bot-context';
+import {CustomerRepository} from './customer-repository';
 
 @EntityRepository(Order)
 export class OrderRepository extends Repository<Order> {

@@ -1,6 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {Role} from './role';
 import {Permession} from './permession';
+import {Role} from './role';
 
 @Entity()
 export class RoleAndPermession {
