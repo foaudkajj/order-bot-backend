@@ -18,7 +18,7 @@ export class OrderItem {
   Amount: number;
 
   @Column({type: 'enum', enum: ProductStatus})
-  ProductStatus?: string;
+  ProductStatus?: ProductStatus;
 
   @Column()
   productId?: number;

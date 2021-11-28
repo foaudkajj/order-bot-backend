@@ -12,10 +12,10 @@ import {OrderItem} from './order-item';
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
-  Id: number;
+  Id?: number;
 
   @Column({length: 15})
-  Type: string;
+  TGQueryResult: string;
 
   @Column()
   ThumbUrl: string;
@@ -26,8 +26,8 @@ export class Product {
   @Column({length: 500})
   Description: string;
 
-  @Column({length: 50, nullable: true})
-  Caption: string;
+  // @Column({length: 50, nullable: true})
+  // Caption: string;
 
   @Column({length: 50})
   ProductCode: string;
@@ -36,10 +36,10 @@ export class Product {
   UnitPrice?: number;
 
   @OneToMany(() => OrderItem, orderDetails => orderDetails.Product)
-  OrderDetails: OrderItem[];
+  OrderDetails?: OrderItem[];
 
   @Column()
-  categoryId: string;
+  categoryId: number;
 
   @ManyToOne(() => Category, category => category.Products, {
     nullable: false,
@@ -54,4 +54,7 @@ export class Product {
     cascade: ['insert'],
   })
   merchant?: Merchant;
+
+  @Column({type: 'uuid', nullable: true})
+  getirProductId: string;
 }

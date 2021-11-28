@@ -1,37 +1,44 @@
 import {Injectable, OnModuleInit} from '@nestjs/common';
-import {Context, Scenes, session, Telegraf} from 'telegraf';
-// import { TelegrafContext } from 'telegraf/typings/context';
+import {Composer, Scenes, session, Telegraf} from 'telegraf';
 import {InlineQueryResultArticle} from 'telegraf/typings/telegram-types';
-import {getCustomRepository, getRepository, Like, Repository} from 'typeorm';
-import {BotContext} from './bot/interfaces/BotContext';
-import {CallBackQueryResult} from './bot/models/CallBackQueryResult';
+import {Like, Repository} from 'typeorm';
+import {BotContext} from './bot/interfaces/bot-context';
+import {CallBackQueryResult} from './bot/models/call-back-query-result';
 import {AddressWizardService} from './bot/wiards/address-wizard.service';
-import {Product} from './DB/models/product';
+import {Product} from './db/models/product';
 import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
-import {CustomerRepository} from './bot/custom-repositories/CustomerRepository';
-import {StartOrderingCb} from './bot/helpers/start-ordering-CB-handler';
+import {CustomerRepository} from './bot/custom-repositories/customer-repository';
+import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
 import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-CB-handler';
 import {FirstMessageHandler} from './bot/helpers/first-message-handler';
 import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
-import {OrderRepository} from './bot/custom-repositories/OrderRepository';
+import {OrderRepository} from './bot/custom-repositories/order-repository';
 import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
-import {OrderItem} from './DB/models/order-item';
+import {OrderItem} from './db/models/order-item';
 import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
 import {v4 as uuid} from 'uuid';
-import {TelegramUserRepository} from './bot/custom-repositories';
-import {Category, OrderChannel, OrderStatus, ProductStatus} from './DB/models';
+import {
+  MerchantRepository,
+  TelegramUserRepository,
+} from './bot/custom-repositories';
+import {Category, OrderChannel, OrderStatus, ProductStatus} from './db/models';
+import {InjectRepository} from '@nestjs/typeorm';
 
 @Injectable()
 export class AppService implements OnModuleInit {
-  customerRepository = getCustomRepository(CustomerRepository);
-  orderRepository = getCustomRepository(OrderRepository);
-  telegramUserRepository = getCustomRepository(TelegramUserRepository);
-  orderItemRepository: Repository<OrderItem> = getRepository(OrderItem);
-  productRepository: Repository<Product> = getRepository(Product);
-  categoryRepository: Repository<Category> = getRepository(Category);
   constructor(
     private addressWizard: AddressWizardService,
     private addNoteToOrderWizard: AddnoteToOrderWizardService,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+    @InjectRepository(OrderItem)
+    private orderItemRepository: Repository<OrderItem>,
+    private customerRepository: CustomerRepository,
+    private orderRepository: OrderRepository,
+    private telegramUserRepository: TelegramUserRepository,
+    private merchantRepository: MerchantRepository,
   ) {}
 
   onModuleInit() {
@@ -42,28 +49,36 @@ export class AppService implements OnModuleInit {
     return 'Hello Fuat!';
   }
 
-  static bot: Telegraf<BotContext>;
-  InitlizeAndLunchBot() {
-    AppService.bot = new Telegraf<BotContext>(
-      '1485687554:AAFbN5pD2h5hzi9o9eydQjh6l4RcVYTtp5c',
-    ); //, { handlerTimeout: 1000 }
+  composer = new Composer<BotContext>();
 
-    this.InitlizeWizards(AppService.bot);
-    this.InilizeBotEventsHandlers(AppService.bot);
+  async InitlizeAndLunchBot() {
+    const merchantList = await this.merchantRepository.find({
+      where: {isActive: true},
+    });
 
-    AppService.bot.launch();
+    this.InitlizeWizards(this.composer);
+    this.InilizeBotEventsHandlers(this.composer);
+
+    for await (const merchant of merchantList) {
+      if (merchant.botToken) {
+        const bot: Telegraf<BotContext> = new Telegraf<BotContext>(
+          merchant.botToken,
+        );
+        bot.use(this.composer);
+        await bot.launch();
+      }
+    }
   }
 
-  InilizeBotEventsHandlers(bot: Telegraf<BotContext>) {
-    bot.command(
+  InilizeBotEventsHandlers(composer: Composer<BotContext>) {
+    composer.command(
       'start',
       async ctx => await FirstMessageHandler.startOptions(ctx),
     );
 
-    bot.on('callback_query', async ctx => {
+    composer.on('callback_query', async ctx => {
       try {
         if ('data' in ctx.callbackQuery && ctx.callbackQuery.data) {
-          // console.log(ctx.callbackQuery.data)
           switch (ctx.callbackQuery.data) {
             case CallBackQueryResult.StartOrdering:
               await ctx.answerCbQuery();
@@ -186,14 +201,17 @@ export class AppService implements OnModuleInit {
       // }
     });
 
-    bot.on('inline_query', async ctx => {
+    composer.on('inline_query', async ctx => {
       try {
         const customer = await this.customerRepository.getCustomerByTelegramId(
           ctx,
         );
         if (customer) {
           const category = await this.categoryRepository.findOne({
-            where: {CategoryKey: Like(ctx.inlineQuery.query)},
+            where: {
+              CategoryKey: Like(ctx.inlineQuery.query),
+              merchantId: customer.merchantId,
+            },
             relations: ['Products'],
           });
           await ctx.answerInlineQuery(
@@ -201,7 +219,7 @@ export class AppService implements OnModuleInit {
               product =>
                 <InlineQueryResultArticle>{
                   id: product.Id.toString(),
-                  type: product.Type,
+                  type: product.TGQueryResult,
                   photo_url: product.ThumbUrl,
                   thumb_url: product.ThumbUrl,
                   title: product.Title,
@@ -244,7 +262,7 @@ export class AppService implements OnModuleInit {
       }
     });
 
-    bot.on('message', async (ctx: BotContext) => {
+    composer.on('message', async (ctx: BotContext) => {
       try {
         if ('text' in ctx.message && ctx.message.via_bot?.is_bot) {
           if (parseInt(ctx.message.text, 10)) {
@@ -307,7 +325,7 @@ export class AppService implements OnModuleInit {
     await StartOrderingCb.StartOrdering(ctx);
   }
 
-  InitlizeWizards(bot: Telegraf<Context>) {
+  InitlizeWizards(composer: Composer<BotContext>) {
     const addNoteToOrderWizard = this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
     const addressWizard = this.addressWizard.InitilizeAdressWizard();
     const stage = new Scenes.Stage<BotContext>([
@@ -318,8 +336,8 @@ export class AppService implements OnModuleInit {
       await ctx.scene.leave();
       await FirstMessageHandler.startOptions(ctx);
     });
-    bot.use(session());
-    bot.use(stage.middleware());
+    composer.use(session());
+    composer.use(stage.middleware());
   }
 
   async AddToBasketAndComplteOrderOrContinueShopping(ctx: BotContext) {
@@ -365,6 +383,7 @@ export class AppService implements OnModuleInit {
         }
         await this.orderRepository.save({
           customerId: customer.Id,
+          merchantId: customer.merchantId,
           OrderNo: uuid(),
           CreateDate: new Date(),
           OrderChannel: OrderChannel.Telegram,
@@ -387,7 +406,7 @@ export class AppService implements OnModuleInit {
 
       // Get Prodcut Details From DB and Show Them
       const product = await this.productRepository.findOne({
-        where: {Id: selectedProduct},
+        where: {Id: selectedProduct, merchantId: customer.merchantId},
       });
       await ctx.reply(
         `<b>${product.Title}</b> \n` +

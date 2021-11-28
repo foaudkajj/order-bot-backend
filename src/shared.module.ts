@@ -2,6 +2,7 @@ import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {
   CustomerRepository,
+  MerchantRepository,
   OrderRepository,
   TelegramUserRepository,
 } from './bot/custom-repositories';
@@ -10,7 +11,7 @@ import {
   OrderItem,
   Product,
   Category,
-  GetirOrderDetails,
+  GetirOrder,
   Menu,
   Merchant,
   Permession,
@@ -29,9 +30,10 @@ import {
       OrderItem,
       Product,
       Category,
-      GetirOrderDetails,
+      GetirOrder,
       Menu,
       Merchant,
+      MerchantRepository,
       Permession,
       Product,
       RoleAndPermession,

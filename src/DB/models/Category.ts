@@ -11,7 +11,7 @@ import {Product} from './product';
 @Entity()
 export class Category {
   @PrimaryGeneratedColumn()
-  Id: number;
+  Id?: number;
 
   @Column({length: 30})
   Name: string;
@@ -20,7 +20,7 @@ export class Category {
   CategoryKey: string;
 
   @OneToMany(() => Product, product => product.Category)
-  Products: Product[];
+  Products?: Product[];
 
   @Column()
   merchantId: number;
@@ -29,4 +29,7 @@ export class Category {
     cascade: ['insert'],
   })
   merchant?: Merchant;
+
+  @Column({type: 'uuid', nullable: true})
+  getirCategoryId: string;
 }

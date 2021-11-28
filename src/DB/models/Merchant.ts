@@ -36,6 +36,9 @@ export class Merchant {
   GetirTokenLastCreated: Date;
 
   @Column({length: 50, nullable: true})
+  GetirRestaurantId: string;
+
+  @Column({length: 50, nullable: true})
   YSAppSecretKey: string;
 
   @Column({length: 50, nullable: true})

@@ -2,7 +2,7 @@ import {Entity, Column, OneToOne, PrimaryColumn} from 'typeorm';
 import {Order} from './order';
 
 @Entity()
-export class GetirOrderDetails {
+export class GetirOrder {
   @PrimaryColumn()
   id?: string;
 

@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import {OrderItem} from './order-item';
 import {Customer} from './customer';
-import {GetirOrderDetails} from './getir-order';
+import {GetirOrder} from './getir-order';
 import {TelegramOrder} from './telegram-order';
 import {OrderChannel} from './enums';
 import {Merchant} from './merchant';
@@ -58,13 +58,13 @@ export class Order {
   @Column({nullable: true})
   getirOrderId?: number;
 
-  @OneToOne(() => GetirOrderDetails, getirOrder => getirOrder.Order, {
+  @OneToOne(() => GetirOrder, getirOrder => getirOrder.Order, {
     cascade: ['insert', 'update'],
     nullable: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn({name: 'getirOrderId', referencedColumnName: 'id'})
-  GetirOrder?: GetirOrderDetails;
+  GetirOrder?: GetirOrder;
 
   @ManyToOne(() => TelegramOrder, telegramOrder => telegramOrder.Orders, {
     cascade: ['insert', 'update'],

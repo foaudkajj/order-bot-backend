@@ -13,6 +13,7 @@ export enum OrderStatus {
   OrderSent = 4,
   Delivered = 5,
   Canceled = 6,
+  FutureOrder = 7,
 }
 
 export enum ProductStatus {
