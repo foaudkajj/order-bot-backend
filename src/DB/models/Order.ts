@@ -16,49 +16,50 @@ import {Merchant} from './merchant';
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn()
-  Id?: number;
+  id?: number;
 
-  @Column({type: 'nvarchar', length: 36})
-  OrderNo: string;
+  @Column({type: 'nvarchar', length: 36, name: 'order_no'})
+  orderNo: string;
 
   @Column({type: 'enum', enum: OrderChannel})
-  OrderChannel: OrderChannel;
+  orderChannel: OrderChannel;
 
   @Column({type: 'enum', enum: PaymentMethod})
-  PaymentMethod: PaymentMethod;
+  paymentMethod: PaymentMethod;
 
   @Column({type: 'decimal', precision: 8, scale: 2, default: 0})
-  TotalPrice: number;
+  totalPrice: number;
 
   @Column({type: 'smallint', default: 0})
-  OrderStatus?: number;
+  orderStatus?: number;
 
   @Column({type: 'datetime'})
-  CreateDate: Date;
+  createDate: Date;
 
   @Column({length: 4000, nullable: true})
-  Note?: string;
+  note?: string;
 
-  @OneToMany(() => OrderItem, order => order.Order, {
+  @OneToMany(() => OrderItem, order => order.order, {
     cascade: ['insert', 'update'],
     onDelete: 'CASCADE',
   })
   orderItems?: OrderItem[];
 
-  @Column()
+  @Column({name: 'customer_id'})
   customerId?: number;
 
-  @ManyToOne(() => Customer, customer => customer.Orders, {
+  @ManyToOne(() => Customer, customer => customer.orders, {
     cascade: ['insert', 'update'],
     onDelete: 'CASCADE',
   })
+  @JoinColumn({name: 'customer_id'})
   customer?: Customer;
 
   // @Column({nullable: true})
   // telegramOrderId?: number;
 
   @Column({nullable: true})
-  getirOrderId?: number;
+  getirOrderId?: string;
 
   @OneToOne(() => GetirOrder, getirOrder => getirOrder.Order, {
     cascade: ['insert', 'update'],
@@ -66,7 +67,7 @@ export class Order {
     onDelete: 'CASCADE',
   })
   @JoinColumn({name: 'getirOrderId', referencedColumnName: 'id'})
-  GetirOrder?: GetirOrder;
+  getirOrder?: GetirOrder;
 
   // @ManyToOne(() => TelegramOrder, telegramOrder => telegramOrder.Orders, {
   //   cascade: ['insert', 'update'],
@@ -84,7 +85,13 @@ export class Order {
   })
   merchant?: Merchant;
 
-  OperationItems?: {
+  // @OneToMany(() => OrderOption, orderOption => orderOption.order, {
+  //   cascade: ['insert', 'update'],
+  //   onDelete: 'CASCADE',
+  // })
+  // orderOptions?: OrderOption[];
+
+  operationItems?: {
     Value: number;
     Text: string;
   }[];

@@ -11,16 +11,16 @@ import {Product} from './product';
 @Entity()
 export class Category {
   @PrimaryGeneratedColumn()
-  Id?: number;
+  id?: number;
 
   @Column({length: 30})
-  Name: string;
+  name: string;
 
   @Column({length: 50})
-  CategoryKey: string;
+  categoryKey: string;
 
-  @OneToMany(() => Product, product => product.Category)
-  Products?: Product[];
+  @OneToMany(() => Product, product => product.category)
+  products?: Product[];
 
   @Column()
   merchantId: number;

@@ -44,7 +44,7 @@ export class CategoryService {
         StatusCode: 200,
       };
       const SameCategory = await this.categoryRepository.findOne({
-        where: {CategoryKey: category.CategoryKey},
+        where: {categoryKey: category.categoryKey},
       });
       if (SameCategory) {
         const err = <UIResponseBase<Category>>{
@@ -71,11 +71,11 @@ export class CategoryService {
   async Update(updateDetails: Category) {
     try {
       const category = await this.categoryRepository.findOne({
-        where: {Id: updateDetails.Id},
+        where: {id: updateDetails.id},
       });
-      const {Id, ...updatedEntity} = {...category, ...updateDetails};
+      const {id: Id, ...updatedEntity} = {...category, ...updateDetails};
       await this.categoryRepository.update(
-        {Id: category.Id, merchantId: updateDetails.merchantId},
+        {id: category.id, merchantId: updateDetails.merchantId},
         updatedEntity,
       );
       return <UIResponseBase<Category>>{
@@ -97,7 +97,7 @@ export class CategoryService {
 
   async Delete(Id: number, MerchantId: number) {
     try {
-      await this.categoryRepository.delete({Id: Id, merchantId: MerchantId});
+      await this.categoryRepository.delete({id: Id, merchantId: MerchantId});
       return <UIResponseBase<Category>>{
         IsError: false,
         MessageKey: 'SUCCESS',

@@ -30,8 +30,8 @@ export class AddnoteToOrderWizardService {
             ctx,
           );
           await this.orderRepository.update(
-            {customerId: customer.Id, OrderStatus: OrderStatus.New},
-            {Note: ctx.message.text},
+            {customerId: customer.id, orderStatus: OrderStatus.New},
+            {note: ctx.message.text},
           );
           await ConfirmOrderHandler.ConfirmOrder(ctx);
           await ctx.scene.leave();

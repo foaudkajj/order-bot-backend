@@ -1,7 +1,7 @@
 import {getCustomRepository} from 'typeorm';
 import {OrderRepository} from '../custom-repositories/order-repository';
 import {BotContext} from '../interfaces/bot-context';
-import {CallBackQueryResult} from '../models/call-back-query-result';
+import {CallBackQueryResult} from '../models/enums';
 
 export abstract class CompleteOrderHandler {
   static async CompleteOrder(ctx: BotContext) {

@@ -45,7 +45,7 @@ export class CategoryController {
     @Request() request,
   ): Promise<UIResponseBase<Category>> {
     const entity = {...JSON.parse(body.values)} as Category;
-    entity.Id = body.key;
+    entity.id = body.key;
 
     const {MerchantId} = request.user;
     entity.merchantId = MerchantId;

@@ -1,6 +1,6 @@
 import {OrderStatus} from 'src/db/models';
 import {BotContext} from '../interfaces/bot-context';
-import {CallBackQueryResult} from '../models/call-back-query-result';
+import {CallBackQueryResult} from '../models/enums';
 import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
 
 export abstract class ConfirmOrderHandler {

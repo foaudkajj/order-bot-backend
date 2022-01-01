@@ -12,19 +12,19 @@ import {Order} from './order';
 @Entity()
 export class Customer {
   @PrimaryGeneratedColumn()
-  Id?: number;
+  id?: number;
 
   @Column({length: 30})
-  FullName: string;
+  fullName?: string;
 
   @Column({length: 30, nullable: true})
-  TelegramUserName?: string;
+  telegramUserName?: string;
 
   @Column({nullable: true})
-  TelegramId?: number;
+  telegramId?: number;
 
   @Column({length: 30, nullable: true})
-  PhoneNumber?: string;
+  phoneNumber?: string;
 
   @Column({length: 1000, nullable: true})
   location?: string;
@@ -33,10 +33,10 @@ export class Customer {
   address?: string;
 
   @Column({type: 'enum', enum: OrderChannel, nullable: false})
-  CustomerChannel: string;
+  customerChannel?: string;
 
   @OneToMany(() => Order, order => order.customer, {nullable: true})
-  Orders?: Promise<Order[]>;
+  orders?: Promise<Order[]>;
   // @OneToMany(() => Product, product => product.user, { nullable: true })
   // Products?: Promise<Product[]>;
 

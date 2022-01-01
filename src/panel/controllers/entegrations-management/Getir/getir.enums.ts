@@ -1,4 +1,4 @@
-export enum DeliveryTypes {
+export enum GetirOrderStatus {
   RestaurantApprovalPendingForScheduledOrder = 325,
   RestaurantApproved = 350,
   RestaurantApprovalPending = 400,
@@ -68,3 +68,15 @@ export enum Endpoints {
   UpdateOptionProductOptionStatus = '/restaurants/option-products/{optionProductId}/option-categories/{optionCategoryId}/options/{optionId}/status',
   UpdateOptionProductOptionStatusWithChainId = '/restaurants/option-products/chain-id/{chainOptionProductId}/option-categories/{chainOptionCategoryId}/options/{chainOptionId}/status',
 }
+
+export enum DeliveryType {
+  ByGetir = 1,
+  ByRestaurant = 2,
+}
+
+export type GetirResult = {
+  result: boolean;
+  code: number;
+  detail: string;
+  message: string;
+};

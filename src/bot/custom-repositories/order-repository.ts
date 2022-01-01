@@ -15,9 +15,9 @@ export class OrderRepository extends Repository<Order> {
     // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
     const customer = await customerRepository.getCustomerByTelegramId(ctx);
     const order = await this.findOne({
-      where: {customerId: customer.Id, OrderStatus: orderStatus},
+      where: {customerId: customer.id, orderStatus: orderStatus},
       relations: relations,
-      order: {CreateDate: 'DESC'},
+      order: {createDate: 'DESC'},
     });
     return order;
   }
@@ -28,12 +28,12 @@ export class OrderRepository extends Repository<Order> {
     const customer = await customerRepository.getCustomerByTelegramId(ctx);
     if (relations && relations.length > 0) {
       return await this.findOne({
-        where: {customerId: customer.Id, OrderStatus: OrderStatus.New},
+        where: {customerId: customer.id, orderStatus: OrderStatus.New},
         relations: relations,
       });
     } else {
       return await this.findOne({
-        where: {customerId: customer.Id, OrderStatus: OrderStatus.New},
+        where: {customerId: customer.id, orderStatus: OrderStatus.New},
       });
     }
   }

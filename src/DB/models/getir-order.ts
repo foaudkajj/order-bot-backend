@@ -84,12 +84,9 @@ export class GetirOrder {
   @Column()
   restaurantId: string;
 
-  @Column({type: 'text'})
-  productDetails: string;
-
   @Column({name: 'orderId', nullable: true})
   OrderId?: number;
 
-  @OneToOne(() => Order, order => order.GetirOrder)
+  @OneToOne(() => Order, order => order.getirOrder)
   Order?: Order;
 }

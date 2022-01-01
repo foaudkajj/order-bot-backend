@@ -13,7 +13,7 @@ export class CustomerRepository extends Repository<Customer> {
     if (relations && relations.length > 0) {
       return await this.findOne({
         where: {
-          TelegramId: userInfo.id,
+          telegramId: userInfo.id,
           merchant: {botUserName: ctx.botInfo.username},
         },
         relations: relations,
@@ -21,7 +21,7 @@ export class CustomerRepository extends Repository<Customer> {
     } else {
       return await this.findOne({
         where: {
-          TelegramId: userInfo.id,
+          telegramId: userInfo.id,
           merchant: {botUserName: ctx.botInfo.username},
         },
         relations: ['merchant'],
@@ -33,10 +33,10 @@ export class CustomerRepository extends Repository<Customer> {
     const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
     return await this.findOne({
       where: {
-        TelegramId: userInfo.id,
+        telegramId: userInfo.id,
         merchant: {botUserName: ctx.botInfo.username},
       },
-      relations: ['Orders', 'Orders.orderItems', 'merchant'],
+      relations: ['orders', 'orders.orderItems', 'merchant'],
     });
   }
 }

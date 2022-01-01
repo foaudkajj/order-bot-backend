@@ -3,7 +3,7 @@ import {OrderStatus} from 'src/db/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/telegram-types';
 import {getRepository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
-import {CallBackQueryResult} from '../models/call-back-query-result';
+import {CallBackQueryResult} from '../models/enums';
 import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
 
 export abstract class StartOrderingCb {
@@ -37,8 +37,8 @@ export abstract class StartOrderingCb {
               mp =>
                 <InlineKeyboardButton[]>[
                   {
-                    text: mp.Name,
-                    switch_inline_query_current_chat: mp.CategoryKey,
+                    text: mp.name,
+                    switch_inline_query_current_chat: mp.categoryKey,
                   },
                 ],
             ),

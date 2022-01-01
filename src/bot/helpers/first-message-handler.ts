@@ -5,7 +5,7 @@ import {getCustomRepository} from 'typeorm';
 import {MerchantRepository} from '../custom-repositories';
 import {CustomerRepository} from '../custom-repositories/customer-repository';
 import {BotContext} from '../interfaces/bot-context';
-import {CallBackQueryResult} from '../models/call-back-query-result';
+import {CallBackQueryResult} from '../models/enums';
 
 export abstract class FirstMessageHandler {
   static async startOptions(
@@ -77,10 +77,10 @@ export abstract class FirstMessageHandler {
 
       const newCustomer: Customer = {
         merchantId: merchant.Id,
-        CustomerChannel: OrderChannel.Telegram,
-        FullName: ctx.from.first_name + ' ' + ctx.from.last_name,
-        TelegramId: ctx.from.id,
-        TelegramUserName: ctx.from.username,
+        customerChannel: OrderChannel.Telegram,
+        fullName: ctx.from.first_name + ' ' + ctx.from.last_name,
+        telegramId: ctx.from.id,
+        telegramUserName: ctx.from.username,
       };
       await customerRepository.save(newCustomer);
     }

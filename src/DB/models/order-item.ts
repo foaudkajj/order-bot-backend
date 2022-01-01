@@ -12,24 +12,28 @@ import {Product} from './product';
 @Entity()
 export class OrderItem {
   @PrimaryGeneratedColumn()
-  Id?: number;
+  id?: number;
 
   @Column()
-  Amount: number;
+  amount: number;
+
+  @Column({type: 'nvarchar', length: '2000'})
+  itemNote?: string;
 
   @Column({type: 'enum', enum: ProductStatus})
-  ProductStatus?: ProductStatus;
+  productStatus?: ProductStatus;
 
   @Column()
   productId?: number;
 
-  @ManyToOne(() => Product, product => product.OrderDetails)
-  @JoinColumn()
-  Product?: Product;
+  @ManyToOne(() => Product, product => product.orderDetails)
+  @JoinColumn({name: 'productId'})
+  product?: Product;
 
   @Column({name: 'orderId'})
-  OrderId?: number;
+  orderId?: number;
 
   @ManyToOne(() => Order, order => order.orderItems)
-  Order?: Order;
+  @JoinColumn({name: 'orderId'})
+  order?: Order;
 }

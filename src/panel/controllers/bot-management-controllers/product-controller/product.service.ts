@@ -59,10 +59,10 @@ export class ProductService {
   async Update(updateDetails: Product) {
     try {
       const product = await this.productRepository.findOne({
-        where: {Id: updateDetails.Id},
+        where: {id: updateDetails.id},
       });
-      const {Id, ...updatedEntity} = {...product, ...updateDetails};
-      await this.productRepository.update({Id: product.Id}, updatedEntity);
+      const {id: Id, ...updatedEntity} = {...product, ...updateDetails};
+      await this.productRepository.update({id: product.id}, updatedEntity);
       return <UIResponseBase<Product>>{
         IsError: false,
         Result: updatedEntity,
@@ -82,7 +82,7 @@ export class ProductService {
 
   async Delete(Id: number, MerchantId: number) {
     try {
-      await this.productRepository.delete({Id: Id, merchantId: MerchantId});
+      await this.productRepository.delete({id: Id, merchantId: MerchantId});
       return <UIResponseBase<Product>>{
         IsError: false,
         MessageKey: 'SUCCESS',

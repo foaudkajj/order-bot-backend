@@ -18,7 +18,7 @@ export abstract class OrdersInBasketCb {
 
       const order = await orderRepository.getOrderInBasketByTelegramId(ctx, [
         'orderItems',
-        'orderItems.Product',
+        'orderItems.product',
       ]);
       if (!order || order?.orderItems?.length === 0) {
         orderDetailsMessage = null; // 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';
@@ -30,15 +30,15 @@ export abstract class OrdersInBasketCb {
         const TotalPrice = order.orderItems
           .map(
             order =>
-              order.Product.UnitPrice * (order.Amount > 0 ? order.Amount : 1),
+              order.product.unitPrice * (order.amount > 0 ? order.amount : 1),
           )
           .reduce((previous, current) => previous + current);
         orderDetailsMessage = 'Sepetinizdeki Ürünler:\n\n';
         order.orderItems.forEach(orderDetails => {
           orderDetailsMessage = orderDetailsMessage.concat(
-            `Ürün İsmi : ${orderDetails.Product.Title}\n`,
-            `Fiyat: <u> ${orderDetails.Product.UnitPrice} TL</u>\n`,
-            `Miktar : ${orderDetails.Amount}\n` + '\n',
+            `Ürün İsmi : ${orderDetails.product.title}\n`,
+            `Fiyat: <u> ${orderDetails.product.unitPrice} TL</u>\n`,
+            `Miktar : ${orderDetails.amount}\n` + '\n',
           );
         });
         // `Açıklama : ${orderDetails.Order.Description ?? "Yok"}`
@@ -46,8 +46,8 @@ export abstract class OrdersInBasketCb {
           `\n\n Toplam: <b>${TotalPrice} TL </b>`,
         );
         orderDetailsMessage =
-          order.Note !== null
-            ? orderDetailsMessage.concat(`\n\n Not: ${order.Note}`)
+          order.note !== null
+            ? orderDetailsMessage.concat(`\n\n Not: ${order.note}`)
             : orderDetailsMessage;
 
         if (isCbQuyer) await ctx.answerCbQuery();

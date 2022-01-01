@@ -3,7 +3,7 @@ import {Composer, Scenes, session, Telegraf} from 'telegraf';
 import {InlineQueryResultArticle} from 'telegraf/typings/telegram-types';
 import {Like, Repository} from 'typeorm';
 import {BotContext} from './bot/interfaces/bot-context';
-import {CallBackQueryResult} from './bot/models/call-back-query-result';
+import {CallBackQueryResult} from './bot/models/enums';
 import {AddressWizardService} from './bot/wiards/address-wizard.service';
 import {Product} from './db/models/product';
 import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
@@ -43,6 +43,11 @@ export class AppService implements OnModuleInit {
     private merchantRepository: MerchantRepository,
   ) {}
 
+  static botMap: Map<string, Telegraf<BotContext>> = new Map<
+    string,
+    Telegraf<BotContext>
+  >();
+
   onModuleInit() {
     this.InitlizeAndLunchBot();
   }
@@ -66,8 +71,10 @@ export class AppService implements OnModuleInit {
         const bot: Telegraf<BotContext> = new Telegraf<BotContext>(
           merchant.botToken,
         );
+
         bot.use(this.composer);
         await bot.launch();
+        AppService.botMap.set(bot.botInfo.username, bot);
       }
     }
   }
@@ -211,24 +218,24 @@ export class AppService implements OnModuleInit {
         if (customer) {
           const category = await this.categoryRepository.findOne({
             where: {
-              CategoryKey: Like(ctx.inlineQuery.query),
+              categoryKey: Like(ctx.inlineQuery.query),
               merchantId: customer.merchantId,
             },
-            relations: ['Products'],
+            relations: ['products'],
           });
           await ctx.answerInlineQuery(
-            category?.Products?.map(
+            category?.products?.map(
               product =>
                 <InlineQueryResultArticle>{
-                  id: product.Id.toString(),
-                  type: product.TGQueryResult,
-                  photo_url: product.ThumbUrl,
-                  thumb_url: product.ThumbUrl,
-                  title: product.Title,
-                  description: product.Description,
+                  id: product.id.toString(),
+                  type: product.tgQueryResult,
+                  photo_url: product.thumbUrl,
+                  thumb_url: product.thumbUrl,
+                  title: product.title,
+                  description: product.description,
                   // caption: product.Caption,
                   input_message_content: {
-                    message_text: product.Id.toString(),
+                    message_text: product.id.toString(),
                     //       // message_text:
                     //       //   `<b>🎞️ TesTRTt</b>\n` +
                     //       //   `http://www.youtube.com/watch?v=${'L_Gqpg0q1sfdxs' || ''}`,
@@ -283,7 +290,7 @@ export class AppService implements OnModuleInit {
         ctx,
       );
       if (order) {
-        await this.orderItemRepository.delete({OrderId: order.Id});
+        await this.orderItemRepository.delete({orderId: order.id});
         await ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.');
       } else {
         await ctx.answerCbQuery('Sepetiniz Boştur.');
@@ -302,8 +309,8 @@ export class AppService implements OnModuleInit {
         ctx,
       );
       await this.orderRepository.update(
-        {customerId: customer.Id, OrderStatus: OrderStatus.New},
-        {OrderStatus: OrderStatus.UserConfirmed},
+        {customerId: customer.id, orderStatus: OrderStatus.New},
+        {orderStatus: OrderStatus.UserConfirmed},
       );
       await ctx.answerCbQuery('Siparişiniz Gönderilmiştir');
       await FirstMessageHandler.startOptions(ctx);
@@ -359,16 +366,16 @@ export class AppService implements OnModuleInit {
         // selectedProducts.push(ctx.message.text);
         // order.SelectedProducts = JSON.stringify(selectedProducts);
         await this.orderItemRepository.delete({
-          OrderId: order.Id,
-          ProductStatus: ProductStatus.Selected,
+          orderId: order.id,
+          productStatus: ProductStatus.Selected,
         });
         order.orderItems = order.orderItems.filter(
-          oi => oi.ProductStatus !== ProductStatus.Selected,
+          oi => oi.productStatus !== ProductStatus.Selected,
         );
         order.orderItems.push({
           productId: Number.parseInt(selectedProduct),
-          Amount: 1,
-          OrderId: order.Id,
+          amount: 1,
+          orderId: order.id,
         });
         await this.orderRepository.save(order);
       } else {
@@ -384,18 +391,18 @@ export class AppService implements OnModuleInit {
         //   };
         // }
         await this.orderRepository.save({
-          customerId: customer.Id,
+          customerId: customer.id,
           merchantId: customer.merchantId,
-          OrderNo: uuid(),
-          CreateDate: new Date(),
-          OrderChannel: OrderChannel.Telegram,
-          OrderStatus: OrderStatus.New,
-          PaymentMethod: PaymentMethod.OnDelivery,
+          orderNo: uuid(),
+          createDate: new Date(),
+          orderChannel: OrderChannel.Telegram,
+          orderStatus: OrderStatus.New,
+          paymentMethod: PaymentMethod.OnDelivery,
           orderItems: [
-            {
-              Amount: 1,
+            <OrderItem>{
+              amount: 1,
               productId: Number.parseInt(selectedProduct),
-              ProductStatus: ProductStatus.Selected,
+              productStatus: ProductStatus.Selected,
             },
           ],
           // TelegramOrder: telegramUser,
@@ -409,12 +416,12 @@ export class AppService implements OnModuleInit {
 
       // Get Prodcut Details From DB and Show Them
       const product = await this.productRepository.findOne({
-        where: {Id: selectedProduct, merchantId: customer.merchantId},
+        where: {id: selectedProduct, merchantId: customer.merchantId},
       });
       await ctx.reply(
-        `<b>${product.Title}</b> \n` +
-          `Açıklama:<i> ${product.Description}</i> \n` +
-          `Fiyat: <u> ${product.UnitPrice} TL</u>`,
+        `<b>${product.title}</b> \n` +
+          `Açıklama:<i> ${product.description}</i> \n` +
+          `Fiyat: <u> ${product.unitPrice} TL</u>`,
         {
           parse_mode: 'HTML',
           reply_markup: {
@@ -466,33 +473,33 @@ export class AppService implements OnModuleInit {
   async AddNewOrder(ctx: BotContext) {
     const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, [
       'orderItems',
-      'orderItems.Product',
+      'orderItems.product',
     ]);
     if (order) {
       console.log('AddNEwOrder');
       const selectedProduct = order.orderItems.find(
-        fi => fi.ProductStatus === ProductStatus.Selected,
+        fi => fi.productStatus === ProductStatus.Selected,
       );
       if (selectedProduct) {
         const totalPrice = order.orderItems
-          .map(product => product.Product)
-          ?.map(mp => mp.UnitPrice)
+          .map(product => product.product)
+          ?.map(mp => mp.unitPrice)
           .reduce((prev, current) => prev + current);
-        order.TotalPrice = order.TotalPrice + totalPrice;
+        order.totalPrice = order.totalPrice + totalPrice;
 
         const productExists = order.orderItems.find(
           fi =>
             fi.productId === selectedProduct.productId &&
-            fi.ProductStatus !== ProductStatus.Selected,
+            fi.productStatus !== ProductStatus.Selected,
         );
         if (productExists) {
-          await this.orderItemRepository.delete({Id: selectedProduct.Id});
+          await this.orderItemRepository.delete({id: selectedProduct.id});
           order.orderItems = order.orderItems.filter(
-            fi => fi.Id !== selectedProduct.Id,
+            fi => fi.id !== selectedProduct.id,
           );
-          productExists.Amount += 1;
+          productExists.amount += 1;
         }
-        selectedProduct.ProductStatus = ProductStatus.InBasket;
+        selectedProduct.productStatus = ProductStatus.InBasket;
         await this.orderRepository.save(order);
       }
     }

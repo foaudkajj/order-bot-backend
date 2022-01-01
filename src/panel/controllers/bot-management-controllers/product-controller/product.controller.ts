@@ -45,7 +45,7 @@ export class ProductController {
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
     const entity = {...JSON.parse(body.values)} as Product;
-    entity.Id = body.key;
+    entity.id = body.key;
 
     const {MerchantId} = request.user;
     if (entity) {
