@@ -10,6 +10,5 @@ export * from './product';
 export * from './role';
 export * from './role-and-permession';
 export * from './standard-model';
-export * from './telegram-order';
 export * from './user';
 export * from './enums';

@@ -4,7 +4,6 @@ import {
   CustomerRepository,
   MerchantRepository,
   OrderRepository,
-  TelegramUserRepository,
 } from './bot/custom-repositories';
 import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
 import {
@@ -17,7 +16,6 @@ import {
   Permession,
   RoleAndPermession,
   Role,
-  TelegramOrder,
   User,
 } from './db/models';
 
@@ -26,7 +24,6 @@ import {
     TypeOrmModule.forFeature([
       CustomerRepository,
       OrderRepository,
-      TelegramUserRepository,
       OrderItem,
       Product,
       Category,
@@ -38,7 +35,6 @@ import {
       Product,
       RoleAndPermession,
       Role,
-      TelegramOrder,
       User,
     ]),
   ],

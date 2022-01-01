@@ -26,6 +26,12 @@ export class Customer {
   @Column({length: 30, nullable: true})
   PhoneNumber?: string;
 
+  @Column({length: 1000, nullable: true})
+  location?: string;
+
+  @Column({length: 1000, nullable: true})
+  address?: string;
+
   @Column({type: 'enum', enum: OrderChannel, nullable: false})
   CustomerChannel: string;
 

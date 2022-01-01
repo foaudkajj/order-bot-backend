@@ -65,12 +65,12 @@ export class AddressWizardService {
 
   async SaveAddressToDBAndLeaveWizard(ctx: BotContext) {
     const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, [
-      'TelegramOrder',
+      'customer',
     ]);
     if (order) {
-      order.TelegramOrder.Address = ctx.scene.session?.address;
+      order.customer.address = ctx.scene.session?.address;
       if (ctx.scene.session.isLocation) {
-        order.TelegramOrder.Location = JSON.stringify({
+        order.customer.location = JSON.stringify({
           latitude: ctx.scene.session.latitude,
           longitude: ctx.scene.session.longitude,
         });

@@ -30,3 +30,8 @@ export enum UserStatus {
   Passive,
   Active,
 }
+
+export enum PaymentMethod {
+  OnDelivery = 'OnDelivery',
+  Online = 'ONLINE',
+}

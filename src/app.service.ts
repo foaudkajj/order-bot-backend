@@ -17,11 +17,14 @@ import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
 import {OrderItem} from './db/models/order-item';
 import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
 import {v4 as uuid} from 'uuid';
+import {MerchantRepository} from './bot/custom-repositories';
 import {
-  MerchantRepository,
-  TelegramUserRepository,
-} from './bot/custom-repositories';
-import {Category, OrderChannel, OrderStatus, ProductStatus} from './db/models';
+  Category,
+  OrderChannel,
+  OrderStatus,
+  PaymentMethod,
+  ProductStatus,
+} from './db/models';
 import {InjectRepository} from '@nestjs/typeorm';
 
 @Injectable()
@@ -37,7 +40,6 @@ export class AppService implements OnModuleInit {
     private orderItemRepository: Repository<OrderItem>,
     private customerRepository: CustomerRepository,
     private orderRepository: OrderRepository,
-    private telegramUserRepository: TelegramUserRepository,
     private merchantRepository: MerchantRepository,
   ) {}
 
@@ -370,17 +372,17 @@ export class AppService implements OnModuleInit {
         });
         await this.orderRepository.save(order);
       } else {
-        let telegramUser = await this.telegramUserRepository.getTelegramUserTelegramId(
-          ctx,
-        );
-        if (!telegramUser) {
-          telegramUser = {
-            Username: ctx.from.username,
-            FirstName: ctx.from.first_name,
-            LastName: ctx.from.last_name,
-            TelegramId: ctx.from.id,
-          };
-        }
+        // let telegramUser = await this.telegramUserRepository.getTelegramUserTelegramId(
+        //   ctx,
+        // );
+        // if (!telegramUser) {
+        //   telegramUser = {
+        //     Username: ctx.from.username,
+        //     FirstName: ctx.from.first_name,
+        //     LastName: ctx.from.last_name,
+        //     TelegramId: ctx.from.id,
+        //   };
+        // }
         await this.orderRepository.save({
           customerId: customer.Id,
           merchantId: customer.merchantId,
@@ -388,6 +390,7 @@ export class AppService implements OnModuleInit {
           CreateDate: new Date(),
           OrderChannel: OrderChannel.Telegram,
           OrderStatus: OrderStatus.New,
+          PaymentMethod: PaymentMethod.OnDelivery,
           orderItems: [
             {
               Amount: 1,
@@ -395,7 +398,7 @@ export class AppService implements OnModuleInit {
               ProductStatus: ProductStatus.Selected,
             },
           ],
-          TelegramOrder: telegramUser,
+          // TelegramOrder: telegramUser,
         });
 
         // ({OrderNo:uuid(), OrderChannel: OrderChannel.Telegram,CreateDate: new Date(),OrderStatus: OrderStatus.InBasket,

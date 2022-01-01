@@ -9,19 +9,19 @@ export abstract class CompleteOrderHandler {
     try {
       const ordersInBasket = await orderRepository.getOrderInBasketByTelegramId(
         ctx,
-        ['TelegramOrder'],
+        ['customer'],
       );
       if (ordersInBasket) {
-        const telegramOrder = ordersInBasket.TelegramOrder;
+        const customer = ordersInBasket.customer;
         await ctx.answerCbQuery();
-        if (telegramOrder.Address) {
-          if (telegramOrder.Location) {
-            const location = JSON.parse(telegramOrder.Location);
+        if (customer.address) {
+          if (customer.location) {
+            const location = JSON.parse(customer.location);
             await ctx.replyWithLocation(location.latitude, location.longitude);
           }
 
           await ctx.replyWithMarkdown(
-            `<i>${telegramOrder.Address}</i> \n \n` +
+            `<i>${customer.address}</i> \n \n` +
               '<b>Kayıtlı olan adres ve konumunuz mu kullanalım?</b> \n \n' +
               '<b>Note:</b> Açık adres ile konum uyuşmadığı tadirde, açık adres kullanılacaktır.',
             {

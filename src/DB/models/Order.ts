@@ -10,8 +10,7 @@ import {
 import {OrderItem} from './order-item';
 import {Customer} from './customer';
 import {GetirOrder} from './getir-order';
-import {TelegramOrder} from './telegram-order';
-import {OrderChannel} from './enums';
+import {OrderChannel, PaymentMethod} from './enums';
 import {Merchant} from './merchant';
 
 @Entity()
@@ -24,6 +23,9 @@ export class Order {
 
   @Column({type: 'enum', enum: OrderChannel})
   OrderChannel: OrderChannel;
+
+  @Column({type: 'enum', enum: PaymentMethod})
+  PaymentMethod: PaymentMethod;
 
   @Column({type: 'decimal', precision: 8, scale: 2, default: 0})
   TotalPrice: number;
@@ -47,13 +49,13 @@ export class Order {
   customerId?: number;
 
   @ManyToOne(() => Customer, customer => customer.Orders, {
-    cascade: ['insert'],
+    cascade: ['insert', 'update'],
     onDelete: 'CASCADE',
   })
   customer?: Customer;
 
-  @Column({nullable: true})
-  telegramOrderId?: number;
+  // @Column({nullable: true})
+  // telegramOrderId?: number;
 
   @Column({nullable: true})
   getirOrderId?: number;
@@ -66,12 +68,13 @@ export class Order {
   @JoinColumn({name: 'getirOrderId', referencedColumnName: 'id'})
   GetirOrder?: GetirOrder;
 
-  @ManyToOne(() => TelegramOrder, telegramOrder => telegramOrder.Orders, {
-    cascade: ['insert', 'update'],
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  TelegramOrder?: TelegramOrder;
+  // @ManyToOne(() => TelegramOrder, telegramOrder => telegramOrder.Orders, {
+  //   cascade: ['insert', 'update'],
+  //   nullable: true,
+  //   onDelete: 'CASCADE',
+  // })
+  // @JoinColumn({name: 'telegramOrderId', referencedColumnName: 'id'})
+  // TelegramOrder?: TelegramOrder;
 
   @Column()
   merchantId: number;
