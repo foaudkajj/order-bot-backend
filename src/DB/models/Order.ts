@@ -40,7 +40,7 @@ export class Order {
   note?: string;
 
   @OneToMany(() => OrderItem, order => order.order, {
-    cascade: ['insert', 'update'],
+    cascade: ['insert', 'update', 'remove'],
     onDelete: 'CASCADE',
   })
   orderItems?: OrderItem[];
@@ -62,7 +62,7 @@ export class Order {
   getirOrderId?: string;
 
   @OneToOne(() => GetirOrder, getirOrder => getirOrder.Order, {
-    cascade: ['insert', 'update'],
+    cascade: ['insert', 'update', 'remove'],
     nullable: true,
     onDelete: 'CASCADE',
   })
@@ -77,11 +77,12 @@ export class Order {
   // @JoinColumn({name: 'telegramOrderId', referencedColumnName: 'id'})
   // TelegramOrder?: TelegramOrder;
 
-  @Column()
+  @Column({name: 'merchantId'})
   merchantId: number;
 
   @ManyToOne(() => Merchant, merchant => merchant.orders, {
-    cascade: ['insert'],
+    cascade: ['insert', 'update', 'remove'],
+    onDelete: 'CASCADE',
   })
   merchant?: Merchant;
 

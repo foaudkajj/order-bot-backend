@@ -12,3 +12,5 @@ export * from './role-and-permession';
 export * from './standard-model';
 export * from './user';
 export * from './enums';
+export * from './option';
+export * from './option-category';

@@ -57,7 +57,10 @@ export class Merchant {
   @OneToMany(() => Customer, customer => customer.merchant)
   customers: Customer[];
 
-  @OneToMany(() => Order, order => order.merchant)
+  @OneToMany(() => Order, order => order.merchant, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
   orders: Order[];
 
   @OneToMany(() => Category, category => category.merchant)

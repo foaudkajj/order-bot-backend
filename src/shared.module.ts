@@ -17,6 +17,8 @@ import {
   RoleAndPermession,
   Role,
   User,
+  Option,
+  OptionCategory,
 } from './db/models';
 
 @Module({
@@ -36,6 +38,8 @@ import {
       RoleAndPermession,
       Role,
       User,
+      Option,
+      OptionCategory,
     ]),
   ],
   controllers: [],
