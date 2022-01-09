@@ -6,6 +6,8 @@ import {
   Post,
   Request,
   Headers,
+  HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {AllowAnonymous} from 'src/panel/decorators/public.decorator';
 import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
@@ -187,23 +189,70 @@ export class GetirController {
     @Body() body: FoodOrderDto,
     @Request() request,
     @Headers() headers,
-  ): Promise<string> {
-    // const { MerchantId } = request.user;
-    console.log(headers);
-    await this.getirService.OrderReceived(1, body);
-    return 'Ok';
+  ): Promise<number> {
+    // console.log(headers);
+    // console.log(JSON.stringify(body));
+    await this.getirService.OrderReceived(body);
+    return HttpStatus.OK;
   }
 
   @Post('OrderCanceled')
   @AllowAnonymous()
-  async OrderCanceled(
-    @Request() request,
-    @Headers() headers,
-    @Body() body,
-  ): Promise<string> {
-    // const { MerchantId } = request.user;
+  async OrderCanceled(@Headers() headers, @Body() body): Promise<number> {
     console.log(headers);
-    await this.getirService.OrderCanceled(1, body);
-    return 'Ok';
+    await this.getirService.OrderCanceled(body);
+    return HttpStatus.OK;
+  }
+
+  @Get('ImportUpdateGetirProducts')
+  async importUpdateGetirProducts(@Request() request) {
+    const {MerchantId} = request.user;
+    return this.getirService.importUpdateGetirProducts(MerchantId);
+  }
+
+  @Get('verifyOrder')
+  async verifyOrder(
+    @Request() request,
+    @Query('foodOrderId') foodOrderId: string,
+  ) {
+    const {MerchantId} = request.user;
+    return this.getirService.verifyOrder(foodOrderId, MerchantId);
+  }
+
+  @Get('verifyFutureOrder')
+  async verifyFutureOrder(
+    @Request() request,
+    @Query('orderId') orderId: string,
+    @Query('foodOrderId') foodOrderId: string,
+  ) {
+    const {MerchantId} = request.user;
+    return this.getirService.verifyFutureOrder(foodOrderId, MerchantId);
+  }
+
+  @Get('prepareOrder')
+  async prepareOrder(
+    @Request() request,
+    @Query('foodOrderId') foodOrderId: string,
+  ) {
+    const {MerchantId} = request.user;
+    return this.getirService.prepareOrder(foodOrderId, MerchantId);
+  }
+
+  @Get('deliverOrder')
+  async deliverOrder(
+    @Request() request,
+    @Query('foodOrderId') foodOrderId: string,
+  ) {
+    const {MerchantId} = request.user;
+    return this.getirService.deliverOrder(foodOrderId, MerchantId);
+  }
+
+  @Get('handoverOrder')
+  async handoverOrder(
+    @Request() request,
+    @Query('foodOrderId') foodOrderId: string,
+  ) {
+    const {MerchantId} = request.user;
+    return this.getirService.handoverOrder(foodOrderId, MerchantId);
   }
 }

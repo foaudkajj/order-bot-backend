@@ -1,4 +1,12 @@
-import {Controller, Get, Post, Query, Body, Request} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Body,
+  Request,
+  Param,
+} from '@nestjs/common';
 import {Order} from 'src/db/models/order';
 import {PermessionsGuard} from 'src/panel/decorators/permessions.decorator';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
@@ -40,7 +48,7 @@ export class OrderController {
   ): Promise<UIResponseBase<Order>> {
     const {MerchantId} = request.user;
     const entity = {...JSON.parse(body.values)} as Order;
-    entity.Id = body.key;
+    entity.id = body.key;
     entity.merchantId = MerchantId;
     const result = await this.orderService.Update(entity);
     return result;
@@ -58,5 +66,11 @@ export class OrderController {
       MerchantId,
     );
     return result;
+  }
+
+  @Get('Cancel/:orderId')
+  @PermessionsGuard(PermessionEnum.SHOW_ORDER)
+  async Cancel(@Param('orderId') orderId: string): Promise<void> {
+    return await this.orderService.CancelOrder(orderId);
   }
 }

@@ -1,27 +1,49 @@
 import {HttpService, Injectable} from '@nestjs/common';
-import {MerchantRepository} from 'src/bot/custom-repositories/MerchantRepository';
-import {DevextremeLoadOptionsService} from 'src/DB/Helpers/devextreme-loadoptions';
+import {MerchantRepository} from 'src/bot/custom-repositories/merchant-repository';
+import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {getCustomRepository, getRepository} from 'typeorm';
+import {In, Repository} from 'typeorm';
 import GetirToken from 'src/panel/helpers/getir-token-helper';
-import {GetirOrderDetails} from 'src/DB/models/getir-order';
-import {Order} from 'src/DB/models/order';
+import {GetirOrder} from 'src/db/models/getir-order';
+import {Order} from 'src/db/models/order';
 import {FoodOrderDto} from './getir-dtos/food-order-dto';
-import {Customer} from 'src/DB/models/customer';
-import {OrderChannel} from 'src/DB/models';
-import {Endpoints} from './getir.enums';
+import {Customer} from 'src/db/models/customer';
+import {
+  Category,
+  Option,
+  OrderChannel,
+  OrderItem,
+  OrderStatus,
+  PaymentMethod,
+  Product,
+  ProductStatus,
+} from 'src/db/models';
+import {GetirOrderStatus, Endpoints, GetirResult} from './getir.enums';
+import {InjectRepository} from '@nestjs/typeorm';
+import {ProductCategory} from './getir-dtos/restaurant-menu';
+import {firstValueFrom} from 'rxjs';
+import {OptionCategory} from 'src/db/models/option-category';
+import {OrderOption} from 'src/db/models/order-option';
 
 @Injectable()
 export class GetirService {
   GetirAppSecretKey: string;
   GetirRestaurantSecretKey: string;
-  merchantRepository = getCustomRepository(MerchantRepository);
   constructor(
     public devextremeLoadOptions: DevextremeLoadOptionsService,
     public httpService: HttpService,
-  ) {
-    console.log('here constructor');
-  }
+    @InjectRepository(Order)
+    private orderRepository: Repository<Order>,
+    private merchantRepository: MerchantRepository,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+    @InjectRepository(OptionCategory)
+    private optionCategoryRepository: Repository<OptionCategory>,
+    @InjectRepository(Option)
+    private optionRepository: Repository<Option>,
+  ) {}
 
   // async AddOrDeletePaymentMethod(merchantId, body) {
   //     const token = await GetirToken.getToken(merchantId);
@@ -413,7 +435,13 @@ export class GetirService {
     } catch (e) {
       return <UIResponseBase<any>>{
         IsError: true,
-        MessageKey: (e as Error).message,
+        Error: <GetirResult>{
+          code: e?.response?.data?.code,
+          detail: e?.response?.data?.detail,
+          error: e?.response?.data?.error,
+          message: e?.response?.data?.message,
+          result: false,
+        },
       };
     }
   }
@@ -544,101 +572,465 @@ export class GetirService {
     }
   }
 
-  async OrderReceived(merchantId, orderDetails: FoodOrderDto) {
-    const orderRepository = getRepository(Order);
-    // console.log(JSON.stringify(orderDetails))
-    const order: Order = {
-      CreateDate: new Date(),
-      Note: orderDetails.foodOrder.clientNote,
-      OrderChannel: OrderChannel.Getir,
-      OrderNo: orderDetails.foodOrder.id,
-      OrderStatus: orderDetails.foodOrder.status,
-      TotalPrice: orderDetails.foodOrder.totalPrice,
-      customer: <Customer>{
-        Address: '',
-        Location: JSON.stringify(orderDetails.foodOrder.courier.location),
-        CustomerChannel: OrderChannel.Getir,
-        PhoneNumber: orderDetails.foodOrder.client.clientPhoneNumber,
-        ContactPhoneNumber: orderDetails.foodOrder.client.contactPhoneNumber,
-        FullName: orderDetails.foodOrder.client.name,
-        TelegramId: null,
-        TelegramUserName: null,
-      },
-      GetirOrder: <GetirOrderDetails>{
-        id: orderDetails.foodOrder.id,
-        status: orderDetails.foodOrder.status,
-        isScheduled: orderDetails.foodOrder.isScheduled,
-        confirmationId: orderDetails.foodOrder.confirmationId,
-        clientId: orderDetails.foodOrder.client.id,
-        clientName: orderDetails.foodOrder.client.name,
-        clientContactPhoneNumber:
-          orderDetails.foodOrder.client.contactPhoneNumber,
-        clientPhoneNumber: orderDetails.foodOrder.client.clientPhoneNumber,
-        clientDeliveryAddressId:
-          orderDetails.foodOrder.client.deliveryAddress.id,
-        clientDistrict: orderDetails.foodOrder.client.deliveryAddress.district,
-        clientCity: orderDetails.foodOrder.client.deliveryAddress.city,
-        clientDeliveryAddress:
-          orderDetails.foodOrder.client.deliveryAddress.address,
-        clientLocation: JSON.stringify(orderDetails.foodOrder.client.location),
-        courierId: orderDetails.foodOrder.courier.id,
-        courierStatus: orderDetails.foodOrder.courier.status,
-        courierName: orderDetails.foodOrder.courier.name,
-        courierLocation: JSON.stringify(
-          orderDetails.foodOrder.courier.location,
-        ),
-        clientNote: orderDetails.foodOrder.clientNote,
-        doNotKnock: orderDetails.foodOrder.doNotKnock,
-        dropOffAtDoor: orderDetails.foodOrder.dropOffAtDoor,
+  async OrderReceived(orderDetails: FoodOrderDto) {
+    const existingOrder = await this.orderRepository.findOne({
+      getirOrderId: orderDetails.foodOrder.id,
+    });
+
+    if (existingOrder) {
+      await this.orderRepository.update(
+        {id: existingOrder.id},
+        {orderStatus: 1},
+      );
+    } else {
+      const merchant = await this.merchantRepository.findOne({
+        where: {GetirRestaurantId: orderDetails.foodOrder.restaurant.id},
+      });
+
+      const getirProductList = orderDetails.foodOrder.products;
+      const productOptionListMap: Map<
+        string,
+        {optionId: string; price: number}[]
+      > = new Map<string, {optionId: string; price: number}[]>();
+      for (const getirProduct of getirProductList) {
+        const optionList: {optionId: string; price: number}[] = [];
+        for (const optionCategory of getirProduct?.optionCategories) {
+          const options = optionCategory.options.map(
+            m =>
+              <{optionId: string; price: number}>{
+                optionId: m.option,
+                price: m.price,
+              },
+          );
+          optionList.push(...options);
+        }
+
+        productOptionListMap.set(getirProduct.product, optionList);
+      }
+
+      const products = await this.productRepository.find({
+        where: {getirProductId: In(getirProductList.map(pr => pr.product))},
+      });
+
+      const optionList = await this.optionRepository.find({
+        select: ['id', 'getirOptionId'],
+      });
+
+      const order: Order = {
+        merchantId: merchant.Id,
+        createDate: new Date(),
+        note: orderDetails.foodOrder.clientNote,
+        orderChannel: OrderChannel.Getir,
+        orderNo: orderDetails.foodOrder.id,
+        orderStatus: this.getUserStatus(orderDetails.foodOrder.status),
         totalPrice: orderDetails.foodOrder.totalPrice,
-        checkoutDate: orderDetails.foodOrder.checkoutDate,
-        deliveryType: orderDetails.foodOrder.deliveryType,
-        isEcoFriendly: orderDetails.foodOrder.isEcoFriendly,
-        paymentMethodText: JSON.stringify(
-          orderDetails.foodOrder.paymentMethodText,
-        ),
-        paymentMethodId: orderDetails.foodOrder.paymentMethod,
-        restaurantId: orderDetails.foodOrder.restaurant.id,
-        productDetails: JSON.stringify(orderDetails.foodOrder.products),
-      },
-    };
-    // orderRepository.save(order)
+        paymentMethod:
+          orderDetails.foodOrder.paymentMethod === 4
+            ? PaymentMethod.OnDelivery
+            : PaymentMethod.Online,
+        customer: <Customer>{
+          merchantId: merchant.Id,
+          Address: `${orderDetails.foodOrder.client.deliveryAddress.address} ${orderDetails.foodOrder.client.deliveryAddress.district}/${orderDetails.foodOrder.client.deliveryAddress.city}`,
+          location: JSON.stringify(orderDetails.foodOrder.courier.location),
+          customerChannel: OrderChannel.Getir,
+          phoneNumber: orderDetails.foodOrder.client.clientPhoneNumber,
+          ContactPhoneNumber: orderDetails.foodOrder.client.contactPhoneNumber,
+          fullName: orderDetails.foodOrder.client.name,
+          telegramId: null,
+          telegramUserName: null,
+          address: orderDetails.foodOrder.client.deliveryAddress.address,
+        },
+        getirOrder: <GetirOrder>{
+          id: orderDetails.foodOrder.id,
+          status: orderDetails.foodOrder.status,
+          isScheduled: orderDetails.foodOrder.isScheduled,
+          confirmationId: orderDetails.foodOrder.confirmationId,
+          clientId: orderDetails.foodOrder.client.id,
+          clientName: orderDetails.foodOrder.client.name,
+          clientContactPhoneNumber:
+            orderDetails.foodOrder.client.contactPhoneNumber,
+          clientPhoneNumber: orderDetails.foodOrder.client.clientPhoneNumber,
+          clientDeliveryAddressId:
+            orderDetails.foodOrder.client.deliveryAddress.id,
+          clientDistrict:
+            orderDetails.foodOrder.client.deliveryAddress.district,
+          clientCity: orderDetails.foodOrder.client.deliveryAddress.city,
+          clientDeliveryAddress:
+            orderDetails.foodOrder.client.deliveryAddress.address,
+          clientLocation: JSON.stringify(
+            orderDetails.foodOrder.client.location,
+          ),
+          courierId: orderDetails.foodOrder.courier.id,
+          courierStatus: orderDetails.foodOrder.courier.status,
+          courierName: orderDetails.foodOrder.courier.name,
+          courierLocation: JSON.stringify(
+            orderDetails.foodOrder.courier.location,
+          ),
+          clientNote: orderDetails.foodOrder.clientNote,
+          doNotKnock: orderDetails.foodOrder.doNotKnock,
+          dropOffAtDoor: orderDetails.foodOrder.dropOffAtDoor,
+          totalPrice: orderDetails.foodOrder.totalPrice,
+          checkoutDate: orderDetails.foodOrder.checkoutDate,
+          deliveryType: orderDetails.foodOrder.deliveryType,
+          isEcoFriendly: orderDetails.foodOrder.isEcoFriendly,
+          paymentMethodText: JSON.stringify(
+            orderDetails.foodOrder.paymentMethodText,
+          ),
+          paymentMethodId: orderDetails.foodOrder.paymentMethod,
+          restaurantId: orderDetails.foodOrder.restaurant.id,
+        },
+      };
+      const createdOrder = await this.orderRepository.save(order);
+      createdOrder.orderItems = getirProductList.map(
+        pp =>
+          <OrderItem>{
+            orderId: createdOrder.id,
+            productId: products.find(f => f.getirProductId === pp.product).id,
+            productStatus: ProductStatus.InBasket,
+            amount: pp.count,
+            itemNote: pp.note,
+            orderOptions: productOptionListMap.get(pp.product).map(
+              m =>
+                <OrderOption>{
+                  optionId: optionList.find(f => f.getirOptionId === m.optionId)
+                    .id,
+                  price: m.price,
+                },
+            ),
+          },
+      );
+      await this.orderRepository.save(createdOrder);
+    }
   }
 
-  async OrderCanceled(merchantId, body) {
+  async OrderCanceled(body) {
+    // const merchant = await this.merchantRepository.findOne({
+    //   where: {GetirRestaurantId: orderDetails.foodOrder.restaurant.id},
+    // });
     console.log(body);
   }
 
-  // async CheckAndGetAccessToken(merchantId: number) {
-  //     const merchant = await this.merchantRepository.findOne(merchantId);
-  //     let token = '';
-  //     if (merchant.GetirAccessToken) {
-  //         const TokenLastCreated = merchant.GetirTokenLastCreated;
-  //         const validityPeriod = parseInt(process.env.GetirAccessTokenLife);
-  //         const afterLifeTime = dayjs(TokenLastCreated).add(validityPeriod, 'minutes').toDate();
+  async importUpdateGetirProducts(merchantId: number) {
+    const restaurantDetails: UIResponseBase<ProductCategory> = await this.GetRestaurantMenusAndOptions(
+      merchantId,
+    );
 
-  //         if (dayjs(afterLifeTime).isBefore(new Date())) {
-  //             token = await this.getAndUpdateToken(merchant);
-  //         } else {
-  //             token = merchant.GetirAccessToken;
-  //         }
-  //     } else {
-  //         token = await this.getAndUpdateToken(merchant);
-  //     }
-  //     if (!token) {
-  //         return <UIResponseBase<string>>{ Result: token, IsError: true }
-  //     } else {
-  //         return <UIResponseBase<string>>{ Result: token, IsError: false }
-  //     }
+    const getirCategoryList = restaurantDetails.data.map(
+      category => category.id,
+    );
 
-  // }
+    const categoryList = await this.categoryRepository.find({
+      where: {getirCategoryId: In(getirCategoryList)},
+    });
 
-  // private async getAndUpdateToken(merchant: Merchant) {
-  //     const response = await this.httpService.post(process.env.GetirApi + Endpoints.auth, { appSecretKey: merchant.GetirAppSecretKey, restaurantSecretKey: merchant.GetirRestaurantSecretKey }).toPromise();
-  //     if (response.status == 200) {
-  //         this.merchantRepository.update({ Id: merchant.Id }, { GetirAccessToken: response.data.token, GetirTokenLastCreated: new Date() })
-  //         return response.data.token;
-  //     }
-  //     return null;
-  // }
+    const getirProductIdList = restaurantDetails.data
+      .map(m => m.products)
+      .reduce((prev, curr) => prev.concat(curr))
+      .map(m => m.id);
+
+    const productList = await this.productRepository.find({
+      where: {getirProductId: In(getirProductIdList)},
+    });
+
+    const getirOptionCategotyIdList: string[] = [];
+    const getirOptionIdList: string[] = [];
+    restaurantDetails.data
+      .map(m => m.products)
+      .forEach(productList => {
+        productList.forEach(product => {
+          const optionCategoryIdList = product.optionCategories.map(
+            oc => oc.id,
+          );
+          if (optionCategoryIdList.length > 0) {
+            getirOptionCategotyIdList.push(...optionCategoryIdList);
+          }
+
+          product.optionCategories.forEach(opcat => {
+            const optionIdList = opcat.options.map(op => op.id);
+            if (optionIdList.length > 0) {
+              getirOptionIdList.push(...optionIdList);
+            }
+          });
+        });
+      });
+
+    const optionCategoryList = getirOptionCategotyIdList
+      ? await this.optionCategoryRepository.find({
+          where: {getirOptionCategoryId: In(getirOptionCategotyIdList)},
+        })
+      : [];
+
+    const optionList = getirOptionIdList
+      ? await this.optionRepository.find({
+          where: {getirOptionId: In(getirOptionIdList)},
+        })
+      : [];
+
+    for await (const productCategory of restaurantDetails.data) {
+      let fetchedCategory: Category;
+      const getirCategory: Category = {
+        name: productCategory.name.tr,
+        getirCategoryId: productCategory.id,
+        merchantId: merchantId,
+        categoryKey: productCategory.name.tr
+          .trim()
+          .replace(' ', '')
+          .toUpperCase(),
+      };
+      if (
+        categoryList.map(c => c.getirCategoryId).includes(productCategory.id)
+      ) {
+        getirCategory.categoryKey =
+          categoryList.find(fi => fi.getirCategoryId === productCategory.id)
+            ?.categoryKey ?? getirCategory.categoryKey;
+        await this.categoryRepository.update(
+          {getirCategoryId: productCategory.id},
+          getirCategory,
+        );
+
+        fetchedCategory = categoryList.find(
+          fi => fi.getirCategoryId === productCategory.id,
+        );
+      } else {
+        fetchedCategory = await this.categoryRepository.save(getirCategory);
+      }
+
+      for await (const getirProduct of productCategory.products) {
+        let productId: number;
+        const newGetirProduct: Product = {
+          title: getirProduct.name.tr,
+          description: getirProduct.description.tr,
+          productCode: getirProduct.name.tr
+            .trim()
+            .replace(' ', '')
+            .toUpperCase(),
+          unitPrice: getirProduct.price,
+          categoryId: fetchedCategory.id,
+          thumbUrl: getirProduct.imageURL,
+          getirProductId: getirProduct.id,
+          merchantId: merchantId,
+          tgQueryResult: 'article',
+        };
+        if (productList.map(m => m.getirProductId).includes(getirProduct.id)) {
+          productId = productList.find(
+            fi => fi.getirProductId === getirProduct.id,
+          )?.id;
+          await this.productRepository.update(
+            {getirProductId: getirProduct.id},
+            newGetirProduct,
+          );
+        } else {
+          const craetedProduct = await this.productRepository.save(
+            newGetirProduct,
+          );
+          productId = craetedProduct.id;
+        }
+
+        for await (const optionCategory of getirProduct.optionCategories) {
+          const newOptionCategory: OptionCategory = {
+            name: optionCategory.name.tr,
+            getirOptionCategoryId: optionCategory.id,
+          };
+
+          let optionCategoryId: number;
+          if (
+            optionCategoryList
+              .map(mp => mp.getirOptionCategoryId)
+              .includes(optionCategory.id)
+          ) {
+            await this.optionCategoryRepository.update(
+              {getirOptionCategoryId: optionCategory.id},
+              newOptionCategory,
+            );
+            optionCategoryId = optionCategoryList.find(
+              mp => mp.getirOptionCategoryId,
+            ).id;
+          } else {
+            const createdCategory = await this.optionCategoryRepository.save(
+              newOptionCategory,
+            );
+            optionCategoryId = createdCategory.id;
+          }
+
+          for await (const option of optionCategory.options) {
+            const newOption: Option = {
+              name: option.name.tr,
+              getirOptionId: option.id,
+              optionCategoryId: optionCategoryId,
+              // getirProductId: option.product,
+            };
+
+            if (optionList.map(mp => mp.getirOptionId).includes(option.id)) {
+              await this.optionRepository.update(
+                {getirOptionId: option.id},
+                newOption,
+              );
+            } else {
+              await this.optionRepository.save(newOption);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  async verifyOrder(foodOrderId: string, merchantId: number) {
+    const token = await GetirToken.getToken(merchantId);
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<GetirResult>(
+          process.env.GetirApi +
+            Endpoints.verifyFoodOrder.replace('{foodOrderId}', foodOrderId),
+          {},
+          {headers: {token: token.Result}},
+        ),
+      );
+      return response?.data;
+    } catch (e) {
+      return <GetirResult>{
+        code: e?.response?.data?.code,
+        detail: e?.response?.data?.detail,
+        error: e?.response?.data?.error,
+        message: e?.response?.data?.message,
+        result: false,
+      };
+    }
+  }
+
+  async verifyFutureOrder(foodOrderId: string, merchantId: number) {
+    const token = await GetirToken.getToken(merchantId);
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<GetirResult>(
+          process.env.GetirApi +
+            Endpoints.verifyScheduledFoodOrder.replace(
+              '{foodOrderId}',
+              foodOrderId,
+            ),
+          {},
+          {headers: {token: token.Result}},
+        ),
+      );
+
+      return response?.data;
+    } catch (e) {
+      return <GetirResult>{
+        code: e?.response?.data?.code,
+        detail: e?.response?.data?.detail,
+        error: e?.response?.data?.error,
+        message: e?.response?.data?.message,
+        result: false,
+      };
+    }
+  }
+
+  async prepareOrder(foodOrderId: string, merchantId: number) {
+    const token = await GetirToken.getToken(merchantId);
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<GetirResult>(
+          process.env.GetirApi +
+            Endpoints.prepareFoodOrder.replace('{foodOrderId}', foodOrderId),
+          {},
+          {headers: {token: token.Result}},
+        ),
+      );
+      return response?.data;
+    } catch (e) {
+      return <GetirResult>{
+        code: e?.response?.data?.code,
+        detail: e?.response?.data?.detail,
+        error: e?.response?.data?.error,
+        message: e?.response?.data?.message,
+        result: false,
+      };
+    }
+  }
+
+  async deliverOrder(foodOrderId: string, merchantId: number) {
+    const token = await GetirToken.getToken(merchantId);
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<GetirResult>(
+          process.env.GetirApi +
+            Endpoints.deliverFoodOrder.replace('{foodOrderId}', foodOrderId),
+          {},
+          {headers: {token: token.Result}},
+        ),
+      );
+
+      return response?.data;
+    } catch (e) {
+      return <GetirResult>{
+        code: e?.response?.data?.code,
+        detail: e?.response?.data?.detail,
+        error: e?.response?.data?.error,
+        message: e?.response?.data?.message,
+        result: false,
+      };
+    }
+  }
+
+  async handoverOrder(foodOrderId: string, merchantId: number) {
+    const token = await GetirToken.getToken(merchantId);
+
+    try {
+      const result = await firstValueFrom(
+        this.httpService.post<GetirResult>(
+          process.env.GetirApi +
+            Endpoints.handoverFoodOrder.replace('{foodOrderId}', foodOrderId),
+          {},
+          {headers: {token: token.Result}},
+        ),
+      );
+      return result?.data;
+    } catch (e) {
+      return <GetirResult>{
+        code: e?.response?.data?.code,
+        detail: e?.response?.data?.detail,
+        error: e?.response?.data?.error,
+        message: e?.response?.data?.message,
+        result: false,
+      };
+    }
+  }
+
+  async cancelOrder(foodOrderId: string, merchantId: number) {
+    const token = await GetirToken.getToken(merchantId);
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<GetirResult>(
+          process.env.GetirApi +
+            Endpoints.cancelFoodOrder.replace('{foodOrderId}', foodOrderId),
+          {},
+          {headers: {token: token.Result}},
+        ),
+      );
+
+      return response?.data;
+    } catch (e) {
+      return <GetirResult>{
+        code: e?.response?.data?.code,
+        detail: e?.response?.data?.detail,
+        error: e?.response?.data?.error,
+        message: e?.response?.data?.message,
+        result: false,
+      };
+    }
+  }
+
+  private getUserStatus(orderStatus: GetirOrderStatus) {
+    switch (orderStatus) {
+      case GetirOrderStatus.RestaurantApprovalPending:
+        return OrderStatus.UserConfirmed;
+
+      case GetirOrderStatus.RestaurantApprovalPendingForScheduledOrder:
+        return OrderStatus.FutureOrder;
+    }
+  }
 }
