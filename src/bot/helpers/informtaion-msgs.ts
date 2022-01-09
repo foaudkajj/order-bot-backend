@@ -1,7 +1,16 @@
-import { AppService } from 'src/app.service';
+import {AppService} from 'src/app.service';
 
 export abstract class InformationMessages {
-  static async SendInformationMessage (chatId: string | number, text: string) {
-    if (chatId && text) await AppService.bot.telegram.sendMessage(chatId, text);
+  static async SendInformationMessage(
+    botUserName: string,
+    telegramId: number,
+    text: string,
+  ) {
+    if (botUserName && text) {
+      const botInstance = AppService.botMap.get(botUserName);
+      if (botInstance) {
+        await botInstance.telegram.sendMessage(telegramId, text);
+      }
+    }
   }
 }
