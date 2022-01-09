@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import {Merchant} from '.';
 import {Category} from './category';
@@ -12,40 +13,41 @@ import {OrderItem} from './order-item';
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
-  Id?: number;
+  id?: number;
 
   @Column({length: 15})
-  TGQueryResult: string;
+  tgQueryResult: string;
 
   @Column()
-  ThumbUrl: string;
+  thumbUrl: string;
 
   @Column({length: 50})
-  Title: string;
+  title: string;
 
   @Column({length: 500})
-  Description: string;
+  description: string;
 
   // @Column({length: 50, nullable: true})
   // Caption: string;
 
   @Column({length: 50})
-  ProductCode: string;
+  productCode: string;
 
   @Column({type: 'decimal', default: 0})
-  UnitPrice?: number;
+  unitPrice?: number;
 
-  @OneToMany(() => OrderItem, orderDetails => orderDetails.Product)
-  OrderDetails?: OrderItem[];
+  @OneToMany(() => OrderItem, orderDetails => orderDetails.product)
+  orderDetails?: OrderItem[];
 
   @Column()
   categoryId: number;
 
-  @ManyToOne(() => Category, category => category.Products, {
+  @ManyToOne(() => Category, category => category.products, {
     nullable: false,
     cascade: ['insert'],
   })
-  Category?: Category;
+  @JoinColumn({name: 'categoryId'})
+  category?: Category;
 
   @Column({nullable: true})
   merchantId: number;
@@ -53,6 +55,7 @@ export class Product {
   @ManyToOne(() => Merchant, merchant => merchant.products, {
     cascade: ['insert'],
   })
+  @JoinColumn({name: 'merchantId'})
   merchant?: Merchant;
 
   @Column({type: 'uuid', nullable: true})
