@@ -1,12 +1,14 @@
 import {HttpException, HttpStatus} from '@nestjs/common';
 
 export class UIResponseError extends HttpException {
-  constructor() {
-    super('Error', HttpStatus.INTERNAL_SERVER_ERROR);
+  constructor(
+    message?: string,
+    errorCode?: string,
+    statusCode: HttpStatus = HttpStatus.FORBIDDEN,
+  ) {
+    super(message, statusCode);
+    this.errorCode = errorCode;
   }
 
-  statusCode: number;
   errorCode?: string;
-  error?: any;
-  messageKey: string;
 }
