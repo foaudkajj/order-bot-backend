@@ -1,6 +1,12 @@
-export class UIResponseError<T> extends Error {
+import {HttpException, HttpStatus} from '@nestjs/common';
+
+export class UIResponseError extends HttpException {
+  constructor() {
+    super('Error', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
   statusCode: number;
-  isError: boolean;
+  errorCode?: string;
   error?: any;
   messageKey: string;
 }

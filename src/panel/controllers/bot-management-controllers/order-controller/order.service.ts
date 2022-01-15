@@ -1,4 +1,4 @@
-import {HttpStatus, Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {Order} from 'src/db/models/order';
 import {Customer} from 'src/db/models/customer';
@@ -13,6 +13,7 @@ import {
   GetirResult,
 } from '../../entegrations-management/getir/getir.enums';
 import {GetirService} from '../../entegrations-management/getir/getir.service';
+import {UIResponseError} from 'src/panel/dtos';
 
 @Injectable()
 export class OrderService {
@@ -103,136 +104,143 @@ export class OrderService {
   }
 
   async Update(updateDetails: Order) {
-    try {
-      const order = await this.orderRepository.findOne({
-        where: {id: updateDetails.id},
-        relations: ['getirOrder', 'merchant', 'customer'],
-      });
+    const order = await this.orderRepository.findOne({
+      where: {id: updateDetails.id},
+      relations: ['getirOrder', 'merchant', 'customer'],
+    });
 
-      if (order.orderChannel === OrderChannel.Getir) {
-        if (updateDetails.orderStatus === OrderStatus.Delivered) {
-          let response: GetirResult;
-          if (order.getirOrder.deliveryType === DeliveryType.ByGetir) {
-            response = await this.getirService.handoverOrder(
-              order.getirOrder.id,
-              order.merchant.Id,
-            );
-          } else if (
-            order.getirOrder.deliveryType === DeliveryType.ByRestaurant
-          ) {
-            response = await this.getirService.deliverOrder(
-              order.getirOrder.id,
-              order.merchant.Id,
-            );
-          }
-
-          if (response.result === true) {
-            await this.orderRepository.update({id: order.id}, updateDetails);
-            return <UIResponseBase<Order>>{
-              IsError: false,
-              Result: updateDetails,
-              MessageKey: 'SUCCESS',
-              StatusCode: 200,
-            };
-          } else {
-            const error = <UIResponseBase<Order>>{
-              IsError: true,
-              Result: updateDetails,
-              MessageKey: 'Getir service error',
-              StatusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            };
-            throw new Error(JSON.stringify(error));
-          }
-        } else {
-          let response: GetirResult;
-          if (updateDetails.orderStatus === OrderStatus.FutureOrder) {
-            response = await this.getirService.verifyFutureOrder(
-              order.getirOrder.id,
-              order.merchant.Id,
-            );
-
-            updateDetails.orderStatus =
-              response?.result === true
-                ? OrderStatus.New
-                : updateDetails.orderStatus;
-          } else if (updateDetails.orderStatus === OrderStatus.Preparing) {
-            response = await this.getirService.prepareOrder(
-              order.getirOrder.id,
-              order.merchant.Id,
-            );
-          } else if (
-            updateDetails.orderStatus === OrderStatus.MerchantConfirmed
-          ) {
-            response = await this.getirService.verifyOrder(
-              order.getirOrder.id,
-              order.merchant.Id,
-            );
-          }
-
-          if (response.result === true) {
-            await this.orderRepository.update({id: order.id}, updateDetails);
-          } else {
-            const error = <UIResponseBase<Order>>{
-              IsError: true,
-              Result: updateDetails,
-              MessageKey: 'Getir service error',
-              StatusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            };
-            throw new Error(JSON.stringify(error));
-          }
+    if (order.orderChannel === OrderChannel.Getir) {
+      let response: GetirResult;
+      if (updateDetails.orderStatus === OrderStatus.Delivered) {
+        if (order.getirOrder.deliveryType === DeliveryType.ByGetir) {
+          response = await this.getirService.handoverOrder(
+            order.getirOrder.id,
+            order.merchant.Id,
+          );
+        } else if (
+          order.getirOrder.deliveryType === DeliveryType.ByRestaurant
+        ) {
+          response = await this.getirService.deliverOrder(
+            order.getirOrder.id,
+            order.merchant.Id,
+          );
         }
-      } else if (order.orderChannel === OrderChannel.Telegram) {
-        await this.orderRepository.update({id: order.id}, updateDetails);
 
-        switch (updateDetails.orderStatus) {
-          case OrderStatus.MerchantConfirmed:
-            InformationMessages.SendInformationMessage(
-              order.merchant.botUserName,
-              order.customer.telegramId,
-              'Siparişiniz Onaylandı',
-            );
-            break;
-          case OrderStatus.Preparing:
-            InformationMessages.SendInformationMessage(
-              order.merchant.botUserName,
-              order.customer.telegramId,
-              'Siparişiniz Hazırlanıyor',
-            );
-            break;
-          case OrderStatus.OrderSent:
-            InformationMessages.SendInformationMessage(
-              order.merchant.botUserName,
-              order.customer.telegramId,
-              'Siparişiniz Yola Çıkmıştır',
-            );
-            break;
-          case OrderStatus.Delivered:
-            InformationMessages.SendInformationMessage(
-              order.merchant.botUserName,
-              order.customer.telegramId,
-              'Siparişiniz Size Teslim Edilmiştir',
-            );
-            break;
-          default:
-            break;
+        if (response.result === true) {
+          await this.orderRepository.update({id: order.id}, updateDetails);
+          return <UIResponseBase<Order>>{
+            IsError: false,
+            Result: updateDetails,
+            MessageKey: 'SUCCESS',
+            StatusCode: 200,
+          };
+        }
+      } else {
+        if (updateDetails.orderStatus === OrderStatus.FutureOrder) {
+          response = await this.getirService.verifyFutureOrder(
+            order.getirOrder.id,
+            order.merchant.Id,
+          );
+
+          updateDetails.orderStatus =
+            response?.result === true
+              ? OrderStatus.New
+              : updateDetails.orderStatus;
+        } else if (updateDetails.orderStatus === OrderStatus.Preparing) {
+          response = await this.getirService.prepareOrder(
+            order.getirOrder.id,
+            order.merchant.Id,
+          );
+        } else if (
+          updateDetails.orderStatus === OrderStatus.MerchantConfirmed
+        ) {
+          response = await this.getirService.verifyOrder(
+            order.getirOrder.id,
+            order.merchant.Id,
+          );
+        }
+
+        if (response.result === true) {
+          await this.orderRepository.update({id: order.id}, updateDetails);
         }
       }
+      if (response.result === false) {
+        let error: UIResponseError = new UIResponseError();
+        switch (updateDetails.orderStatus) {
+          case OrderStatus.Preparing:
+            if (response.code === 74) {
+              error = <UIResponseError>{
+                messageKey: 'GETIR.ERRORS.FAST_PREPARE',
+                errorCode: response.code.toString(),
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+              };
+            }
+            break;
 
-      return <UIResponseBase<Order>>{
-        IsError: false,
-        Result: updateDetails,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
-      };
-    } catch (error) {
-      console.log(error);
-      const err = <UIResponseBase<Order>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
-      throw new Error(JSON.stringify(err));
+          case OrderStatus.Delivered:
+            if (response.code === 62) {
+              error = <UIResponseError>{
+                messageKey: 'GETIR.ERRORS.FAST_DELIVER',
+                errorCode: response.code.toString(),
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+              };
+            }
+            break;
+
+          default:
+            error = <UIResponseError>{
+              messageKey: 'GETIR.ERRORS.GENERAL_ERROR',
+              errorCode: response.code.toString(),
+              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            };
+            break;
+        }
+
+        throw new HttpException(error, 500);
+      }
+    } else if (order.orderChannel === OrderChannel.Telegram) {
+      await this.orderRepository.update({id: order.id}, updateDetails);
+
+      switch (updateDetails.orderStatus) {
+        case OrderStatus.MerchantConfirmed:
+          InformationMessages.SendInformationMessage(
+            order.merchant.botUserName,
+            order.customer.telegramId,
+            'Siparişiniz Onaylandı',
+          );
+          break;
+        case OrderStatus.Preparing:
+          InformationMessages.SendInformationMessage(
+            order.merchant.botUserName,
+            order.customer.telegramId,
+            'Siparişiniz Hazırlanıyor',
+          );
+          break;
+        case OrderStatus.OrderSent:
+          InformationMessages.SendInformationMessage(
+            order.merchant.botUserName,
+            order.customer.telegramId,
+            'Siparişiniz Yola Çıkmıştır',
+          );
+          break;
+        case OrderStatus.Delivered:
+          InformationMessages.SendInformationMessage(
+            order.merchant.botUserName,
+            order.customer.telegramId,
+            'Siparişiniz Size Teslim Edilmiştir',
+          );
+          break;
+        default:
+          break;
+      }
     }
+
+    return <UIResponseBase<Order>>{
+      IsError: false,
+      Result: updateDetails,
+      MessageKey: 'SUCCESS',
+      StatusCode: 200,
+    };
   }
 
   async Delete(Id: number, merchantId: number) {
