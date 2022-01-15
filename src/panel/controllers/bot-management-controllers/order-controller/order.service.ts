@@ -1,4 +1,4 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {HttpStatus, Injectable} from '@nestjs/common';
 import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {Order} from 'src/db/models/order';
 import {Customer} from 'src/db/models/customer';
@@ -165,38 +165,31 @@ export class OrderService {
         }
       }
       if (response.result === false) {
-        let error: UIResponseError = new UIResponseError();
         switch (updateDetails.orderStatus) {
           case OrderStatus.Preparing:
             if (response.code === 74) {
-              error = <UIResponseError>{
-                messageKey: 'GETIR.ERRORS.FAST_PREPARE',
-                errorCode: response.code.toString(),
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-              };
+              throw new UIResponseError(
+                'GETIR.ERRORS.FAST_PREPARE',
+                response.code.toString(),
+              );
             }
             break;
 
           case OrderStatus.Delivered:
             if (response.code === 62) {
-              error = <UIResponseError>{
-                messageKey: 'GETIR.ERRORS.FAST_DELIVER',
-                errorCode: response.code.toString(),
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-              };
+              throw new UIResponseError(
+                'GETIR.ERRORS.FAST_DELIVER',
+                response.code.toString(),
+              );
             }
             break;
 
           default:
-            error = <UIResponseError>{
-              messageKey: 'GETIR.ERRORS.GENERAL_ERROR',
-              errorCode: response.code.toString(),
-              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            };
-            break;
+            throw new UIResponseError(
+              'GETIR.ERRORS.GENERAL_ERROR',
+              response.code.toString(),
+            );
         }
-
-        throw new HttpException(error, 500);
       }
     } else if (order.orderChannel === OrderChannel.Telegram) {
       await this.orderRepository.update({id: order.id}, updateDetails);
