@@ -587,13 +587,17 @@ export class GetirService {
         where: {GetirRestaurantId: orderDetails.foodOrder.restaurant.id},
       });
 
+      let optionList = await this.optionRepository.find({
+        select: ['id', 'getirOptionId'],
+      });
+
       const getirProductList = orderDetails.foodOrder.products;
       const productOptionListMap: Map<
         string,
         {optionId: string; price: number}[]
       > = new Map<string, {optionId: string; price: number}[]>();
       for (const getirProduct of getirProductList) {
-        const optionList: {optionId: string; price: number}[] = [];
+        const tempOptionList: {optionId: string; price: number}[] = [];
         for (const optionCategory of getirProduct?.optionCategories) {
           const options = optionCategory.options.map(
             m =>
@@ -602,18 +606,27 @@ export class GetirService {
                 price: m.price,
               },
           );
-          optionList.push(...options);
+          tempOptionList.push(...options);
         }
 
-        productOptionListMap.set(getirProduct.product, optionList);
+        const notExistingOptions = tempOptionList
+          .map(m => m.optionId)
+          .filter(fi => !optionList.map(mm => mm.getirOptionId).includes(fi));
+
+        if (notExistingOptions.length > 0) {
+          try {
+            await this.importUpdateGetirProducts(merchant.Id);
+            optionList = await this.optionRepository.find({
+              select: ['id', 'getirOptionId'],
+            });
+          } catch (e) {}
+        }
+
+        productOptionListMap.set(getirProduct.product, tempOptionList);
       }
 
       const products = await this.productRepository.find({
         where: {getirProductId: In(getirProductList.map(pr => pr.product))},
-      });
-
-      const optionList = await this.optionRepository.find({
-        select: ['id', 'getirOptionId'],
       });
 
       const order: Order = {
@@ -857,6 +870,7 @@ export class GetirService {
               name: option.name.tr,
               getirOptionId: option.id,
               optionCategoryId: optionCategoryId,
+              price: option.price,
               // getirProductId: option.product,
             };
 

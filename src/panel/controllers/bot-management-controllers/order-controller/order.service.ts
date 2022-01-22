@@ -26,20 +26,6 @@ export class OrderService {
     private getirService: GetirService,
   ) {}
 
-  orderStatusList = [
-    {Value: 2, Text: 'ORDER.MERCHANT_CONFIRMED'},
-    {Value: 3, Text: 'ORDER.PREPARING'},
-    {Value: 4, Text: 'ORDER.SENT'},
-    {Value: 5, Text: 'ORDER.DELIVERED'},
-  ];
-
-  getirOrderStatusList = [
-    {Value: 2, Text: 'ORDER.MERCHANT_CONFIRMED'},
-    {Value: 3, Text: 'ORDER.PREPARING'},
-    {Value: 4, Text: 'ORDER.HANDOVER'},
-    {Value: 5, Text: 'ORDER.DELIVERED'},
-  ];
-
   async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
     const findOptions: FindManyOptions<Order> = this.devextremeLoadOptions.GetFindOptionsFromQuery(
       query,
@@ -144,9 +130,9 @@ export class OrderService {
 
           updateDetails.orderStatus =
             response?.result === true
-              ? OrderStatus.New
+              ? OrderStatus.ConfirmedFutureOrder
               : updateDetails.orderStatus;
-        } else if (updateDetails.orderStatus === OrderStatus.Preparing) {
+        } else if (updateDetails.orderStatus === OrderStatus.Prepared) {
           response = await this.getirService.prepareOrder(
             order.getirOrder.id,
             order.merchant.Id,
@@ -166,7 +152,7 @@ export class OrderService {
       }
       if (response.result === false) {
         switch (updateDetails.orderStatus) {
-          case OrderStatus.Preparing:
+          case OrderStatus.Prepared:
             if (response.code === 74) {
               throw new UIResponseError(
                 'GETIR.ERRORS.FAST_PREPARE',
@@ -202,7 +188,7 @@ export class OrderService {
             'Siparişiniz Onaylandı',
           );
           break;
-        case OrderStatus.Preparing:
+        case OrderStatus.Prepared:
           InformationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,

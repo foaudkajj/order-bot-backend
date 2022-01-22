@@ -54,7 +54,7 @@ export class GetirOrder {
   @Column()
   courierLocation: string;
 
-  @Column()
+  @Column({type: 'varchar', length: '4000'})
   clientNote: string;
 
   @Column()

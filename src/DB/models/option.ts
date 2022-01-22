@@ -18,6 +18,9 @@ export class Option {
   @Column({length: 500})
   getirOptionId: string;
 
+  @Column({type: 'decimal', precision: 8, scale: 2, default: 0})
+  price: number;
+
   // @Column({length: 500})
   // getirProductId: string;
 
