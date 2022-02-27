@@ -45,8 +45,7 @@ export class AuthService {
     });
     Menus = Menus.concat(parentMenus);
     const sortedMenus = sortBy(Menus, 'Priority');
-    let NavigationItems = this.CreateMenus(sortedMenus);
-    NavigationItems = NavigationItems.filter(fi => fi.children.length !== 0);
+    const NavigationItems = this.CreateMenus(sortedMenus);
 
     const permessions = user.Role.RoleAndPermessions.map(
       mp => mp.Permession.PermessionKey,
@@ -96,18 +95,18 @@ export class AuthService {
     ParentMenue: Menu,
     UserPermessions: Menu[],
   ): NavigationItems {
+    const parentChildren = UserPermessions.filter(
+      wh => wh.ParentId === ParentMenue.MenuKey,
+    );
     const navigationItems: NavigationItems = {
       icon: ParentMenue.Icon,
       key: ParentMenue.MenuKey,
       title: ParentMenue.Title,
       translate: ParentMenue.Translate,
       url: ParentMenue.URL,
-      type: 'collapsable',
+      type: parentChildren.length > 0 ? 'collapsable' : 'item',
       children: [],
     };
-    const parentChildren = UserPermessions.filter(
-      wh => wh.ParentId === ParentMenue.MenuKey,
-    );
     parentChildren.forEach(child => {
       if (child.IsParent) {
         navigationItems.children.push(
