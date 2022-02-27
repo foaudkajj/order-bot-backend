@@ -1,6 +1,6 @@
 import {OrderChannel} from 'src/db/models';
 import {Customer} from 'src/db/models/customer';
-import {InlineKeyboardButton} from 'telegraf/typings/telegram-types';
+import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {getCustomRepository} from 'typeorm';
 import {MerchantRepository} from '../custom-repositories';
 import {CustomerRepository} from '../custom-repositories/customer-repository';

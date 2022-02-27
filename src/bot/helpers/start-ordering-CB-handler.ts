@@ -1,6 +1,6 @@
 import {Category} from 'src/db/models';
 import {OrderStatus} from 'src/db/models/enums';
-import {InlineKeyboardButton} from 'telegraf/typings/telegram-types';
+import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {getRepository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
