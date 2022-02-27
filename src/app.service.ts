@@ -1,6 +1,5 @@
 import {Injectable, OnModuleInit} from '@nestjs/common';
 import {Composer, Scenes, session, Telegraf} from 'telegraf';
-import {InlineQueryResultArticle} from 'telegraf/typings/telegram-types';
 import {Like, Repository} from 'typeorm';
 import {BotContext} from './bot/interfaces/bot-context';
 import {CallBackQueryResult} from './bot/models/enums';
@@ -16,7 +15,6 @@ import {OrderRepository} from './bot/custom-repositories/order-repository';
 import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
 import {OrderItem} from './db/models/order-item';
 import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
-import {v4 as uuid} from 'uuid';
 import {MerchantRepository} from './bot/custom-repositories';
 import {
   Category,
@@ -26,12 +24,15 @@ import {
   ProductStatus,
 } from './db/models';
 import {InjectRepository} from '@nestjs/typeorm';
+import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
+import {InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
 
 @Injectable()
 export class AppService implements OnModuleInit {
   constructor(
     private addressWizard: AddressWizardService,
     private addNoteToOrderWizard: AddnoteToOrderWizardService,
+    private phoneNumberService: PhoneNumberService,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
     @InjectRepository(Product)
@@ -94,13 +95,13 @@ export class AppService implements OnModuleInit {
               await StartOrderingCb.StartOrdering(ctx);
               break;
 
-            case CallBackQueryResult.AddProductAndCompleteOrder:
-              await ctx.answerCbQuery();
-              await this.AddProductAndCompleteOrder(ctx);
-              break;
+            // case CallBackQueryResult.AddProductAndCompleteOrder:
+            //   await ctx.answerCbQuery();
+            //   await this.AddProductAndCompleteOrder(ctx);
+            //   break;
 
             case CallBackQueryResult.CompleteOrder:
-              await CompleteOrderHandler.CompleteOrder(ctx);
+              await this.askForPhoneNumberIfNotAvailable(ctx);
               break;
 
             case CallBackQueryResult.AddToBasketAndContinueShopping:
@@ -290,7 +291,7 @@ export class AppService implements OnModuleInit {
         ctx,
       );
       if (order) {
-        await this.orderItemRepository.delete({orderId: order.id});
+        await this.orderRepository.delete(order);
         await ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.');
       } else {
         await ctx.answerCbQuery('Sepetiniz Boştur.');
@@ -323,9 +324,9 @@ export class AppService implements OnModuleInit {
   async EnterAddress(ctx: BotContext) {
     await ctx.scene.enter(
       'address',
-      await ctx.reply(
-        'Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
-      ),
+      // await ctx.reply(
+      //   'Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
+      // ),
     );
   }
 
@@ -337,9 +338,11 @@ export class AppService implements OnModuleInit {
   InitlizeWizards(composer: Composer<BotContext>) {
     const addNoteToOrderWizard = this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
     const addressWizard = this.addressWizard.InitilizeAdressWizard();
+    const phoneNumber = this.phoneNumberService.InitilizePhoneNumberWizard();
     const stage = new Scenes.Stage<BotContext>([
       addressWizard,
       addNoteToOrderWizard,
+      phoneNumber,
     ]);
     stage.command('iptal', async ctx => {
       await ctx.scene.leave();
@@ -393,7 +396,7 @@ export class AppService implements OnModuleInit {
         await this.orderRepository.save({
           customerId: customer.id,
           merchantId: customer.merchantId,
-          orderNo: uuid(),
+          orderNo: new Date().getTime().toString(36),
           createDate: new Date(),
           orderChannel: OrderChannel.Telegram,
           orderStatus: OrderStatus.New,
@@ -434,12 +437,12 @@ export class AppService implements OnModuleInit {
                     CallBackQueryResult.AddToBasketAndContinueShopping,
                 },
               ],
-              [
-                {
-                  text: '🛒 Sepete Ekle ve Siparişimi Tamamla ✔️',
-                  callback_data: CallBackQueryResult.AddProductAndCompleteOrder,
-                },
-              ],
+              // [
+              //   {
+              //     text: '🛒 Sepete Ekle ve Siparişimi Tamamla ✔️',
+              //     callback_data: CallBackQueryResult.AddProductAndCompleteOrder,
+              //   },
+              // ],
               [
                 {
                   text: '🍛 Başka Ürün Seç 🍝',
@@ -465,10 +468,10 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  async AddProductAndCompleteOrder(ctx: BotContext) {
-    await this.AddNewOrder(ctx);
-    await CompleteOrderHandler.CompleteOrder(ctx);
-  }
+  // async AddProductAndCompleteOrder(ctx: BotContext) {
+  //   await this.AddNewOrder(ctx);
+  //   await CompleteOrderHandler.CompleteOrder(ctx);
+  // }
 
   async AddNewOrder(ctx: BotContext) {
     const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, [
@@ -513,12 +516,37 @@ export class AppService implements OnModuleInit {
     if (order) {
       ctx.scene.enter(
         'AddNoteToOrder',
-        ctx.reply(
-          'Lütfen Eklemek İstediğiniz notu giriniz... \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
-        ),
+        // ctx.reply(
+        //   'Lütfen Eklemek İstediğiniz notu giriniz... \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
+        // ),
       );
     } else {
       await ctx.answerCbQuery('Sepetiniz Boştur.');
+    }
+  }
+
+  async askForPhoneNumberIfNotAvailable(ctx: BotContext) {
+    const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+    if (!customer.phoneNumber) {
+      await ctx.scene.enter(
+        'phone-number',
+        // await ctx.reply('Lütfen telefon numarınızı gönderiniz. /iptal', {
+        //   reply_markup: {
+        //     keyboard: [
+        //       [
+        //         {
+        //           request_contact: true,
+        //           text:
+        //             'Bu butona tıklayarak telefon numaranızı gönderebilirsiniz.',
+        //         },
+        //       ],
+        //     ],
+        //     one_time_keyboard: true,
+        //   },
+        // }),
+      );
+    } else {
+      await CompleteOrderHandler.CompleteOrder(ctx);
     }
   }
 }

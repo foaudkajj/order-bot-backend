@@ -11,6 +11,7 @@ import {ConfigModule} from '@nestjs/config';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {SharedModule} from './shared.module';
 import {CustomNamingStrategy} from './naming-strategy';
+import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import {CustomNamingStrategy} from './naming-strategy';
     AppService,
     AddressWizardService,
     AddnoteToOrderWizardService,
+    PhoneNumberService,
   ],
 })
 export class AppModule {}

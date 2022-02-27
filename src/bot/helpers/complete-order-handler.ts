@@ -13,7 +13,7 @@ export abstract class CompleteOrderHandler {
       );
       if (ordersInBasket) {
         const customer = ordersInBasket.customer;
-        await ctx.answerCbQuery();
+        if (ctx.updateType === 'callback_query') await ctx.answerCbQuery();
         if (customer.address) {
           if (customer.location) {
             const location = JSON.parse(customer.location);
@@ -45,9 +45,9 @@ export abstract class CompleteOrderHandler {
         } else {
           await ctx.scene.enter(
             'address',
-            ctx.reply(
-              'Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
-            ),
+            // ctx.reply(
+            //   'Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
+            // ),
           );
         }
       } else {

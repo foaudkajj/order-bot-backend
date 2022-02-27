@@ -72,7 +72,7 @@ export class OrderService {
         };
         entity.customer = NewCustomer;
       }
-      if (!entity.orderNo) entity.orderNo = new Date().valueOf().toString();
+      if (!entity.orderNo) entity.orderNo = new Date().getTime().toString(36);
       entity.createDate = new Date();
 
       console.log(entity);
@@ -185,28 +185,28 @@ export class OrderService {
           InformationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            'Siparişiniz Onaylandı',
+            `Siparişiniz Onaylandı. sipariş no: ${order.orderNo}`,
           );
           break;
         case OrderStatus.Prepared:
           InformationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            'Siparişiniz Hazırlanıyor',
+            `Siparişiniz Hazır. sipariş no: ${order.orderNo}`,
           );
           break;
         case OrderStatus.OrderSent:
           InformationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            'Siparişiniz Yola Çıkmıştır',
+            `Siparişiniz Yola Çıkmıştır. sipariş no: ${order.orderNo}`,
           );
           break;
         case OrderStatus.Delivered:
           InformationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            'Siparişiniz Size Teslim Edilmiştir',
+            `Siparişiniz Size Teslim Edilmiştir. sipariş no: ${order.orderNo}`,
           );
           break;
         default:
