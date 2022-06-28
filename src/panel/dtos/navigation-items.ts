@@ -1,10 +1,11 @@
-export class NavigationItems {
+export class NavigationItem {
   key: string;
   title: string;
   type: string;
   translate: string;
   icon: string;
   url: string;
+  priority: number;
 
-  children?: NavigationItems[] = [];
+  children?: NavigationItem[] = [];
 }

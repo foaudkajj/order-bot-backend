@@ -1,11 +1,11 @@
-import {Module} from '@nestjs/common';
-import {TypeOrmModule} from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   CustomerRepository,
   MerchantRepository,
   OrderRepository,
 } from './bot/custom-repositories';
-import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
+import { DevextremeLoadOptionsService } from './db/helpers/devextreme-loadoptions';
 import {
   OrderItem,
   Product,
@@ -13,8 +13,8 @@ import {
   GetirOrder,
   Menu,
   Merchant,
-  Permession,
-  RoleAndPermession,
+  Permission,
+  RoleAndPermission,
   Role,
   User,
   Option,
@@ -33,9 +33,9 @@ import {
       Menu,
       Merchant,
       MerchantRepository,
-      Permession,
+      Permission,
       Product,
-      RoleAndPermession,
+      RoleAndPermission,
       Role,
       User,
       Option,
@@ -46,4 +46,4 @@ import {
   providers: [DevextremeLoadOptionsService],
   exports: [DevextremeLoadOptionsService, TypeOrmModule],
 })
-export class SharedModule {}
+export class SharedModule { }

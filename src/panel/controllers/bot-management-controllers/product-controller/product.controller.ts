@@ -1,36 +1,36 @@
-import {Controller, Get, Post, Query, Body, Request} from '@nestjs/common';
-import {Product} from 'src/DB/models/product';
-import {PermessionsGuard} from 'src/panel/decorators/permessions.decorator';
-import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
-import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {PermessionEnum} from 'src/panel/enums/PermessionsEnum';
-import {ProductService} from './product.service';
+import { Controller, Get, Post, Query, Body, Request } from '@nestjs/common';
+import { Product } from 'src/DB/models/product';
+import { PermissionsGuard } from 'src/panel/decorators/permissions.decorator';
+import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
+import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
+import { DxGridUpdateRequest } from 'src/panel/dtos/dx-grid-update-request';
+import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
+import { PermissionEnum } from 'src/panel/enums/permissions-enum';
+import { ProductService } from './product.service';
 
 @Controller('api/Products')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService) { }
 
   @Get('Get')
-  @PermessionsGuard(PermessionEnum.SHOW_PRODUCT)
+  @PermissionsGuard(PermissionEnum.SHOW_PRODUCT)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     const result = await this.productService.Get(query, MerchantId);
     return result;
   }
 
   @Post('Insert')
-  @PermessionsGuard(PermessionEnum.ADD_PRODUCT)
+  @PermissionsGuard(PermissionEnum.ADD_PRODUCT)
   async Insert(
     @Body() body,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
     const entity = JSON.parse(body.values) as Product;
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     if (entity) {
       entity.merchantId = MerchantId;
     }
@@ -39,15 +39,15 @@ export class ProductController {
   }
 
   @Post('Update')
-  @PermessionsGuard(PermessionEnum.UPDATE_PRODUCT)
+  @PermissionsGuard(PermissionEnum.UPDATE_PRODUCT)
   async Update(
     @Body() body: DxGridUpdateRequest,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
-    const entity = {...JSON.parse(body.values)} as Product;
+    const entity = { ...JSON.parse(body.values) } as Product;
     entity.id = body.key;
 
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     if (entity) {
       entity.merchantId = MerchantId;
     }
@@ -57,12 +57,12 @@ export class ProductController {
   }
 
   @Post('Delete')
-  @PermessionsGuard(PermessionEnum.DELETE_PRODUCT)
+  @PermissionsGuard(PermissionEnum.DELETE_PRODUCT)
   async Delete(
     @Body() deleteBody: DxGridDeleteRequest,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
 
     const result = await this.productService.Delete(deleteBody.key, MerchantId);
     return result;

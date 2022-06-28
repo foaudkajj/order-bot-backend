@@ -1,15 +1,14 @@
-import {Injectable} from '@nestjs/common';
-import {JwtService} from '@nestjs/jwt';
-import {User} from 'src/db/models/user';
-import {Repository} from 'typeorm';
-import {LoginRequest} from '../dtos/login-request-dto';
-import {LoginResponse} from '../dtos/login-response';
-import {UIResponseBase} from '../dtos/ui-response-base';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { User } from 'src/db/models/user';
+import { Repository } from 'typeorm';
+import { LoginRequest } from '../dtos/login-request-dto';
+import { LoginResponse } from '../dtos/login-response';
+import { UIResponseBase } from '../dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
-import {Menu} from 'src/db/models/menu';
-import {sortBy} from 'underscore';
-import {NavigationItems} from '../dtos/navigation-items';
-import {InjectRepository} from '@nestjs/typeorm';
+import { Menu } from 'src/db/models/menu';
+import { NavigationItem } from '../dtos/navigation-items';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
@@ -19,61 +18,60 @@ export class AuthService {
     @InjectRepository(Menu)
     private menusRepository: Repository<Menu>,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(loginRequest: LoginRequest): Promise<any> {
-    // let user: User = await this.userRepository.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('Role.RoleAndPermessions', 'RoleAndPermessions').getOne();
+    // let user: User = await this.userRepository.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('role.roleAndPermissions', 'roleAndPermissions').getOne();
     const user = await this.userRepository.findOne({
-      where: {UserName: loginRequest.UserName},
+      where: { userName: loginRequest.UserName },
       relations: [
-        'Role',
-        'Merchant',
-        'Role.RoleAndPermessions',
-        'Role.RoleAndPermessions.Permession',
-        'Role.RoleAndPermessions.Permession.Menu',
+        'role',
+        'merchant',
+        'role.roleAndPermissions',
+        'role.roleAndPermissions.permission',
+        'role.roleAndPermissions.permission.menu',
       ],
     });
     if (!user) {
       // TODO: return error
       return;
     }
-    let Menus = user.Role.RoleAndPermessions.filter(
-      fi => fi.Permession.Menu,
-    ).map(fi => fi.Permession.Menu);
+    let menus = user.role.roleAndPermissions.filter(
+      fi => fi.permission.menu,
+    ).map(fi => fi.permission.menu);
     const parentMenus = await this.menusRepository.find({
-      where: {IsParent: true},
+      where: { isParent: true },
     });
-    Menus = Menus.concat(parentMenus);
-    const sortedMenus = sortBy(Menus, 'Priority');
-    const NavigationItems = this.CreateMenus(sortedMenus);
+    menus = menus.concat(parentMenus);
+    const navigationItems = this.createMenus(menus);
 
-    const permessions = user.Role.RoleAndPermessions.map(
-      mp => mp.Permession.PermessionKey,
+    const permissions = user.role.roleAndPermissions.map(
+      mp => mp.permission.permissionKey,
     );
 
     const isMatch = await bcrypt.compareSync(
       loginRequest.Password,
-      user?.Password,
+      user?.password,
     );
     if (user && isMatch) {
       const loginReponse: UIResponseBase<LoginResponse> = {
-        Result: {
-          IsAuthenticated: true,
-          Token: this.jwtService.sign({
-            UserName: user.UserName,
-            Permessions: permessions,
-            MerchantId: user.MerchantId,
+        result: {
+          isAuthenticated: true,
+          token: this.jwtService.sign({
+            UserName: user.userName,
+            permissions: permissions,
+            MerchantId: user.merchantId,
           }),
-          UserId: user.Id,
-          MerchantId: user.MerchantId,
-          UserName: user.UserName,
-          UserStatus: user.UserStatus,
-          Permessions: JSON.stringify(permessions),
-          NavigationItems: NavigationItems,
+          userId: user.id,
+          merchantId: user.merchantId,
+          userName: user.userName,
+          userStatus: user.userStatus,
+          permissions: JSON.stringify(permissions),
+          navigationItems: navigationItems,
         },
-        StatusCode: 200,
-        IsError: false,
-        MessageKey: 'SUCCESS',
+        statusCode: 200,
+        isError: false,
+        messageKey: 'SUCCESS',
       };
 
       return loginReponse;
@@ -81,45 +79,47 @@ export class AuthService {
     return null;
   }
 
-  private CreateMenus(Menus: Menu[]) {
-    const ParentMenus = Menus.filter(wh => wh.ParentId == null);
-    const NavigationItems: NavigationItems[] = [];
-    ParentMenus.forEach(fe => {
-      NavigationItems.push(this.UserPermissionsCreator(fe, Menus));
+  private createMenus(menus: Menu[]): NavigationItem[] {
+    const parentMenus = menus.filter(wh => wh.parentId == null);
+    const navigationItems: NavigationItem[] = [];
+    parentMenus.forEach(fe => {
+      navigationItems.push(this.userPermissionsCreator(fe, menus));
     });
 
-    return NavigationItems;
+    return navigationItems;
   }
 
-  private UserPermissionsCreator(
-    ParentMenue: Menu,
-    UserPermessions: Menu[],
-  ): NavigationItems {
-    const parentChildren = UserPermessions.filter(
-      wh => wh.ParentId === ParentMenue.MenuKey,
+  private userPermissionsCreator(
+    parentMenu: Menu,
+    userPermissions: Menu[],
+  ): NavigationItem {
+    const parentChildren = userPermissions.filter(
+      wh => wh.parentId === parentMenu.menuKey,
     );
-    const navigationItems: NavigationItems = {
-      icon: ParentMenue.Icon,
-      key: ParentMenue.MenuKey,
-      title: ParentMenue.Title,
-      translate: ParentMenue.Translate,
-      url: ParentMenue.URL,
+    const navigationItems: NavigationItem = {
+      icon: parentMenu.icon,
+      key: parentMenu.menuKey,
+      title: parentMenu.title,
+      translate: parentMenu.translate,
+      url: parentMenu.url,
+      priority: parentMenu.priority,
       type: parentChildren.length > 0 ? 'collapsable' : 'item',
       children: [],
     };
     parentChildren.forEach(child => {
-      if (child.IsParent) {
+      if (child.isParent) {
         navigationItems.children.push(
-          this.UserPermissionsCreator(child, UserPermessions),
+          this.userPermissionsCreator(child, userPermissions),
         );
       } else {
-        navigationItems.children.push(<NavigationItems>{
-          icon: child.Icon,
-          key: child.MenuKey,
-          title: child.Title,
-          translate: child.Translate,
+        navigationItems.children.push(<NavigationItem>{
+          icon: child.icon,
+          key: child.menuKey,
+          title: child.title,
+          translate: child.translate,
+          priority: child.priority,
           type: 'item',
-          url: child.URL,
+          url: child.url,
           children: [],
         });
       }

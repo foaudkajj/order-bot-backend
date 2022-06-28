@@ -3,29 +3,29 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity()
 export class Menu {
   @PrimaryGeneratedColumn()
-  Id: number;
+  id: number;
 
   @Column({ length: 50 })
-  MenuKey: string;
+  menuKey: string;
 
   @Column({ length: 20, nullable: true })
-  Icon: string;
+  icon: string;
 
   @Column({ length: 50, nullable: true })
-  Title: string;
+  title: string;
 
   @Column({ length: 200, nullable: true })
-  Translate: string;
+  translate: string;
 
   @Column({ length: 300, nullable: true })
-  URL: string;
+  url: string;
 
   @Column({ type: 'nvarchar', length: '50', nullable: true })
-  ParentId: string;
+  parentId: string;
 
   @Column()
-  IsParent: boolean;
+  isParent: boolean;
 
   @Column()
-  Priority: number;
+  priority: number;
 }

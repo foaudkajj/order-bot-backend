@@ -7,47 +7,47 @@ import {
   Request,
   Param,
 } from '@nestjs/common';
-import {Order} from 'src/db/models/order';
-import {PermessionsGuard} from 'src/panel/decorators/permessions.decorator';
-import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
-import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {PermessionEnum} from 'src/panel/enums/PermessionsEnum';
-import {OrderService} from './order.service';
+import { Order } from 'src/db/models/order';
+import { PermissionsGuard } from 'src/panel/decorators/permissions.decorator';
+import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
+import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
+import { DxGridUpdateRequest } from 'src/panel/dtos/dx-grid-update-request';
+import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
+import { PermissionEnum } from 'src/panel/enums/permissions-enum';
+import { OrderService } from './order.service';
 
 @Controller('api/Orders')
 export class OrderController {
-  constructor(private orderService: OrderService) {}
+  constructor(private orderService: OrderService) { }
 
   @Get('Get')
-  @PermessionsGuard(PermessionEnum.SHOW_ORDER)
+  @PermissionsGuard(PermissionEnum.SHOW_ORDER)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     const result = await this.orderService.Get(query, MerchantId);
     return result;
   }
 
   @Post('Insert')
-  @PermessionsGuard(PermessionEnum.ADD_ORDER)
+  @PermissionsGuard(PermissionEnum.ADD_ORDER)
   async Insert(@Body() body): Promise<UIResponseBase<Order>> {
-    const {MerchantId} = body.user;
+    const { MerchantId } = body.user;
     const entity = JSON.parse(body.values) as Order;
     const result = await this.orderService.Insert(MerchantId, entity);
     return result;
   }
 
   @Post('Update')
-  @PermessionsGuard(PermessionEnum.UPDATE_ORDER)
+  @PermissionsGuard(PermissionEnum.UPDATE_ORDER)
   async Update(
     @Body() body: DxGridUpdateRequest,
     @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const {MerchantId} = request.user;
-    const entity = {...JSON.parse(body.values)} as Order;
+    const { MerchantId } = request.user;
+    const entity = { ...JSON.parse(body.values) } as Order;
     entity.id = body.key;
     entity.merchantId = MerchantId;
     const result = await this.orderService.Update(entity);
@@ -55,12 +55,12 @@ export class OrderController {
   }
 
   @Post('Delete')
-  @PermessionsGuard(PermessionEnum.DELETE_ORDER)
+  @PermissionsGuard(PermissionEnum.DELETE_ORDER)
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
     @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const {MerchantId} = request.user;
+    const { MerchantId } = request.user;
     const result = await this.orderService.Delete(
       deleteRequest.key,
       MerchantId,
@@ -69,7 +69,7 @@ export class OrderController {
   }
 
   @Get('Cancel/:orderId')
-  @PermessionsGuard(PermessionEnum.SHOW_ORDER)
+  @PermissionsGuard(PermissionEnum.SHOW_ORDER)
   async Cancel(@Param('orderId') orderId: string): Promise<void> {
     return await this.orderService.CancelOrder(orderId);
   }

@@ -1,17 +1,17 @@
-import {Injectable} from '@nestjs/common';
-import {User} from 'src/db/models/user';
-import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {Repository} from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { User } from 'src/db/models/user';
+import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
+import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import {InjectRepository} from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async Get(query: DataSourceLoadOptionsBase) {
     let users: User[];
@@ -24,11 +24,11 @@ export class UserService {
       users = await this.userRepository.find();
     }
     const response: UIResponseBase<User> = {
-      IsError: false,
+      isError: false,
       data: users,
       totalCount: users.length,
-      MessageKey: 'SUCCESS',
-      StatusCode: 200,
+      messageKey: 'SUCCESS',
+      statusCode: 200,
     };
     return response;
   }
@@ -36,69 +36,56 @@ export class UserService {
   async Insert(user: User) {
     try {
       const response: UIResponseBase<User> = {
-        IsError: false,
-        Result: user,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        result: user,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
       const salt = await bcrypt.genSalt();
-      const hash = await bcrypt.hash(user.Password, salt);
-      user.Salt = salt;
-      user.Password = hash;
+      const hash = await bcrypt.hash(user.password, salt);
+      user.salt = salt;
+      user.password = hash;
       await this.userRepository.insert(user);
       return response;
     } catch (error) {
-      throw <UIResponseBase<User>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
+      throw new Error(error);
     }
   }
 
   async Update(updateDetails: User) {
     try {
       const user = await this.userRepository.findOne({
-        where: {Id: updateDetails.Id},
+        where: { id: updateDetails.id },
       });
-      if (updateDetails.Password) {
+      if (updateDetails.password) {
         const salt = await bcrypt.genSalt();
-        const hash = await bcrypt.hash(updateDetails.Password, salt);
-        updateDetails.Salt = salt;
-        updateDetails.Password = hash;
+        const hash = await bcrypt.hash(updateDetails.password, salt);
+        updateDetails.salt = salt;
+        updateDetails.password = hash;
       }
-      const {Id, ...updatedUser} = {...user, ...updateDetails};
-      await this.userRepository.update({Id: user.Id}, updatedUser);
+      const { id: _, ...updatedUser } = { ...user, ...updateDetails };
+      await this.userRepository.update({ id: user.id }, updatedUser);
       return <UIResponseBase<User>>{
-        IsError: false,
-        Result: updatedUser,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        result: updatedUser,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
     } catch (error) {
-      throw <UIResponseBase<User>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
+      throw new Error(error);
     }
   }
 
   async Delete(Id: number) {
     try {
-      await this.userRepository.delete({Id: Id});
+      await this.userRepository.delete({ id: Id });
       return <UIResponseBase<User>>{
-        IsError: false,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
     } catch (error) {
-      console.log(error);
-      throw <UIResponseBase<User>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
+      throw new Error(error);
     }
   }
 }

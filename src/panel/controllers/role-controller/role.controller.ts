@@ -1,21 +1,21 @@
-import {Controller, Get, Post, Query, Body} from '@nestjs/common';
-import {Role} from 'src/db/models/Role';
-import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
-import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
-import {RoleIdAndPermessions} from 'src/panel/dtos/role-id-and-permessions';
-import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {PermessionsGuard} from '../../decorators/permessions.decorator';
-import {PermessionEnum} from '../../enums/PermessionsEnum';
-import {RoleService} from './role.service';
+import { Controller, Get, Post, Query, Body } from '@nestjs/common';
+import { Role } from 'src/db/models/Role';
+import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
+import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
+import { DxGridUpdateRequest } from 'src/panel/dtos/dx-grid-update-request';
+import { GetRolesDto } from 'src/panel/dtos/get-roles-dto';
+import { RoleIdAndPermissions } from 'src/panel/dtos/role-id-and-permissions';
+import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
+import { PermissionsGuard } from '../../decorators/permissions.decorator';
+import { PermissionEnum } from '../../enums/permissions-enum';
+import { RoleService } from './role.service';
 
 @Controller('api/Roles')
 export class RoleController {
-  constructor(private roleService: RoleService) {}
+  constructor(private roleService: RoleService) { }
 
   @Get('Get')
-  @PermessionsGuard(PermessionEnum.SHOW_ROLE)
+  @PermissionsGuard(PermissionEnum.SHOW_ROLE)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
   ): Promise<UIResponseBase<GetRolesDto>> {
@@ -23,27 +23,27 @@ export class RoleController {
     return result;
   }
 
-  @Get('GetPermessions')
-  async GetPermessions(@Query() query: DataSourceLoadOptionsBase) {
-    const result = await this.roleService.GetPermessions(query);
+  @Get('GetPermissions')
+  async GetPermissions(@Query() query: DataSourceLoadOptionsBase) {
+    const result = await this.roleService.GetPermissions(query);
 
     return result;
   }
 
-  @Post('SaveRolePermessions')
-  @PermessionsGuard(PermessionEnum.UPDATE_ROLE)
-  async SaveRolePermessions(
-    @Body() roleIdAndPermessions: RoleIdAndPermessions,
+  @Post('SaveRolePermissions')
+  @PermissionsGuard(PermissionEnum.UPDATE_ROLE)
+  async SaveRolePermissions(
+    @Body() roleIdAndPermissions: RoleIdAndPermissions,
   ) {
-    const result = await this.roleService.SaveRolePermessions(
-      roleIdAndPermessions,
+    const result = await this.roleService.SaveRolePermissions(
+      roleIdAndPermissions,
     );
 
     return result;
   }
 
   @Post('Insert')
-  @PermessionsGuard(PermessionEnum.ADD_ROLE)
+  @PermissionsGuard(PermissionEnum.ADD_ROLE)
   async Insert(@Body() request): Promise<UIResponseBase<Role>> {
     const role = JSON.parse(request.values) as Role;
     const result = await this.roleService.Insert(role);
@@ -51,18 +51,18 @@ export class RoleController {
   }
 
   @Post('Update')
-  @PermessionsGuard(PermessionEnum.UPDATE_ROLE)
+  @PermissionsGuard(PermissionEnum.UPDATE_ROLE)
   async Update(
     @Body() request: DxGridUpdateRequest,
   ): Promise<UIResponseBase<Role>> {
-    const role = {...JSON.parse(request.values)} as Role;
-    role.Id = request.key;
+    const role = { ...JSON.parse(request.values) } as Role;
+    role.id = request.key;
     const result = await this.roleService.Update(role);
     return result;
   }
 
   @Post('Delete')
-  @PermessionsGuard(PermessionEnum.DELETE_ROLE)
+  @PermissionsGuard(PermissionEnum.DELETE_ROLE)
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
   ): Promise<UIResponseBase<Role>> {

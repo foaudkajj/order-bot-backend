@@ -1,22 +1,22 @@
-import {Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Permession} from 'src/db/models/permession';
-import {Role} from 'src/db/models/role';
-import {RoleAndPermession} from 'src/db/models/role-and-permession';
-import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
-import {RoleIdAndPermessions} from 'src/panel/dtos/role-id-and-permessions';
-import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {getManager, Repository} from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Permission } from 'src/db/models/permission';
+import { Role } from 'src/db/models/role';
+import { RoleAndPermission } from 'src/db/models/role-and-permission';
+import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
+import { GetRolesDto } from 'src/panel/dtos/get-roles-dto';
+import { RoleIdAndPermissions } from 'src/panel/dtos/role-id-and-permissions';
+import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
+import { getManager, Repository } from 'typeorm';
 
 @Injectable()
 export class RoleService {
   constructor(
-    @InjectRepository(Permession)
-    private permessionRepository: Repository<Permession>,
+    @InjectRepository(Permission)
+    private permissionRepository: Repository<Permission>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
-  ) {}
+  ) { }
 
   async GetRoles(query: DataSourceLoadOptionsBase) {
     let roles: Role[];
@@ -24,144 +24,124 @@ export class RoleService {
       roles = await this.roleRepository.find({
         take: query.take,
         skip: query.skip,
-        relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession'],
+        relations: ['roleAndPermissions', 'roleAndPermissions.permission'],
       });
     } else {
       roles = await this.roleRepository.find({
-        relations: ['RoleAndPermessions', 'RoleAndPermessions.Permession'],
+        relations: ['roleAndPermissions', 'roleAndPermissions.permission'],
       });
     }
     const result = roles.map(
       mp =>
         <GetRolesDto>{
-          Id: mp.Id,
-          Description: mp.Description,
-          RoleName: mp.RoleName,
-          RolePermessionsIds: mp.RoleAndPermessions.map(
-            mpp => mpp.Permession.PermessionKey,
+          id: mp.id,
+          description: mp.description,
+          roleName: mp.roleName,
+          rolePermissionsIds: mp.roleAndPermissions.map(
+            mpp => mpp.permission.permissionKey,
           ),
         },
     );
     const response: UIResponseBase<GetRolesDto> = {
-      IsError: false,
+      isError: false,
       data: result,
       totalCount: result.length,
-      MessageKey: 'SUCCESS',
-      StatusCode: 200,
+      messageKey: 'SUCCESS',
+      statusCode: 200,
     };
     return response;
   }
 
-  async GetPermessions(query: DataSourceLoadOptionsBase) {
+  async GetPermissions(query: DataSourceLoadOptionsBase) {
     let result;
     if (query.take && query.skip) {
-      result = await this.permessionRepository.find({
+      result = await this.permissionRepository.find({
         take: query.take,
         skip: query.skip,
       });
     } else {
-      result = await this.permessionRepository.find();
+      result = await this.permissionRepository.find();
     }
-    const response: UIResponseBase<Permession> = {
-      IsError: false,
+    const response: UIResponseBase<Permission> = {
+      isError: false,
       data: result,
       totalCount: result.length,
-      MessageKey: 'SUCCESS',
-      StatusCode: 200,
+      messageKey: 'SUCCESS',
+      statusCode: 200,
     };
     return response;
   }
 
-  async SaveRolePermessions(roleIdAndPermessions: RoleIdAndPermessions) {
+  async SaveRolePermissions(roleIdAndPermissions: RoleIdAndPermissions) {
     try {
       await getManager().transaction(async transactionalEntityManager => {
-        await transactionalEntityManager.delete(RoleAndPermession, {
-          RoleId: roleIdAndPermessions.roleId,
+        await transactionalEntityManager.delete(RoleAndPermission, {
+          roleId: roleIdAndPermissions.roleId,
         });
         await transactionalEntityManager.insert(
-          RoleAndPermession,
-          roleIdAndPermessions.rolePermessions.map(
+          RoleAndPermission,
+          roleIdAndPermissions.rolePermissions.map(
             mp =>
-              <RoleAndPermession>{
-                RoleId: roleIdAndPermessions.roleId,
-                PermessionId: mp,
+              <RoleAndPermission>{
+                roleId: roleIdAndPermissions.roleId,
+                permissionId: mp,
               },
           ),
         );
       });
-      return <UIResponseBase<Permession>>{
-        IsError: false,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+      return <UIResponseBase<Permission>>{
+        isError: false,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
     } catch (error) {
-      console.log(error);
-      return <UIResponseBase<Permession>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
+      throw new Error(error);
     }
   }
 
   async Insert(role: Role) {
     try {
       const response: UIResponseBase<Role> = {
-        IsError: false,
-        Result: role,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        result: role,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
       await this.roleRepository.insert(role);
       return response;
     } catch (error) {
-      console.log(error);
-      throw <UIResponseBase<Role>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
+      throw new Error(error);
     }
   }
 
   async Update(updateDetails: Role) {
     try {
       const role = await this.roleRepository.findOne({
-        where: {Id: updateDetails.Id},
+        where: { id: updateDetails.id },
       });
-      const {Id, ...updatedRole} = {...role, ...updateDetails};
-      await this.roleRepository.update({Id: role.Id}, updatedRole);
+      const { id: _, ...updatedRole } = { ...role, ...updateDetails };
+      await this.roleRepository.update({ id: role.id }, updatedRole);
       return <UIResponseBase<Role>>{
-        IsError: false,
-        Result: updatedRole,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        result: updatedRole,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
     } catch (error) {
-      console.log(error);
-      throw <UIResponseBase<Role>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
+      throw new Error(error);
     }
   }
 
   async Delete(Id: number) {
     try {
-      await this.roleRepository.delete({Id: Id});
+      await this.roleRepository.delete({ id: Id });
       return <UIResponseBase<Role>>{
-        IsError: false,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
     } catch (error) {
-      console.log(error);
-      throw <UIResponseBase<Role>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
+      throw new Error(error);
     }
   }
 }

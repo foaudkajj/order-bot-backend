@@ -1,11 +1,11 @@
-import {OrderChannel} from 'src/db/models';
-import {Customer} from 'src/db/models/customer';
-import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
-import {getCustomRepository} from 'typeorm';
-import {MerchantRepository} from '../custom-repositories';
-import {CustomerRepository} from '../custom-repositories/customer-repository';
-import {BotContext} from '../interfaces/bot-context';
-import {CallBackQueryResult} from '../models/enums';
+import { OrderChannel } from 'src/db/models';
+import { Customer } from 'src/db/models/customer';
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
+import { getCustomRepository } from 'typeorm';
+import { MerchantRepository } from '../custom-repositories';
+import { CustomerRepository } from '../custom-repositories/customer-repository';
+import { BotContext } from '../interfaces/bot-context';
+import { CallBackQueryResult } from '../models/enums';
 
 export abstract class FirstMessageHandler {
   static async startOptions(
@@ -25,7 +25,7 @@ export abstract class FirstMessageHandler {
           callback_data: CallBackQueryResult.GetConfirmedOrders,
         },
       ],
-      [{text: '🗑 Sepetem 🗑', callback_data: CallBackQueryResult.MyBasket}],
+      [{ text: '🗑 Sepetem 🗑', callback_data: CallBackQueryResult.MyBasket }],
       [
         {
           text: '🗑 Sepetemi Boşalt 🗑',
@@ -43,7 +43,7 @@ export abstract class FirstMessageHandler {
     if (ctx.updateType === 'message') {
       return await ctx.reply(
         messageToShow ??
-          'Hoş Geldiniz , \n Sipariş vermeniz için ben size yardımcı olacağım.',
+        'Hoş Geldiniz , \n Sipariş vermeniz için ben size yardımcı olacağım.',
         {
           reply_markup: {
             one_time_keyboard: true,
@@ -54,7 +54,7 @@ export abstract class FirstMessageHandler {
     } else {
       return await ctx.editMessageText(
         messageToShow ??
-          'Hoş Geldiniz , \n Sipariş vermeniz için ben size yardımcı olacağım.',
+        'Hoş Geldiniz , \n Sipariş vermeniz için ben size yardımcı olacağım.',
         {
           reply_markup: {
             // one_time_keyboard: true,
@@ -76,7 +76,7 @@ export abstract class FirstMessageHandler {
       );
 
       const newCustomer: Customer = {
-        merchantId: merchant.Id,
+        merchantId: merchant.id,
         customerChannel: OrderChannel.Telegram,
         fullName: ctx.from.first_name + ' ' + ctx.from.last_name,
         telegramId: ctx.from.id,

@@ -1,6 +1,6 @@
 export class GetRolesDto {
-  Id: number;
-  RoleName: string;
-  Description: string;
-  RolePermessionsIds: string[];
+  id: number;
+  roleName: string;
+  description: string;
+  rolePermissionsIds: string[];
 }

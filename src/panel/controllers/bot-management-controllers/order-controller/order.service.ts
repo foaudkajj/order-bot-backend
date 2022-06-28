@@ -1,19 +1,19 @@
-import {HttpStatus, Injectable} from '@nestjs/common';
-import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
-import {Order} from 'src/db/models/order';
-import {Customer} from 'src/db/models/customer';
-import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {FindManyOptions, QueryFailedError, Repository} from 'typeorm';
-import {InformationMessages} from 'src/bot/helpers/informtaion-msgs';
-import {OrderChannel, OrderStatus} from 'src/db/models';
-import {InjectRepository} from '@nestjs/typeorm';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { DevextremeLoadOptionsService } from 'src/db/helpers/devextreme-loadoptions';
+import { Order } from 'src/db/models/order';
+import { Customer } from 'src/db/models/customer';
+import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
+import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
+import { FindManyOptions, Repository } from 'typeorm';
+import { InformationMessages } from 'src/bot/helpers/informtaion-msgs';
+import { OrderChannel, OrderStatus } from 'src/db/models';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeliveryType,
   GetirResult,
 } from '../../entegrations-management/getir/getir.enums';
-import {GetirService} from '../../entegrations-management/getir/getir.service';
-import {UIResponseError} from 'src/panel/dtos';
+import { GetirService } from '../../entegrations-management/getir/getir.service';
+import { UIResponseError } from 'src/panel/dtos';
 
 @Injectable()
 export class OrderService {
@@ -24,7 +24,7 @@ export class OrderService {
     @InjectRepository(Customer)
     private customerRepository: Repository<Customer>,
     private getirService: GetirService,
-  ) {}
+  ) { }
 
   async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
     const findOptions: FindManyOptions<Order> = this.devextremeLoadOptions.GetFindOptionsFromQuery(
@@ -44,11 +44,11 @@ export class OrderService {
     const orders: Order[] = await this.orderRepository.find(findOptions);
 
     const response: UIResponseBase<Order> = {
-      IsError: false,
+      isError: false,
       data: orders,
       totalCount: orders.length,
-      MessageKey: 'SUCCESS',
-      StatusCode: 200,
+      messageKey: 'SUCCESS',
+      statusCode: 200,
     };
     return response;
   }
@@ -56,10 +56,10 @@ export class OrderService {
   async Insert(MerchantId: number, entity: Order) {
     try {
       const response: UIResponseBase<Order> = {
-        IsError: false,
-        Result: entity,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        result: entity,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
       console.log(entity);
       if (entity.customer) {
@@ -79,19 +79,13 @@ export class OrderService {
       await this.orderRepository.insert(entity);
       return response;
     } catch (error) {
-      console.log((error as QueryFailedError).message);
-      const err = <UIResponseBase<Order>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
-      throw new Error(JSON.stringify(err));
+      throw new Error(error);
     }
   }
 
   async Update(updateDetails: Order) {
     const order = await this.orderRepository.findOne({
-      where: {id: updateDetails.id},
+      where: { id: updateDetails.id },
       relations: ['getirOrder', 'merchant', 'customer'],
     });
 
@@ -101,31 +95,31 @@ export class OrderService {
         if (order.getirOrder.deliveryType === DeliveryType.ByGetir) {
           response = await this.getirService.handoverOrder(
             order.getirOrder.id,
-            order.merchant.Id,
+            order.merchant.id,
           );
         } else if (
           order.getirOrder.deliveryType === DeliveryType.ByRestaurant
         ) {
           response = await this.getirService.deliverOrder(
             order.getirOrder.id,
-            order.merchant.Id,
+            order.merchant.id,
           );
         }
 
         if (response.result === true) {
-          await this.orderRepository.update({id: order.id}, updateDetails);
+          await this.orderRepository.update({ id: order.id }, updateDetails);
           return <UIResponseBase<Order>>{
-            IsError: false,
-            Result: updateDetails,
-            MessageKey: 'SUCCESS',
-            StatusCode: 200,
+            isError: false,
+            result: updateDetails,
+            messageKey: 'SUCCESS',
+            statusCode: 200,
           };
         }
       } else {
         if (updateDetails.orderStatus === OrderStatus.FutureOrder) {
           response = await this.getirService.verifyFutureOrder(
             order.getirOrder.id,
-            order.merchant.Id,
+            order.merchant.id,
           );
 
           updateDetails.orderStatus =
@@ -135,19 +129,19 @@ export class OrderService {
         } else if (updateDetails.orderStatus === OrderStatus.Prepared) {
           response = await this.getirService.prepareOrder(
             order.getirOrder.id,
-            order.merchant.Id,
+            order.merchant.id,
           );
         } else if (
           updateDetails.orderStatus === OrderStatus.MerchantConfirmed
         ) {
           response = await this.getirService.verifyOrder(
             order.getirOrder.id,
-            order.merchant.Id,
+            order.merchant.id,
           );
         }
 
         if (response.result === true) {
-          await this.orderRepository.update({id: order.id}, updateDetails);
+          await this.orderRepository.update({ id: order.id }, updateDetails);
         }
       }
       if (response.result === false) {
@@ -178,7 +172,7 @@ export class OrderService {
         }
       }
     } else if (order.orderChannel === OrderChannel.Telegram) {
-      await this.orderRepository.update({id: order.id}, updateDetails);
+      await this.orderRepository.update({ id: order.id }, updateDetails);
 
       switch (updateDetails.orderStatus) {
         case OrderStatus.MerchantConfirmed:
@@ -215,36 +209,30 @@ export class OrderService {
     }
 
     return <UIResponseBase<Order>>{
-      IsError: false,
-      Result: updateDetails,
-      MessageKey: 'SUCCESS',
-      StatusCode: 200,
+      isError: false,
+      result: updateDetails,
+      messageKey: 'SUCCESS',
+      statusCode: 200,
     };
   }
 
   async Delete(Id: number, merchantId: number) {
     try {
-      await this.orderRepository.delete({id: Id, merchantId: merchantId});
+      await this.orderRepository.delete({ id: Id, merchantId: merchantId });
       return <UIResponseBase<Order>>{
-        IsError: false,
-        MessageKey: 'SUCCESS',
-        StatusCode: 200,
+        isError: false,
+        messageKey: 'SUCCESS',
+        statusCode: 200,
       };
     } catch (error) {
-      console.log(error);
-      const err = <UIResponseBase<Order>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
-      throw new Error(JSON.stringify(err));
+      throw new Error(error);
     }
   }
 
   async CancelOrder(orderId: string) {
     try {
       const order = await this.orderRepository.findOne({
-        where: {id: orderId},
+        where: { id: orderId },
         relations: ['getirOrder', 'merchant', 'customer'],
       });
 
@@ -270,21 +258,15 @@ export class OrderService {
           });
         } else {
           const error = <UIResponseBase<Order>>{
-            IsError: true,
-            MessageKey: 'Getir service error',
-            StatusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            isError: true,
+            messageKey: 'Getir service error',
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           };
           throw new Error(JSON.stringify(error));
         }
       }
     } catch (error) {
-      console.log(error);
-      const err = <UIResponseBase<Order>>{
-        IsError: true,
-        MessageKey: 'ERROR',
-        StatusCode: 500,
-      };
-      throw new Error(JSON.stringify(err));
+      throw new Error(error);
     }
   }
 }

@@ -1,21 +1,21 @@
-import {Module} from '@nestjs/common';
-import {APP_GUARD} from '@nestjs/core';
-import {AppController} from './app.controller';
-import {AppService} from './app.service';
-import {AddressWizardService} from './bot/wiards/address-wizard.service';
-import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
-import {PermessionsGuard} from './panel/guards/permessions.guard';
-import {PanelModule} from './panel/panel.module';
-import {JwtAuthGuard} from './panel/passport/guards/jwt-auth.guard';
-import {ConfigModule} from '@nestjs/config';
-import {TypeOrmModule} from '@nestjs/typeorm';
-import {SharedModule} from './shared.module';
-import {CustomNamingStrategy} from './naming-strategy';
-import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AddressWizardService } from './bot/wiards/address-wizard.service';
+import { AddnoteToOrderWizardService } from './bot/wiards/order-note.-wizard.service';
+import { PermissionsGuard } from './panel/guards/permissions.guard';
+import { PanelModule } from './panel/panel.module';
+import { JwtAuthGuard } from './panel/passport/guards/jwt-auth.guard';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { SharedModule } from './shared.module';
+import { CustomNamingStrategy } from './naming-strategy';
+import { PhoneNumberService } from './bot/wiards/phone-number-wizard.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({isGlobal: true}),
+    ConfigModule.forRoot({ isGlobal: true }),
     PanelModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -23,7 +23,7 @@ import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
       port: 3306,
       username: 'root',
       password: 'Fouad@Fouad1',
-      database: 'siparisbotu',
+      database: 'orderbot',
       synchronize: true,
       logging: false,
       entities: ['dist/**/*.js'],
@@ -51,7 +51,7 @@ import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
     },
     {
       provide: APP_GUARD,
-      useClass: PermessionsGuard,
+      useClass: PermissionsGuard,
     },
     AppService,
     AddressWizardService,
@@ -59,4 +59,4 @@ import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
     PhoneNumberService,
   ],
 })
-export class AppModule {}
+export class AppModule { }

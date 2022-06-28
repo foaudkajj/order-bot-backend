@@ -1,9 +1,9 @@
 export interface UIResponseBase<T> {
-  StatusCode: number;
-  IsError: boolean;
-  Error?: any;
-  MessageKey: string;
-  Result?: T;
+  statusCode: number;
+  isError: boolean;
+  error?: any;
+  messageKey: string;
+  result?: T;
   data?: T[];
   totalCount?: number;
   groupCount?: number;
