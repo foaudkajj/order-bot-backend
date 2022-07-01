@@ -53,7 +53,7 @@ module.exports = class init1642869230940 {
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (9, 'ENTEGRATIONS', NULL, NULL, 'NAV.ENTEGRATIONS', NULL, NULL, 1, 5);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (10, 'GETIR', NULL, NULL, 'NAV.GETIR', '/entegrations/getir-entegration', 'ENTEGRATIONS', 0, 0);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (11, 'YEMEKSEPETI', NULL, NULL, 'NAV.YEMEKSEPETI', '/entegrations/yemeksepeti-entegration', 'ENTEGRATIONS', 0, 0);`);        
-        await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (12, 'DASHBOARD', 'menu', NULL, 'NAV.DASHBOARD', '/home', NULL, 0, 1);`);
+        await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (12, 'DASHBOARD', 'home', NULL, 'NAV.DASHBOARD', '/home', NULL, 0, 1);`);
 
        
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (21, 'SHOW_ROLE', NULL, 1, 1);`);
