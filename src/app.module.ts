@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AddressWizardService } from './bot/wiards/address-wizard.service';
 import { AddnoteToOrderWizardService } from './bot/wiards/order-note.-wizard.service';
-import { PermissionsGuard } from './panel/guards/permissions.guard';
+import { PermissionsGuard } from './panel/passport/guards/permissions.guard';
 import { PanelModule } from './panel/panel.module';
 import { JwtAuthGuard } from './panel/passport/guards/jwt-auth.guard';
 import { ConfigModule } from '@nestjs/config';
@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SharedModule } from './shared.module';
 import { CustomNamingStrategy } from './naming-strategy';
 import { PhoneNumberService } from './bot/wiards/phone-number-wizard.service';
+import { MerchantInterceptor } from './panel/interceptors/merchant.interceptor';
 
 @Module({
   imports: [
@@ -52,6 +53,10 @@ import { PhoneNumberService } from './bot/wiards/phone-number-wizard.service';
     {
       provide: APP_GUARD,
       useClass: PermissionsGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MerchantInterceptor,
     },
     AppService,
     AddressWizardService,

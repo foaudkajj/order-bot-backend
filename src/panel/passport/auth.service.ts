@@ -49,18 +49,18 @@ export class AuthService {
       mp => mp.permission.permissionKey,
     );
 
-    const isMatch = await bcrypt.compareSync(
+    const isMatch = bcrypt.compareSync(
       loginRequest.Password,
-      user?.password,
+      user?.password
     );
     if (user && isMatch) {
       const loginReponse: UIResponseBase<LoginResponse> = {
         result: {
           isAuthenticated: true,
           token: this.jwtService.sign({
-            UserName: user.userName,
+            userName: user.userName,
             permissions: permissions,
-            MerchantId: user.merchantId,
+            merchantId: user.merchantId,
           }),
           userId: user.id,
           merchantId: user.merchantId,

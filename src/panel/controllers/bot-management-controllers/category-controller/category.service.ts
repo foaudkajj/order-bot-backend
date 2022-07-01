@@ -83,9 +83,9 @@ export class CategoryService {
     }
   }
 
-  async Delete(Id: number, MerchantId: number) {
+  async Delete(Id: number, merchantId: number) {
     try {
-      await this.categoryRepository.delete({ id: Id, merchantId: MerchantId });
+      await this.categoryRepository.delete({ id: Id, merchantId: merchantId });
       return <UIResponseBase<Category>>{
         isError: false,
         messageKey: 'SUCCESS',

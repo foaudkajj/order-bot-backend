@@ -26,8 +26,7 @@ export class OrderController {
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const { MerchantId } = request.user;
-    const result = await this.orderService.Get(query, MerchantId);
+    const result = await this.orderService.Get(query, request.merchantId);
     return result;
   }
 
@@ -46,10 +45,9 @@ export class OrderController {
     @Body() body: DxGridUpdateRequest,
     @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const { MerchantId } = request.user;
     const entity = { ...JSON.parse(body.values) } as Order;
     entity.id = body.key;
-    entity.merchantId = MerchantId;
+    entity.merchantId = request.merchantId;
     const result = await this.orderService.Update(entity);
     return result;
   }
@@ -60,10 +58,9 @@ export class OrderController {
     @Body() deleteRequest: DxGridDeleteRequest,
     @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const { MerchantId } = request.user;
     const result = await this.orderService.Delete(
       deleteRequest.key,
-      MerchantId,
+      request.merchantId,
     );
     return result;
   }

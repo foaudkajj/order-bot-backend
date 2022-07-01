@@ -18,8 +18,7 @@ export class ProductController {
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
-    const { MerchantId } = request.user;
-    const result = await this.productService.Get(query, MerchantId);
+    const result = await this.productService.Get(query, request.merchantId);
     return result;
   }
 
@@ -30,9 +29,9 @@ export class ProductController {
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
     const entity = JSON.parse(body.values) as Product;
-    const { MerchantId } = request.user;
+
     if (entity) {
-      entity.merchantId = MerchantId;
+      entity.merchantId = request.merchantId;
     }
     const result = await this.productService.Insert(entity);
     return result;
@@ -47,9 +46,8 @@ export class ProductController {
     const entity = { ...JSON.parse(body.values) } as Product;
     entity.id = body.key;
 
-    const { MerchantId } = request.user;
     if (entity) {
-      entity.merchantId = MerchantId;
+      entity.merchantId = request.merchantId;
     }
 
     const result = await this.productService.Update(entity);
@@ -62,9 +60,7 @@ export class ProductController {
     @Body() deleteBody: DxGridDeleteRequest,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
-    const { MerchantId } = request.user;
-
-    const result = await this.productService.Delete(deleteBody.key, MerchantId);
+    const result = await this.productService.Delete(deleteBody.key, request.merchantId);
     return result;
   }
 }

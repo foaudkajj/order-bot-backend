@@ -18,8 +18,7 @@ export class CategoryController {
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
   ): Promise<UIResponseBase<Category>> {
-    const { MerchantId } = request.user;
-    const result = await this.categoryService.Get(query, MerchantId);
+    const result = await this.categoryService.Get(query, request.merchantId);
     return result;
   }
 
@@ -29,10 +28,9 @@ export class CategoryController {
     @Body() body,
     @Request() request,
   ): Promise<UIResponseBase<Category>> {
-    const { MerchantId } = request.user;
     const entity = JSON.parse(body.values) as Category;
     if (entity) {
-      entity.merchantId = MerchantId;
+      entity.merchantId = request.merchantId;
     }
     const result = await this.categoryService.Insert(entity);
     return result;
@@ -46,9 +44,7 @@ export class CategoryController {
   ): Promise<UIResponseBase<Category>> {
     const entity = { ...JSON.parse(body.values) } as Category;
     entity.id = body.key;
-
-    const { MerchantId } = request.user;
-    entity.merchantId = MerchantId;
+    entity.merchantId = request.merchantId;
     const result = await this.categoryService.Update(entity);
     return result;
   }
@@ -59,10 +55,10 @@ export class CategoryController {
     @Body() deleteRequest: DxGridDeleteRequest,
     @Request() request,
   ): Promise<UIResponseBase<Category>> {
-    const { MerchantId } = request.user;
+
     const result = await this.categoryService.Delete(
       deleteRequest.key,
-      MerchantId,
+      request.merchantId,
     );
     return result;
   }

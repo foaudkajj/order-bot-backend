@@ -9,28 +9,26 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import {AllowAnonymous} from 'src/panel/decorators/public.decorator';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {FoodOrderDto} from './getir-dtos/food-order-dto';
-import {GetirService} from './getir.service';
+import { AllowAnonymous } from 'src/panel/decorators/public.decorator';
+import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
+import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
+import { FoodOrderDto } from './getir-dtos/food-order-dto';
+import { GetirService } from './getir.service';
 
 @Controller('api/Getir')
 export class GetirController {
-  constructor(public getirService: GetirService) {}
+  constructor(public getirService: GetirService) { }
 
   // @Post('AddOrDeletePaymentMethod')
   // async AddOrDeletePaymentMethod(@Body() body: AddOrDeletePaymentMethodDto, @Request() request): Promise<UIResponseBase<string>> {
-  //     const { MerchantId } = request.user;
-  //     return (await this.getirService.AddOrDeletePaymentMethod(MerchantId, body))
+  //     return (await this.getirService.AddOrDeletePaymentMethod(request.merchantId, body))
   // }
 
   @Get('GetRestaurantPaymentMethods')
   async GetRestaurantPaymentMethods(
     @Request() request,
   ): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
-    return await this.getirService.GetRestaurantPaymentMethods(MerchantId);
+    return await this.getirService.GetRestaurantPaymentMethods(request.merchantId);
   }
 
   @Delete('DeleteRestaurantPaymentMethods')
@@ -38,9 +36,8 @@ export class GetirController {
     @Request() request,
     @Body() deleteRequest: DxGridDeleteRequest,
   ): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
     return await this.getirService.DeleteRestaurantPaymentMethods(
-      MerchantId,
+      request.merchantId,
       deleteRequest.key,
     );
   }
@@ -49,8 +46,7 @@ export class GetirController {
   async GetAllPaymentMethods(
     @Request() request,
   ): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
-    return await this.getirService.GetAllPaymentMethods(MerchantId);
+    return await this.getirService.GetAllPaymentMethods(request.merchantId);
   }
 
   @Post('AddPaymentMethod')
@@ -58,9 +54,8 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     const result = await this.getirService.AddPaymentMethod(
-      MerchantId,
+      request.merchantId,
       body.values,
     );
     return result;
@@ -71,9 +66,8 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     const result = await this.getirService.ActivateDeactivateRestaurantPaymentMethods(
-      MerchantId,
+      request.merchantId,
       body,
     );
     return result;
@@ -84,9 +78,8 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     const result = await this.getirService.ActivateDeactivateProductStatus(
-      MerchantId,
+      request.merchantId,
       body,
     );
     return result;
@@ -94,22 +87,19 @@ export class GetirController {
 
   // @Post('ActivateDeactivateCategoryStatus')
   // async ActivateDeactivateCategoryStatus(@Request() request, @Body() body): Promise<UIResponseBase<any>> {
-  //     const { MerchantId } = request.user;
-  //     let result = await this.getirService.ActivateDeactivateCategoryStatus(MerchantId, body);
+  //     let result = await this.getirService.ActivateDeactivateCategoryStatus(request.merchantId, body);
   //     return result;
   // }
 
   // @Get('CheckAndGetAccessToken')
   // async CheckAndGetAccessToken(@Request() request): Promise<UIResponseBase<string>> {
-  //     const { MerchantId } = request.user;
-  //     const token = await GetirToken.getToken(MerchantId);
-  //     return (<UIResponseBase<string>>{ Result: token.Result })
+  //     const token = await GetirToken.getToken(request.merchantId);
+  //     return (<UIResponseBase<string>>{ Result: token.result })
   // }
 
   @Get('GetOptionProdcuts')
   async GetOptionProdcuts(@Request() request): Promise<UIResponseBase<string>> {
-    const {MerchantId} = request.user;
-    return await this.getirService.GetOptionProdcuts(MerchantId);
+    return await this.getirService.GetOptionProdcuts(request.merchantId);
   }
 
   @Post('ActivateDeactivateOptionProduct')
@@ -117,9 +107,8 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     const result = await this.getirService.ActivateDeactivateOptionProduct(
-      MerchantId,
+      request.merchantId,
       body,
     );
     return result;
@@ -130,17 +119,15 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     return await this.getirService.UpdateRestaurantAndCourierInfo(
-      MerchantId,
+      request.merchantId,
       body,
     );
   }
 
   // @Post('ActivateDeactivateAltOptions')
   // async ActivateDeactivateAltOptions(@Request() request, @Body() body): Promise<UIResponseBase<any>> {
-  //     const { MerchantId } = request.user;
-  //     let result = await this.getirService.ActivateDeactivateAltOptions(MerchantId, body);
+  //     let result = await this.getirService.ActivateDeactivateAltOptions(request.merchantId, body);
   //     return result;
   // }
 
@@ -149,9 +136,8 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     const result = await this.getirService.ActivateInActiveOptionProducts(
-      MerchantId,
+      request.merchantId,
       body,
     );
     return result;
@@ -162,9 +148,8 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     const result = await this.getirService.ActivateInActiveProductsAsOptions(
-      MerchantId,
+      request.merchantId,
       body,
     );
     return result;
@@ -175,9 +160,8 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const {MerchantId} = request.user;
     const result = await this.getirService.UpdateOptionStatusInSpecificProductAndCategory(
-      MerchantId,
+      request.merchantId,
       body,
     );
     return result;
@@ -187,11 +171,7 @@ export class GetirController {
   @AllowAnonymous()
   async OrderReceived(
     @Body() body: FoodOrderDto,
-    @Request() request,
-    @Headers() headers,
   ): Promise<number> {
-    // console.log(headers);
-    // console.log(JSON.stringify(body));
     await this.getirService.OrderReceived(body);
     return HttpStatus.OK;
   }
@@ -199,15 +179,13 @@ export class GetirController {
   @Post('OrderCanceled')
   @AllowAnonymous()
   async OrderCanceled(@Headers() headers, @Body() body): Promise<number> {
-    console.log(headers);
     await this.getirService.OrderCanceled(body);
     return HttpStatus.OK;
   }
 
   @Get('ImportUpdateGetirProducts')
   async importUpdateGetirProducts(@Request() request) {
-    const {MerchantId} = request.user;
-    return this.getirService.importUpdateGetirProducts(MerchantId);
+    return this.getirService.importUpdateGetirProducts(request.merchantId);
   }
 
   @Get('verifyOrder')
@@ -215,8 +193,7 @@ export class GetirController {
     @Request() request,
     @Query('foodOrderId') foodOrderId: string,
   ) {
-    const {MerchantId} = request.user;
-    return this.getirService.verifyOrder(foodOrderId, MerchantId);
+    return this.getirService.verifyOrder(foodOrderId, request.merchantId);
   }
 
   @Get('verifyFutureOrder')
@@ -225,8 +202,7 @@ export class GetirController {
     @Query('orderId') orderId: string,
     @Query('foodOrderId') foodOrderId: string,
   ) {
-    const {MerchantId} = request.user;
-    return this.getirService.verifyFutureOrder(foodOrderId, MerchantId);
+    return this.getirService.verifyFutureOrder(foodOrderId, request.merchantId);
   }
 
   @Get('prepareOrder')
@@ -234,8 +210,7 @@ export class GetirController {
     @Request() request,
     @Query('foodOrderId') foodOrderId: string,
   ) {
-    const {MerchantId} = request.user;
-    return this.getirService.prepareOrder(foodOrderId, MerchantId);
+    return this.getirService.prepareOrder(foodOrderId, request.merchantId);
   }
 
   @Get('deliverOrder')
@@ -243,8 +218,7 @@ export class GetirController {
     @Request() request,
     @Query('foodOrderId') foodOrderId: string,
   ) {
-    const {MerchantId} = request.user;
-    return this.getirService.deliverOrder(foodOrderId, MerchantId);
+    return this.getirService.deliverOrder(foodOrderId, request.merchantId);
   }
 
   @Get('handoverOrder')
@@ -252,7 +226,6 @@ export class GetirController {
     @Request() request,
     @Query('foodOrderId') foodOrderId: string,
   ) {
-    const {MerchantId} = request.user;
-    return this.getirService.handoverOrder(foodOrderId, MerchantId);
+    return this.getirService.handoverOrder(foodOrderId, request.merchantId);
   }
 }
