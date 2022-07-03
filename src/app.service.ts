@@ -230,8 +230,9 @@ export class AppService implements OnModuleInit {
                 <InlineQueryResultArticle>{
                   id: product.id.toString(),
                   type: 'article',
-                  photo_url: product.thumbUrl,
-                  thumb_url: product.thumbUrl,
+                  thumb_url: product.thumbUrl
+                    ? `${process.env.BLOB_URL}${product.thumbUrl}`
+                    : undefined,
                   title: product.title,
                   description: product.description,
                   // caption: product.Caption,

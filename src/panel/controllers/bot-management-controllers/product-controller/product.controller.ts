@@ -1,16 +1,34 @@
-import { Controller, Get, Post, Query, Body, Request } from '@nestjs/common';
-import { Product } from 'src/DB/models/product';
-import { PermissionsGuard } from 'src/panel/decorators/permissions.decorator';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
-import { DxGridUpdateRequest } from 'src/panel/dtos/dx-grid-update-request';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { PermissionEnum } from 'src/panel/enums/permissions-enum';
-import { ProductService } from './product.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Body,
+  Request,
+  UseInterceptors,
+  UploadedFile,
+  HttpStatus,
+} from '@nestjs/common';
+import {Product} from 'src/DB/models/product';
+import {PermissionsGuard} from 'src/panel/decorators/permissions.decorator';
+import {PermissionEnum} from 'src/panel/enums/permissions-enum';
+import {ProductService} from './product.service';
+import {Express} from 'express';
+import {
+  DataSourceLoadOptionsBase,
+  DxGridDeleteRequest,
+  DxGridUpdateRequest,
+  UIResponseBase,
+} from 'src/panel/dtos';
+import {FileInterceptor} from '@nestjs/platform-express';
+import {StorageBlobService} from 'src/services';
 
 @Controller('api/Products')
 export class ProductController {
-  constructor(private productService: ProductService) { }
+  constructor(
+    private productService: ProductService,
+    private storageBlobService: StorageBlobService,
+  ) {}
 
   @Get('Get')
   @PermissionsGuard(PermissionEnum.SHOW_PRODUCT)
@@ -43,7 +61,7 @@ export class ProductController {
     @Body() body: DxGridUpdateRequest,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
-    const entity = { ...JSON.parse(body.values) } as Product;
+    const entity = {...JSON.parse(body.values)} as Product;
     entity.id = body.key;
 
     if (entity) {
@@ -60,7 +78,22 @@ export class ProductController {
     @Body() deleteBody: DxGridDeleteRequest,
     @Request() request,
   ): Promise<UIResponseBase<Product>> {
-    const result = await this.productService.Delete(deleteBody.key, request.merchantId);
+    const result = await this.productService.Delete(
+      deleteBody.key,
+      request.merchantId,
+    );
     return result;
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('files[]'))
+  @PermissionsGuard(PermissionEnum.UPDATE_PRODUCT)
+  async uploadPicture(@UploadedFile() file: Express.Multer.File) {
+    await this.storageBlobService.uploadProductPicture(
+      file.originalname,
+      file.buffer,
+    );
+
+    return HttpStatus.OK;
   }
 }
