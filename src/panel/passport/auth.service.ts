@@ -43,9 +43,7 @@ export class AuthService {
       where: {isParent: true},
     });
     menus = menus.concat(parentMenus);
-    let navigationItems = this.createMenus(menus);
-    // filter menus that don't contain children
-    navigationItems = navigationItems.filter(f => f.children.length > 0);
+    const navigationItems = this.createMenus(menus);
 
     const permissions = user.role.roleAndPermissions.map(
       mp => mp.permission.permissionKey,
