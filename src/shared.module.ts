@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import {Module} from '@nestjs/common';
+import {TypeOrmModule} from '@nestjs/typeorm';
 import {
   CustomerRepository,
   MerchantRepository,
   OrderRepository,
 } from './bot/custom-repositories';
-import { DevextremeLoadOptionsService } from './db/helpers/devextreme-loadoptions';
+import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
 import {
   OrderItem,
   Product,
@@ -20,6 +20,7 @@ import {
   Option,
   OptionCategory,
 } from './db/models';
+import {StorageBlobService} from './services';
 
 @Module({
   imports: [
@@ -43,7 +44,7 @@ import {
     ]),
   ],
   controllers: [],
-  providers: [DevextremeLoadOptionsService],
-  exports: [DevextremeLoadOptionsService, TypeOrmModule],
+  providers: [DevextremeLoadOptionsService, StorageBlobService],
+  exports: [DevextremeLoadOptionsService, TypeOrmModule, StorageBlobService],
 })
-export class SharedModule { }
+export class SharedModule {}

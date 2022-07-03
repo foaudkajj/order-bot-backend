@@ -27,9 +27,6 @@ export class Product {
   // @Column({length: 50, nullable: true})
   // Caption: string;
 
-  @Column({length: 50})
-  productCode: string;
-
   @Column({type: 'decimal', default: 0})
   unitPrice?: number;
 

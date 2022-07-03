@@ -6,7 +6,7 @@ module.exports = class init1642869230940 {
     name = 'init1642869230940'
     
     // please create new db before run the migrations
-    // to excecute the following SQL commands, run typeorm migration:run
+    // to excecute the following SQL commands, run `typeorm migration:run` (without quotes)
     async up(queryRunner) {
         
         await queryRunner.query(`CREATE TABLE \`menu\` (\`id\` int NOT NULL AUTO_INCREMENT, \`menuKey\` varchar(50) NOT NULL, \`icon\` varchar(20) NULL, \`title\` varchar(50) NULL, \`translate\` varchar(200) NULL, \`url\` varchar(300) NULL, \`parentId\` varchar(50) NULL, \`isParent\` tinyint NOT NULL, \`priority\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
@@ -20,7 +20,7 @@ module.exports = class init1642869230940 {
         await queryRunner.query(`CREATE TABLE \`order\` (\`id\` int NOT NULL AUTO_INCREMENT, \`order_no\` varchar(36) NOT NULL, \`orderChannel\` enum ('TELEGRAM', 'YEMEKSEPETI', 'GETIR', 'PANEL') NOT NULL, \`paymentMethod\` enum ('OnDelivery', 'ONLINE') NOT NULL, \`totalPrice\` decimal(8,2) NOT NULL DEFAULT '0.00', \`orderStatus\` smallint NOT NULL DEFAULT '0', \`createDate\` datetime NOT NULL, \`note\` varchar(4000) NULL, \`customer_id\` int NOT NULL, \`getirOrderId\` varchar(255) NULL, \`merchantId\` int NOT NULL, UNIQUE INDEX \`REL_60c614712f96cf7ca323ada03f\` (\`getirOrderId\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`order_option\` (\`id\` int NOT NULL AUTO_INCREMENT, \`price\` decimal NOT NULL DEFAULT '0', \`optionId\` int NOT NULL, \`orderItemId\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`order_item\` (\`id\` int NOT NULL AUTO_INCREMENT, \`amount\` int NOT NULL, \`itemNote\` varchar(2000) NULL, \`productStatus\` enum ('SELECTED', 'INBASKET') NOT NULL, \`productId\` int NOT NULL, \`orderId\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`product\` (\`id\` int NOT NULL AUTO_INCREMENT, \`thumbUrl\` varchar(255) NOT NULL, \`title\` varchar(50) NOT NULL, \`description\` varchar(500) NOT NULL, \`productCode\` varchar(50) NOT NULL, \`unitPrice\` decimal NOT NULL DEFAULT '0', \`categoryId\` int NOT NULL, \`merchantId\` int NULL, \`getirProductId\` varchar(255) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`product\` (\`id\` int NOT NULL AUTO_INCREMENT, \`thumbUrl\` varchar(255) NOT NULL, \`title\` varchar(50) NOT NULL, \`description\` varchar(500) NOT NULL, \`unitPrice\` decimal NOT NULL DEFAULT '0', \`categoryId\` int NOT NULL, \`merchantId\` int NULL, \`getirProductId\` varchar(255) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`category\` (\`id\` int NOT NULL AUTO_INCREMENT, \`name\` varchar(30) NOT NULL, \`categoryKey\` varchar(50) NOT NULL, \`merchantId\` int NOT NULL, \`getirCategoryId\` varchar(255) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`option_category\` (\`id\` int NOT NULL AUTO_INCREMENT, \`name\` varchar(500) NOT NULL, \`getirOptionCategoryId\` varchar(500) NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`option\` (\`id\` int NOT NULL AUTO_INCREMENT, \`name\` varchar(500) NOT NULL, \`getirOptionId\` varchar(500) NOT NULL, \`price\` decimal(8,2) NOT NULL DEFAULT '0.00', \`optionCategoryId\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
@@ -50,9 +50,9 @@ module.exports = class init1642869230940 {
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (5, 'CATEGORIES', 'fa-solid fa-list', NULL, 'NAV.CATEGORIES', '/categories', 'PRODUCTS_MANAGEMENT', 0, 0);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (6, 'PRODUCTS', 'fa-solid fa-blender', NULL, 'NAV.PRODUCTS', '/products', 'PRODUCTS_MANAGEMENT', 0, 0);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (7, 'ORDERS', 'cart', NULL, 'NAV.ORDERS', '/orders', NULL, 0, 2);`);
-        await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (9, 'ENTEGRATIONS', NULL, NULL, 'NAV.ENTEGRATIONS', NULL, NULL, 1, 5);`);
-        await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (10, 'GETIR', NULL, NULL, 'NAV.GETIR', '/entegrations/getir-entegration', 'ENTEGRATIONS', 0, 0);`);
-        await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (11, 'YEMEKSEPETI', NULL, NULL, 'NAV.YEMEKSEPETI', '/entegrations/yemeksepeti-entegration', 'ENTEGRATIONS', 0, 0);`);        
+        // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (9, 'ENTEGRATIONS', NULL, NULL, 'NAV.ENTEGRATIONS', NULL, NULL, 1, 5);`);
+        // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (10, 'GETIR', NULL, NULL, 'NAV.GETIR', '/entegrations/getir-entegration', 'ENTEGRATIONS', 0, 0);`);
+        // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (11, 'YEMEKSEPETI', NULL, NULL, 'NAV.YEMEKSEPETI', '/entegrations/yemeksepeti-entegration', 'ENTEGRATIONS', 0, 0);`);        
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (12, 'DASHBOARD', 'home', NULL, 'NAV.DASHBOARD', '/home', NULL, 0, 1);`);
 
        
@@ -77,8 +77,8 @@ module.exports = class init1642869230940 {
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (39, 'ADD_ORDER', 'SHOW_ORDER', 0, NULL);`);
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (40, 'UPDATE_ORDER', 'SHOW_ORDER', 0, NULL);`);
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (41, 'DELETE_ORDER', 'SHOW_ORDER', 0, NULL);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (42, 'SHOW_GETIR_ENTEGRATION', NULL, 1, 10);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (43, 'SHOW_YEMEK_SEPETI_ENTEGRATION', NULL, 1, 11);`);
+    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (42, 'SHOW_GETIR_ENTEGRATION', NULL, 1, 10);`);
+    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (43, 'SHOW_YEMEK_SEPETI_ENTEGRATION', NULL, 1, 11);`);
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (44, 'SHOW_DASHBOARD', NULL, 1, 12);`);
 
        await queryRunner.query(`INSERT INTO \`role\` (\`id\`, \`RoleName\`, \`Description\`) VALUES (1, 'admin', 'Her şeyi kontrol eder.');`);
@@ -107,8 +107,8 @@ module.exports = class init1642869230940 {
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (19, 39, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (20, 40, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (21, 41, 1);`);
-       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (22, 42, 1);`);
-       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (23, 43, 1);`);
+    //    await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (22, 42, 1);`);
+    //    await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (23, 43, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (24, 44, 1);`);
         
 
