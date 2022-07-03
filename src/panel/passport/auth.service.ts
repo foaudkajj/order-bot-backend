@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/db/models/user';
-import { Repository } from 'typeorm';
-import { LoginRequest } from '../dtos/login-request-dto';
-import { LoginResponse } from '../dtos/login-response';
-import { UIResponseBase } from '../dtos/ui-response-base';
+import {Injectable} from '@nestjs/common';
+import {JwtService} from '@nestjs/jwt';
+import {User} from 'src/db/models/user';
+import {Repository} from 'typeorm';
+import {LoginRequest} from '../dtos/login-request-dto';
+import {LoginResponse} from '../dtos/login-response';
+import {UIResponseBase} from '../dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
-import { Menu } from 'src/db/models/menu';
-import { NavigationItem } from '../dtos/navigation-items';
-import { InjectRepository } from '@nestjs/typeorm';
+import {Menu} from 'src/db/models/menu';
+import {NavigationItem} from '../dtos/navigation-items';
+import {InjectRepository} from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
@@ -18,12 +18,12 @@ export class AuthService {
     @InjectRepository(Menu)
     private menusRepository: Repository<Menu>,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async validateUser(loginRequest: LoginRequest): Promise<any> {
     // let user: User = await this.userRepository.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('role.roleAndPermissions', 'roleAndPermissions').getOne();
     const user = await this.userRepository.findOne({
-      where: { userName: loginRequest.UserName },
+      where: {userName: loginRequest.UserName},
       relations: [
         'role',
         'merchant',
@@ -36,23 +36,22 @@ export class AuthService {
       // TODO: return error
       return;
     }
-    let menus = user.role.roleAndPermissions.filter(
-      fi => fi.permission.menu,
-    ).map(fi => fi.permission.menu);
+    let menus = user.role.roleAndPermissions
+      .filter(fi => fi.permission.menu)
+      .map(fi => fi.permission.menu);
     const parentMenus = await this.menusRepository.find({
-      where: { isParent: true },
+      where: {isParent: true},
     });
     menus = menus.concat(parentMenus);
-    const navigationItems = this.createMenus(menus);
+    let navigationItems = this.createMenus(menus);
+    // filter menus that don't contain children
+    navigationItems = navigationItems.filter(f => f.children.length > 0);
 
     const permissions = user.role.roleAndPermissions.map(
       mp => mp.permission.permissionKey,
     );
 
-    const isMatch = bcrypt.compareSync(
-      loginRequest.Password,
-      user?.password
-    );
+    const isMatch = bcrypt.compareSync(loginRequest.Password, user?.password);
     if (user && isMatch) {
       const loginReponse: UIResponseBase<LoginResponse> = {
         result: {
