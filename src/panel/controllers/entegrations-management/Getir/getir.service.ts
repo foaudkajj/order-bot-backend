@@ -813,10 +813,6 @@ export class GetirService {
         const newGetirProduct: Product = {
           title: getirProduct.name.tr,
           description: getirProduct.description.tr,
-          productCode: getirProduct.name.tr
-            .trim()
-            .replace(' ', '')
-            .toUpperCase(),
           unitPrice: getirProduct.price,
           categoryId: fetchedCategory.id,
           thumbUrl: getirProduct.imageURL,
