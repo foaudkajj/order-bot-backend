@@ -229,7 +229,7 @@ export class AppService implements OnModuleInit {
               product =>
                 <InlineQueryResultArticle>{
                   id: product.id.toString(),
-                  type: product.tgQueryResult,
+                  type: 'article',
                   photo_url: product.thumbUrl,
                   thumb_url: product.thumbUrl,
                   title: product.title,
@@ -479,7 +479,6 @@ export class AppService implements OnModuleInit {
       'orderItems.product',
     ]);
     if (order) {
-      console.log('AddNEwOrder');
       const selectedProduct = order.orderItems.find(
         fi => fi.productStatus === ProductStatus.Selected,
       );

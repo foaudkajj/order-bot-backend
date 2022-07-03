@@ -24,7 +24,6 @@ export class AddnoteToOrderWizardService {
 
         if (ctx.message && 'text' in ctx.message) {
           await ctx.reply('Kaydedilmiştir...');
-          console.log(ctx.message.text);
           // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
           const customer = await this.customerRepository.getCustomerByTelegramId(
             ctx,
