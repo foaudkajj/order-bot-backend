@@ -4,7 +4,7 @@ import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {getRepository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
-import {OrdersInBasketCb} from './get-orders-in-basket-CB-handler';
+import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
 
 export abstract class StartOrderingCb {
   public static async StartOrdering(ctx: BotContext) {

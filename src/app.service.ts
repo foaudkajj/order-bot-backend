@@ -8,7 +8,7 @@ import {Product} from './db/models/product';
 import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
 import {CustomerRepository} from './bot/custom-repositories/customer-repository';
 import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
-import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-CB-handler';
+import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-cb-handler';
 import {FirstMessageHandler} from './bot/helpers/first-message-handler';
 import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
 import {OrderRepository} from './bot/custom-repositories/order-repository';
