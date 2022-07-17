@@ -1,18 +1,18 @@
-import { Controller, Get, Post, Query, Body } from '@nestjs/common';
-import { Role } from 'src/db/models/Role';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
-import { DxGridUpdateRequest } from 'src/panel/dtos/dx-grid-update-request';
-import { GetRolesDto } from 'src/panel/dtos/get-roles-dto';
-import { RoleIdAndPermissions } from 'src/panel/dtos/role-id-and-permissions';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { PermissionsGuard } from '../../decorators/permissions.decorator';
-import { PermissionEnum } from '../../enums/permissions-enum';
-import { RoleService } from './role.service';
+import {Controller, Get, Post, Query, Body} from '@nestjs/common';
+import {Role} from 'src/db/models/role';
+import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
+import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
+import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
+import {RoleIdAndPermissions} from 'src/panel/dtos/role-id-and-permissions';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
+import {PermissionsGuard} from '../../decorators/permissions.decorator';
+import {PermissionEnum} from '../../enums/permissions-enum';
+import {RoleService} from './role.service';
 
 @Controller('api/Roles')
 export class RoleController {
-  constructor(private roleService: RoleService) { }
+  constructor(private roleService: RoleService) {}
 
   @Get('Get')
   @PermissionsGuard(PermissionEnum.SHOW_ROLE)
@@ -55,7 +55,7 @@ export class RoleController {
   async Update(
     @Body() request: DxGridUpdateRequest,
   ): Promise<UIResponseBase<Role>> {
-    const role = { ...JSON.parse(request.values) } as Role;
+    const role = {...JSON.parse(request.values)} as Role;
     role.id = request.key;
     const result = await this.roleService.Update(role);
     return result;
