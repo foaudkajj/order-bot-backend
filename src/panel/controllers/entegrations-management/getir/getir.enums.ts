@@ -1,0 +1,82 @@
+export enum GetirOrderStatus {
+  RestaurantApprovalPendingForScheduledOrder = 325,
+  RestaurantApproved = 350,
+  RestaurantApprovalPending = 400,
+  PreparingOrder = 500,
+  OrderPreapred = 550,
+  OrderHandedToGetirCourier = 600,
+  CourierOnWay = 700,
+  CourierReached = 800,
+  OrderDelivered = 900,
+  OrderCancelledByAdmin = 1500,
+  OrderCancelledByRestaurant = 1600,
+}
+
+export enum Endpoints {
+  auth = '/auth/login',
+  foodOrdersReport = '​/food-orders​/report',
+  foodOrder = '/food-orders/{foodOrderId}',
+  foodOrdersDetails = '​/food-orders/report/details',
+  cancelOptionOfFoodOrder = '/food-orders/{foodOrderId}/cancel-options',
+  availableRestaurantsForTransfer = '/food-orders/{foodOrderId}/available-restaurants-for-transfer',
+  restaurantActiveFoodOrders = '/food-orders/active',
+  cancelledFoodOrders = '/food-orders/periodic/cancelled',
+  unapprovedFoodOrders = '/food-orders/periodic/unapproved',
+  transferToAnotherRestaurant = '/food-orders/{foodOrderId}/transfer-to-another-restaurant',
+  handoverFoodOrder = '/food-orders/{foodOrderId}/handover',
+  verifyScheduledFoodOrder = '/food-orders/{foodOrderId}/verify-scheduled',
+  verifyFoodOrder = '/food-orders/{foodOrderId}/verify',
+  prepareFoodOrder = '/food-orders/{foodOrderId}/prepare',
+  deliverFoodOrder = '/food-orders/{foodOrderId}/deliver',
+  cancelFoodOrder = '/food-orders/{foodOrderId}/cancel',
+  restaurantPanelOperation = '/food-orders/{foodOrderId}/restaurant-panel-operation',
+  checkHealth = '/health',
+  listPaymentMethods = '/payment-methods',
+  getProductSatatus = '/products/{productId}/status',
+  updateProductStatus = '/products/{productId}/status',
+  getProductSatatusWithChainId = '/products/chain-id/{chainProductId}/status',
+  updateProductSatatusWithChainId = '/products/chain-id/{chainProductId}/status',
+  activeRestaurantOptionsWithProductId = '/products/{productId}/activate-as-option',
+  inactivateRestaurantOptionsWithProductId = '/products/{productId}/inactivate-as-option',
+  activateRestaurantOptionsWithChainProductId = '/products/chain-id/{chainProductId}/activate-as-option',
+  inactivateRestaurantOptionsWithChainProductId = '/products/chain-id/{chainProductId}/inactivate-as-option',
+  activateRestaurantOptionsWithOptionProductId = '/products/option-products/{optionProductId}/activate-as-option',
+  inactivateRestaurantOptionsWithOptionProductId = '/products/option-products/{optionProductId}/inactivate-as-option',
+  activateRestaurantOptionsWithChainOptionId = '/products/option-products/chain-id/{chainOptionProductId}/activate-as-option',
+  inactivateRestaurantOptionsWithChainOptionId = '/products/option-products/chain-id/{chainOptionProductId}/inactivate-as-option',
+  updateProductOptionStatus = '/products/{productId}/option-categories/{optionCategoryId}/options/{optionId}/status',
+  updateProductOptionStatusWithChainId = '/products/chain-id/{chainProductId}/option-categories/{chainOptionCategoryId}/options/{chainOptionId}/status',
+  GetRestaurantInformation = '/restaurants',
+  GetRestaurantMenuAndOptions = '/restaurants/menu',
+  GetRestaurantOptionProducts = '/restaurants/option-products',
+  GetRestaurantPaymentMethods = '/restaurants/payment-methods',
+  AddRestaurantPaymentMethod = '/restaurants/payment-methods',
+  DeleteRestaurantPaymentMethod = '/restaurants/payment-methods',
+  GetRestaurantZondeList = '/restaurants/zones',
+  GetZoneByRestaurantId = '/restaurants/zones/{zoneId}',
+  DisableTheCourierService = '/restaurants/courier/disable',
+  EnableTheCourierService = '/restaurants/courier/enable',
+  ActivateRestaurantPaymentMethod = '/restaurants/payment-methods/active',
+  InactivateRestaurantPaymentMethod = '/restaurants/payment-methods/inactive',
+  UpdateRestaurantAveragePreparationTime = '/restaurants/average-preparation-time',
+  UpdateRestaurantDeliveryDurationAmount = '/restaurants/delivery-duration',
+  DeleteRestaurantDeliveryDurationAmount = '/restaurants/delivery-duration',
+  CloseTheRestaurant = '/restaurants/status/close',
+  OpenTheRestaurant = '/restaurants/status/open',
+  InactivateRestaurantZoneStatus = '/restaurants/zones/{zoneId}/inactive',
+  ActivateRestaurantZoneStatus = '/restaurants/zones/{zoneId}/active',
+  UpdateOptionProductOptionStatus = '/restaurants/option-products/{optionProductId}/option-categories/{optionCategoryId}/options/{optionId}/status',
+  UpdateOptionProductOptionStatusWithChainId = '/restaurants/option-products/chain-id/{chainOptionProductId}/option-categories/{chainOptionCategoryId}/options/{chainOptionId}/status',
+}
+
+export enum DeliveryType {
+  ByGetir = 1,
+  ByRestaurant = 2,
+}
+
+export type GetirResult = {
+  result: boolean;
+  code: number;
+  detail: string;
+  message: string;
+};
