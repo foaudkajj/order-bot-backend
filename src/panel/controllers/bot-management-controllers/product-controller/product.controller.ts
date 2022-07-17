@@ -9,7 +9,7 @@ import {
   UploadedFile,
   HttpStatus,
 } from '@nestjs/common';
-import {Product} from 'src/DB/models/product';
+import {Product} from 'src/db/models/product';
 import {PermissionsGuard} from 'src/panel/decorators/permissions.decorator';
 import {PermissionEnum} from 'src/panel/enums/permissions-enum';
 import {ProductService} from './product.service';
