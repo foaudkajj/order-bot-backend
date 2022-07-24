@@ -19,6 +19,8 @@ import {
   User,
   Option,
   OptionCategory,
+  Customer,
+  Order,
 } from './db/models';
 import {StorageBlobService} from './services';
 
@@ -26,14 +28,16 @@ import {StorageBlobService} from './services';
   imports: [
     TypeOrmModule.forFeature([
       CustomerRepository,
+      Customer,
       OrderRepository,
+      Order,
       OrderItem,
       Product,
       Category,
       GetirOrder,
       Menu,
-      Merchant,
       MerchantRepository,
+      Merchant,
       Permission,
       Product,
       RoleAndPermission,

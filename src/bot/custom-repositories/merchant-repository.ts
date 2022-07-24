@@ -1,10 +1,10 @@
-import { Merchant } from 'src/db/models/merchant';
-import { EntityRepository, Repository } from 'typeorm';
+import {Merchant} from 'src/db/models/merchant';
+import {EntityRepository, Repository} from 'typeorm';
 
 @EntityRepository(Merchant)
 export class MerchantRepository extends Repository<Merchant> {
   async getGetirToken(merchatId: number) {
-    const merchant = await this.findOne(merchatId);
+    const merchant = await this.findOne({where: {id: merchatId}});
     if (merchant?.getirAccessToken) {
       return merchant.getirAccessToken;
     } else {
@@ -13,6 +13,6 @@ export class MerchantRepository extends Repository<Merchant> {
   }
 
   async getMerchantIdByBotUserName(botUserName: string): Promise<Merchant> {
-    return await this.findOne({ where: { botUserName: botUserName } });
+    return await this.findOne({where: {botUserName: botUserName}});
   }
 }

@@ -1,4 +1,5 @@
-import {HttpModule, Module} from '@nestjs/common';
+import {HttpModule} from '@nestjs/axios';
+import {Module} from '@nestjs/common';
 import {SharedModule} from 'src/shared.module';
 import {GetirService} from '../../entegrations-management/getir/getir.service';
 import {OrderController} from './order.controller';
