@@ -19,12 +19,12 @@ import {CustomNamingStrategy} from './naming-strategy';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: 'orderbot.mysql.database.azure.com',
       port: 3306,
-      username: 'root',
-      password: 'password',
+      username: 'orderbot_root@orderbot',
+      password: 'Fouad@Fouad1',
       database: 'orderbot',
-      synchronize: true,
+      synchronize: false,
       logging: false,
       entities: ['dist/**/*.js'],
       extra: {
