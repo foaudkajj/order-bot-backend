@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {DataSourceLoadOptionsBase, SortingInfo} from 'src/panel/dtos';
-import {FindManyOptions, MoreThan} from 'typeorm';
+import {FindManyOptions, FindOptionsWhere, MoreThan} from 'typeorm';
 
 @Injectable()
 export class DevextremeLoadOptionsService {
@@ -19,7 +19,9 @@ export class DevextremeLoadOptionsService {
       const filter = JSON.parse(query.filter);
       switch (filter[1]) {
         case '>':
-          findOptions.where = {[filter[0]]: MoreThan(filter[2])};
+          findOptions.where = <FindOptionsWhere<T>>{
+            [filter[0]]: MoreThan(filter[2]),
+          };
           break;
 
         default:

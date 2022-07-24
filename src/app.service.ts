@@ -18,6 +18,9 @@ import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
 import {MerchantRepository} from './bot/custom-repositories';
 import {
   Category,
+  Customer,
+  Merchant,
+  Order,
   OrderChannel,
   OrderStatus,
   PaymentMethod,
@@ -39,8 +42,11 @@ export class AppService implements OnModuleInit {
     private productRepository: Repository<Product>,
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
+    @InjectRepository(Customer)
     private customerRepository: CustomerRepository,
+    @InjectRepository(Order)
     private orderRepository: OrderRepository,
+    @InjectRepository(Merchant)
     private merchantRepository: MerchantRepository,
   ) {}
 
@@ -120,10 +126,11 @@ export class AppService implements OnModuleInit {
 
             case CallBackQueryResult.MyBasket:
               {
-                const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
-                  ctx,
-                  OrderStatus.New,
-                );
+                const orderDetails =
+                  await OrdersInBasketCb.GetOrdersInBasketByStatus(
+                    ctx,
+                    OrderStatus.New,
+                  );
                 if (orderDetails != null) {
                   await ctx.editMessageText(orderDetails, {
                     parse_mode: 'HTML',
@@ -292,7 +299,7 @@ export class AppService implements OnModuleInit {
         ctx,
       );
       if (order) {
-        await this.orderRepository.delete(order);
+        await this.orderRepository.delete({id: order.id});
         await ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.');
       } else {
         await ctx.answerCbQuery('Sepetiniz Boştur.');
@@ -337,7 +344,8 @@ export class AppService implements OnModuleInit {
   }
 
   InitlizeWizards(composer: Composer<BotContext>) {
-    const addNoteToOrderWizard = this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
+    const addNoteToOrderWizard =
+      this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
     const addressWizard = this.addressWizard.InitilizeAdressWizard();
     const phoneNumber = this.phoneNumberService.InitilizePhoneNumberWizard();
     const stage = new Scenes.Stage<BotContext>([
@@ -420,7 +428,10 @@ export class AppService implements OnModuleInit {
 
       // Get Prodcut Details From DB and Show Them
       const product = await this.productRepository.findOne({
-        where: {id: selectedProduct, merchantId: customer.merchantId},
+        where: {
+          id: Number.parseInt(selectedProduct),
+          merchantId: customer.merchantId,
+        },
       });
       await ctx.reply(
         `<b>${product.title}</b> \n` +

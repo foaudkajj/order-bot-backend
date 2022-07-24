@@ -1,35 +1,33 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { DevextremeLoadOptionsService } from 'src/db/helpers/devextreme-loadoptions';
-import { Order } from 'src/db/models/order';
-import { Customer } from 'src/db/models/customer';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { FindManyOptions, Repository } from 'typeorm';
-import { InformationMessages } from 'src/bot/helpers/informtaion-msgs';
-import { OrderChannel, OrderStatus } from 'src/db/models';
-import { InjectRepository } from '@nestjs/typeorm';
+import {HttpStatus, Injectable} from '@nestjs/common';
+import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
+import {Order} from 'src/db/models/order';
+import {Customer} from 'src/db/models/customer';
+import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
+import {FindManyOptions, Repository} from 'typeorm';
+import {InformationMessages} from 'src/bot/helpers/informtaion-msgs';
+import {OrderChannel, OrderStatus} from 'src/db/models';
+import {InjectRepository} from '@nestjs/typeorm';
 import {
   DeliveryType,
   GetirResult,
 } from '../../entegrations-management/getir/getir.enums';
-import { GetirService } from '../../entegrations-management/getir/getir.service';
-import { UIResponseError } from 'src/panel/dtos';
+import {GetirService} from '../../entegrations-management/getir/getir.service';
+import {UIResponseError} from 'src/panel/dtos';
+import {OrderRepository} from 'src/bot/custom-repositories';
 
 @Injectable()
 export class OrderService {
   constructor(
     private devextremeLoadOptions: DevextremeLoadOptionsService,
     @InjectRepository(Order)
-    private orderRepository: Repository<Order>,
-    @InjectRepository(Customer)
-    private customerRepository: Repository<Customer>,
+    private orderRepository: OrderRepository,
     private getirService: GetirService,
-  ) { }
+  ) {}
 
   async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
-    const findOptions: FindManyOptions<Order> = this.devextremeLoadOptions.GetFindOptionsFromQuery(
-      query,
-    );
+    const findOptions: FindManyOptions<Order> =
+      this.devextremeLoadOptions.GetFindOptionsFromQuery(query);
     findOptions.relations = [
       'customer',
       'getirOrder',
@@ -85,7 +83,7 @@ export class OrderService {
 
   async Update(updateDetails: Order) {
     const order = await this.orderRepository.findOne({
-      where: { id: updateDetails.id },
+      where: {id: updateDetails.id},
       relations: ['getirOrder', 'merchant', 'customer'],
     });
 
@@ -107,7 +105,7 @@ export class OrderService {
         }
 
         if (response.result === true) {
-          await this.orderRepository.update({ id: order.id }, updateDetails);
+          await this.orderRepository.update({id: order.id}, updateDetails);
           return <UIResponseBase<Order>>{
             isError: false,
             result: updateDetails,
@@ -141,7 +139,7 @@ export class OrderService {
         }
 
         if (response.result === true) {
-          await this.orderRepository.update({ id: order.id }, updateDetails);
+          await this.orderRepository.update({id: order.id}, updateDetails);
         }
       }
       if (response.result === false) {
@@ -172,7 +170,7 @@ export class OrderService {
         }
       }
     } else if (order.orderChannel === OrderChannel.Telegram) {
-      await this.orderRepository.update({ id: order.id }, updateDetails);
+      await this.orderRepository.update({id: order.id}, updateDetails);
 
       switch (updateDetails.orderStatus) {
         case OrderStatus.MerchantConfirmed:
@@ -218,7 +216,7 @@ export class OrderService {
 
   async Delete(Id: number, merchantId: number) {
     try {
-      await this.orderRepository.delete({ id: Id, merchantId: merchantId });
+      await this.orderRepository.delete({id: Id, merchantId: merchantId});
       return <UIResponseBase<Order>>{
         isError: false,
         messageKey: 'SUCCESS',
@@ -232,7 +230,7 @@ export class OrderService {
   async CancelOrder(orderId: string) {
     try {
       const order = await this.orderRepository.findOne({
-        where: { id: orderId },
+        where: {id: Number.parseInt(orderId)},
         relations: ['getirOrder', 'merchant', 'customer'],
       });
 

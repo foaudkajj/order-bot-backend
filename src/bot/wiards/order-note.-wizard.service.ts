@@ -1,9 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {OrderStatus} from 'src/db/models';
+import {Customer, OrderStatus} from 'src/db/models';
 import {Order} from 'src/db/models/order';
 import {Scenes} from 'telegraf';
 import {Repository} from 'typeorm';
+import {OrderRepository} from '../custom-repositories';
 import {CustomerRepository} from '../custom-repositories/customer-repository';
 import {ConfirmOrderHandler} from '../helpers/confirm-order.handler';
 import {BotContext} from '../interfaces/bot-context';
@@ -12,7 +13,8 @@ import {BotContext} from '../interfaces/bot-context';
 export class AddnoteToOrderWizardService {
   constructor(
     @InjectRepository(Order)
-    private orderRepository: Repository<Order>,
+    private orderRepository: OrderRepository,
+    @InjectRepository(Customer)
     private customerRepository: CustomerRepository,
   ) {}
 
@@ -25,9 +27,8 @@ export class AddnoteToOrderWizardService {
         if (ctx.message && 'text' in ctx.message) {
           await ctx.reply('Kaydedilmiştir...');
           // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-          const customer = await this.customerRepository.getCustomerByTelegramId(
-            ctx,
-          );
+          const customer =
+            await this.customerRepository.getCustomerByTelegramId(ctx);
           await this.orderRepository.update(
             {customerId: customer.id, orderStatus: OrderStatus.New},
             {note: ctx.message.text},

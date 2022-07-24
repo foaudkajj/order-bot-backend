@@ -1,4 +1,4 @@
-import {HttpService, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {MerchantRepository} from 'src/bot/custom-repositories/merchant-repository';
 import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
@@ -10,6 +10,7 @@ import {FoodOrderDto} from './getir-dtos/food-order-dto';
 import {Customer} from 'src/db/models/customer';
 import {
   Category,
+  Merchant,
   Option,
   OrderChannel,
   OrderItem,
@@ -24,6 +25,8 @@ import {ProductCategory} from './getir-dtos/restaurant-menu';
 import {firstValueFrom} from 'rxjs';
 import {OptionCategory} from 'src/db/models/option-category';
 import {OrderOption} from 'src/db/models/order-option';
+import {HttpService} from '@nestjs/axios';
+import {OrderRepository} from 'src/bot/custom-repositories';
 
 @Injectable()
 export class GetirService {
@@ -33,7 +36,8 @@ export class GetirService {
     public devextremeLoadOptions: DevextremeLoadOptionsService,
     public httpService: HttpService,
     @InjectRepository(Order)
-    private orderRepository: Repository<Order>,
+    private orderRepository: OrderRepository,
+    @InjectRepository(Merchant)
     private merchantRepository: MerchantRepository,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
@@ -574,7 +578,7 @@ export class GetirService {
 
   async OrderReceived(orderDetails: FoodOrderDto) {
     const existingOrder = await this.orderRepository.findOne({
-      getirOrderId: orderDetails.foodOrder.id,
+      where: {getirOrderId: orderDetails.foodOrder.id},
     });
 
     if (existingOrder) {
@@ -724,9 +728,8 @@ export class GetirService {
   }
 
   async importUpdateGetirProducts(merchantId: number) {
-    const restaurantDetails: UIResponseBase<ProductCategory> = await this.GetRestaurantMenusAndOptions(
-      merchantId,
-    );
+    const restaurantDetails: UIResponseBase<ProductCategory> =
+      await this.GetRestaurantMenusAndOptions(merchantId);
 
     const getirCategoryList = restaurantDetails.data.map(
       category => category.id,
