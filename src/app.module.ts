@@ -33,6 +33,9 @@ import {CustomNamingStrategy} from './naming-strategy';
       namingStrategy: new CustomNamingStrategy(),
       autoLoadEntities: true,
       keepConnectionAlive: true,
+      ssl: {
+        ca: fs.readFileSync('BaltimoreCyberTrustRoot.crt.pem'),
+      },
     }),
     ConfigModule.forRoot({isGlobal: true}),
     PanelModule,
