@@ -13,3 +13,4 @@ export * from './user';
 export * from './enums';
 export * from './option';
 export * from './option-category';
+export * from './order-option';

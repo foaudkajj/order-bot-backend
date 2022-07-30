@@ -5,6 +5,7 @@ import {
   MerchantRepository,
   OrderRepository,
 } from './bot/custom-repositories';
+import {FirstMessageHandler} from './bot/helpers';
 import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
 import {
   OrderItem,
@@ -21,13 +22,13 @@ import {
   OptionCategory,
   Customer,
   Order,
+  OrderOption,
 } from './db/models';
 import {StorageBlobService} from './services';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      CustomerRepository,
       Customer,
       OrderRepository,
       Order,
@@ -45,10 +46,22 @@ import {StorageBlobService} from './services';
       User,
       Option,
       OptionCategory,
+      OrderOption,
     ]),
   ],
   controllers: [],
-  providers: [DevextremeLoadOptionsService, StorageBlobService],
-  exports: [DevextremeLoadOptionsService, TypeOrmModule, StorageBlobService],
+  providers: [
+    DevextremeLoadOptionsService,
+    StorageBlobService,
+    CustomerRepository,
+    FirstMessageHandler,
+  ],
+  exports: [
+    DevextremeLoadOptionsService,
+    TypeOrmModule,
+    StorageBlobService,
+    CustomerRepository,
+    FirstMessageHandler,
+  ],
 })
 export class SharedModule {}

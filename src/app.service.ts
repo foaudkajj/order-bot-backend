@@ -6,19 +6,19 @@ import {CallBackQueryResult} from './bot/models/enums';
 import {AddressWizardService} from './bot/wiards/address-wizard.service';
 import {Product} from './db/models/product';
 import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
-import {CustomerRepository} from './bot/custom-repositories/customer-repository';
 import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
 import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-cb-handler';
-import {FirstMessageHandler} from './bot/helpers/first-message-handler';
 import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
 import {OrderRepository} from './bot/custom-repositories/order-repository';
 import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
 import {OrderItem} from './db/models/order-item';
 import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
-import {MerchantRepository} from './bot/custom-repositories';
+import {
+  CustomerRepository,
+  MerchantRepository,
+} from './bot/custom-repositories';
 import {
   Category,
-  Customer,
   Merchant,
   Order,
   OrderChannel,
@@ -29,6 +29,7 @@ import {
 import {InjectRepository} from '@nestjs/typeorm';
 import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
 import {InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
+import {FirstMessageHandler} from './bot/helpers';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -42,12 +43,12 @@ export class AppService implements OnModuleInit {
     private productRepository: Repository<Product>,
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
-    @InjectRepository(Customer)
     private customerRepository: CustomerRepository,
     @InjectRepository(Order)
     private orderRepository: OrderRepository,
     @InjectRepository(Merchant)
     private merchantRepository: MerchantRepository,
+    private fmh: FirstMessageHandler,
   ) {}
 
   static botMap: Map<string, Telegraf<BotContext>> = new Map<
@@ -87,10 +88,7 @@ export class AppService implements OnModuleInit {
   }
 
   InilizeBotEventsHandlers(composer: Composer<BotContext>) {
-    composer.command(
-      'start',
-      async ctx => await FirstMessageHandler.startOptions(ctx),
-    );
+    composer.command('start', async ctx => await this.fmh.startOptions(ctx));
 
     composer.on('callback_query', async ctx => {
       try {
@@ -179,7 +177,7 @@ export class AppService implements OnModuleInit {
 
             case CallBackQueryResult.ConfirmOrder:
               await ConfirmOrderHandler.ConfirmOrder(ctx);
-              // await FirstMessageHandler.startOptions(ctx);
+              // await this.fmh.startOptions(ctx);
               break;
 
             case CallBackQueryResult.EmptyBakset:
@@ -188,7 +186,7 @@ export class AppService implements OnModuleInit {
 
             case CallBackQueryResult.MainMenu:
               await ctx.answerCbQuery();
-              await FirstMessageHandler.startOptions(ctx);
+              await this.fmh.startOptions(ctx);
               break;
 
             case CallBackQueryResult.TrackOrder:
@@ -201,7 +199,7 @@ export class AppService implements OnModuleInit {
 
             case CallBackQueryResult.GetConfirmedOrders:
               await GetConfirmedOrderCb.GetConfirmedOrders(ctx);
-              // await FirstMessageHandler.startOptions(ctx);
+              // await this.fmh.startOptions(ctx);
               break;
 
             default:
@@ -322,7 +320,7 @@ export class AppService implements OnModuleInit {
         {orderStatus: OrderStatus.UserConfirmed},
       );
       await ctx.answerCbQuery('Siparişiniz Gönderilmiştir');
-      await FirstMessageHandler.startOptions(ctx);
+      await this.fmh.startOptions(ctx);
     } catch (error) {
       console.log(error);
       await ctx.answerCbQuery('Bir hata oluştu. Lütfen tekrar deneyiniz.');
@@ -355,7 +353,7 @@ export class AppService implements OnModuleInit {
     ]);
     stage.command('iptal', async ctx => {
       await ctx.scene.leave();
-      await FirstMessageHandler.startOptions(ctx);
+      await this.fmh.startOptions(ctx);
     });
     composer.use(session());
     composer.use(stage.middleware());
