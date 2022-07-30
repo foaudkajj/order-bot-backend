@@ -1,11 +1,14 @@
+import {Injectable} from '@nestjs/common';
 import {OrderStatus} from 'src/db/models';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
 
-export abstract class ConfirmOrderHandler {
-  public static async ConfirmOrder(ctx: BotContext) {
-    const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
+@Injectable()
+export class ConfirmOrderHandler {
+  constructor(private orderInBasket: OrdersInBasketCb) {}
+  public async ConfirmOrder(ctx: BotContext) {
+    const orderDetails = await this.orderInBasket.GetOrdersInBasketByStatus(
       ctx,
       OrderStatus.New,
     );

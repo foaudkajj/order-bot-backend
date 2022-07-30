@@ -11,6 +11,7 @@ export class AddnoteToOrderWizardService {
   constructor(
     private orderRepository: OrderRepository,
     private customerRepository: CustomerRepository,
+    private confirmOrderHandler: ConfirmOrderHandler,
   ) {}
 
   InitilizeAddnoteToOrderWizard() {
@@ -28,7 +29,7 @@ export class AddnoteToOrderWizardService {
             {customerId: customer.id, orderStatus: OrderStatus.New},
             {note: ctx.message.text},
           );
-          await ConfirmOrderHandler.ConfirmOrder(ctx);
+          await this.confirmOrderHandler.ConfirmOrder(ctx);
           await ctx.scene.leave();
         } else {
           await ctx.reply(

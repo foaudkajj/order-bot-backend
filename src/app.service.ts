@@ -45,9 +45,14 @@ export class AppService implements OnModuleInit {
     private orderRepository: OrderRepository,
     private merchantRepository: MerchantRepository,
     private fmh: FirstMessageHandler,
+    private completeOrderHandler: CompleteOrderHandler,
+    private confirmOrderHandler: ConfirmOrderHandler,
+    private getConfirmedOrderCb: GetConfirmedOrderCb,
+    private ordersInBasketCb: OrdersInBasketCb,
+    private startOrderingCb: StartOrderingCb,
   ) {}
 
-  static botMap: Map<string, Telegraf<BotContext>> = new Map<
+  botMap: Map<string, Telegraf<BotContext>> = new Map<
     string,
     Telegraf<BotContext>
   >();
@@ -78,7 +83,7 @@ export class AppService implements OnModuleInit {
 
         bot.use(this.composer);
         await bot.launch();
-        AppService.botMap.set(bot.botInfo.username, bot);
+        this.botMap.set(bot.botInfo.username, bot);
       }
     }
   }
@@ -92,7 +97,7 @@ export class AppService implements OnModuleInit {
           switch (ctx.callbackQuery.data) {
             case CallBackQueryResult.StartOrdering:
               await ctx.answerCbQuery();
-              await StartOrderingCb.StartOrdering(ctx);
+              await this.startOrderingCb.StartOrdering(ctx);
               break;
 
             // case CallBackQueryResult.AddProductAndCompleteOrder:
@@ -121,7 +126,7 @@ export class AppService implements OnModuleInit {
             case CallBackQueryResult.MyBasket:
               {
                 const orderDetails =
-                  await OrdersInBasketCb.GetOrdersInBasketByStatus(
+                  await this.ordersInBasketCb.GetOrdersInBasketByStatus(
                     ctx,
                     OrderStatus.New,
                   );
@@ -172,7 +177,7 @@ export class AppService implements OnModuleInit {
               break;
 
             case CallBackQueryResult.ConfirmOrder:
-              await ConfirmOrderHandler.ConfirmOrder(ctx);
+              await this.confirmOrderHandler.ConfirmOrder(ctx);
               // await this.fmh.startOptions(ctx);
               break;
 
@@ -194,7 +199,7 @@ export class AppService implements OnModuleInit {
               break;
 
             case CallBackQueryResult.GetConfirmedOrders:
-              await GetConfirmedOrderCb.GetConfirmedOrders(ctx);
+              await this.getConfirmedOrderCb.GetConfirmedOrders(ctx);
               // await this.fmh.startOptions(ctx);
               break;
 
@@ -334,7 +339,7 @@ export class AppService implements OnModuleInit {
 
   async AddToBasketAndContinueShopping(ctx: BotContext) {
     await this.AddNewOrder(ctx);
-    await StartOrderingCb.StartOrdering(ctx);
+    await this.startOrderingCb.StartOrdering(ctx);
   }
 
   InitlizeWizards(composer: Composer<BotContext>) {
@@ -551,7 +556,7 @@ export class AppService implements OnModuleInit {
         // }),
       );
     } else {
-      await CompleteOrderHandler.CompleteOrder(ctx);
+      await this.completeOrderHandler.CompleteOrder(ctx);
     }
   }
 }

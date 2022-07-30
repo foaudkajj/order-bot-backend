@@ -1,16 +1,18 @@
-import {getCustomRepository} from 'typeorm';
+import {Injectable} from '@nestjs/common';
 import {OrderRepository} from '../custom-repositories/order-repository';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 
-export abstract class CompleteOrderHandler {
-  static async CompleteOrder(ctx: BotContext) {
-    const orderRepository = getCustomRepository(OrderRepository);
+@Injectable()
+export class CompleteOrderHandler {
+  constructor(private orderRepository: OrderRepository) {}
+
+  async CompleteOrder(ctx: BotContext) {
     try {
-      const ordersInBasket = await orderRepository.getOrderInBasketByTelegramId(
-        ctx,
-        ['customer'],
-      );
+      const ordersInBasket =
+        await this.orderRepository.getOrderInBasketByTelegramId(ctx, [
+          'customer',
+        ]);
       if (ordersInBasket) {
         const customer = ordersInBasket.customer;
         if (ctx.updateType === 'callback_query') await ctx.answerCbQuery();

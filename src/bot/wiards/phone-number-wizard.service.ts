@@ -6,10 +6,10 @@ import {BotContext} from '../interfaces/bot-context';
 
 @Injectable()
 export class PhoneNumberService {
-  static customerRepository: CustomerRepository;
-  constructor(private cr: CustomerRepository) {
-    PhoneNumberService.customerRepository = cr;
-  }
+  constructor(
+    private customerRepository: CustomerRepository,
+    private completeOrderHandler: CompleteOrderHandler,
+  ) {}
 
   InitilizePhoneNumberWizard() {
     const phoneNumber = new Scenes.WizardScene(
@@ -19,17 +19,12 @@ export class PhoneNumberService {
 
         if (ctx?.message && 'contact' in ctx?.message) {
           const customer =
-            await PhoneNumberService.customerRepository.getCustomerByTelegramId(
-              ctx,
-            );
+            await this.customerRepository.getCustomerByTelegramId(ctx);
           customer.phoneNumber = ctx.message.contact.phone_number;
-          await PhoneNumberService.customerRepository.orm.update(
-            {id: customer.id},
-            customer,
-          );
+          await this.customerRepository.orm.update({id: customer.id}, customer);
           // ctx.scene.session.address = ctx.message.contact.phone_number;
           await ctx.scene.leave();
-          await CompleteOrderHandler.CompleteOrder(ctx);
+          await this.completeOrderHandler.CompleteOrder(ctx);
         } else {
           await ctx.reply('Lütfen telefon numarınızı gönderiniz. /iptal', {
             reply_markup: {

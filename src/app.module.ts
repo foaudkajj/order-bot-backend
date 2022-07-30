@@ -14,6 +14,12 @@ import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
 import {MerchantInterceptor} from './panel/interceptors/merchant.interceptor';
 import * as fs from 'fs';
 import {CustomNamingStrategy} from './naming-strategy';
+import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
+import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
+import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
+import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-cb-handler';
+import {InformationMessages} from './bot/helpers/informtaion-msgs';
+import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
 
 @Module({
   imports: [
@@ -59,6 +65,12 @@ import {CustomNamingStrategy} from './naming-strategy';
     AddressWizardService,
     AddnoteToOrderWizardService,
     PhoneNumberService,
+    CompleteOrderHandler,
+    ConfirmOrderHandler,
+    GetConfirmedOrderCb,
+    StartOrderingCb,
+    OrdersInBasketCb,
+    InformationMessages,
   ],
 })
 export class AppModule {}

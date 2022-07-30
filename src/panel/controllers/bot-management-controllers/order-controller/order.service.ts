@@ -22,6 +22,7 @@ export class OrderService {
     private devextremeLoadOptions: DevextremeLoadOptionsService,
     private orderRepository: OrderRepository,
     private getirService: GetirService,
+    private informationMessages: InformationMessages,
   ) {}
 
   async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
@@ -173,28 +174,28 @@ export class OrderService {
 
       switch (updateDetails.orderStatus) {
         case OrderStatus.MerchantConfirmed:
-          InformationMessages.SendInformationMessage(
+          this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
             `Siparişiniz Onaylandı. sipariş no: ${order.orderNo}`,
           );
           break;
         case OrderStatus.Prepared:
-          InformationMessages.SendInformationMessage(
+          this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
             `Siparişiniz Hazır. sipariş no: ${order.orderNo}`,
           );
           break;
         case OrderStatus.OrderSent:
-          InformationMessages.SendInformationMessage(
+          this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
             `Siparişiniz Yola Çıkmıştır. sipariş no: ${order.orderNo}`,
           );
           break;
         case OrderStatus.Delivered:
-          InformationMessages.SendInformationMessage(
+          this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
             `Siparişiniz Size Teslim Edilmiştir. sipariş no: ${order.orderNo}`,
@@ -238,7 +239,7 @@ export class OrderService {
           orderStatus: OrderStatus.Canceled,
         });
 
-        InformationMessages.SendInformationMessage(
+        this.informationMessages.SendInformationMessage(
           order.merchant.botUserName,
           order.customer.telegramId,
           'Siparişiniz İptal Edilmiştir.',
