@@ -2,15 +2,16 @@ import {Injectable} from '@nestjs/common';
 import {OrderChannel} from 'src/db/models';
 import {Customer} from 'src/db/models/customer';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
-import {getCustomRepository} from 'typeorm';
-import {MerchantRepository} from '../custom-repositories';
-import {CustomerRepository} from '../custom-repositories/customer-repository';
+import {MerchantRepository, CustomerRepository} from '../custom-repositories';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 
 @Injectable()
 export class FirstMessageHandler {
-  constructor(private customerRepository: CustomerRepository) {}
+  constructor(
+    private customerRepository: CustomerRepository,
+    private merchantRepository: MerchantRepository,
+  ) {}
 
   async startOptions(ctx: BotContext, messageToShow: null | string = null) {
     const inlineKeyboard: InlineKeyboardButton[][] = [
@@ -69,8 +70,7 @@ export class FirstMessageHandler {
   private async createNewUserIfUserDoesnitExist(ctx: BotContext) {
     const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
     if (!customer) {
-      const merchantRepository = getCustomRepository(MerchantRepository);
-      const merchant = await merchantRepository.getMerchantIdByBotUserName(
+      const merchant = await this.merchantRepository.getMerchantIdByBotUserName(
         ctx.botInfo.username,
       );
 
@@ -81,7 +81,7 @@ export class FirstMessageHandler {
         telegramId: ctx.from.id,
         telegramUserName: ctx.from.username,
       };
-      await this.customerRepository.ds.save(newCustomer);
+      await this.customerRepository.orm.save(newCustomer);
     }
   }
 }

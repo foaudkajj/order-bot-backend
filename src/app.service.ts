@@ -19,8 +19,6 @@ import {
 } from './bot/custom-repositories';
 import {
   Category,
-  Merchant,
-  Order,
   OrderChannel,
   OrderStatus,
   PaymentMethod,
@@ -44,9 +42,7 @@ export class AppService implements OnModuleInit {
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
     private customerRepository: CustomerRepository,
-    @InjectRepository(Order)
     private orderRepository: OrderRepository,
-    @InjectRepository(Merchant)
     private merchantRepository: MerchantRepository,
     private fmh: FirstMessageHandler,
   ) {}
@@ -67,7 +63,7 @@ export class AppService implements OnModuleInit {
   composer = new Composer<BotContext>();
 
   async InitlizeAndLunchBot() {
-    const merchantList = await this.merchantRepository.find({
+    const merchantList = await this.merchantRepository.orm.find({
       where: {isActive: true},
     });
 
@@ -297,7 +293,7 @@ export class AppService implements OnModuleInit {
         ctx,
       );
       if (order) {
-        await this.orderRepository.delete({id: order.id});
+        await this.orderRepository.orm.delete({id: order.id});
         await ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.');
       } else {
         await ctx.answerCbQuery('Sepetiniz Boştur.');
@@ -315,7 +311,7 @@ export class AppService implements OnModuleInit {
       const customer = await this.customerRepository.getCustomerByTelegramId(
         ctx,
       );
-      await this.orderRepository.update(
+      await this.orderRepository.orm.update(
         {customerId: customer.id, orderStatus: OrderStatus.New},
         {orderStatus: OrderStatus.UserConfirmed},
       );
@@ -387,7 +383,7 @@ export class AppService implements OnModuleInit {
           amount: 1,
           orderId: order.id,
         });
-        await this.orderRepository.save(order);
+        await this.orderRepository.orm.save(order);
       } else {
         // let telegramUser = await this.telegramUserRepository.getTelegramUserTelegramId(
         //   ctx,
@@ -400,7 +396,7 @@ export class AppService implements OnModuleInit {
         //     TelegramId: ctx.from.id,
         //   };
         // }
-        await this.orderRepository.save({
+        await this.orderRepository.orm.save({
           customerId: customer.id,
           merchantId: customer.merchantId,
           orderNo: new Date().getTime().toString(36),
@@ -512,7 +508,7 @@ export class AppService implements OnModuleInit {
           productExists.amount += 1;
         }
         selectedProduct.productStatus = ProductStatus.InBasket;
-        await this.orderRepository.save(order);
+        await this.orderRepository.orm.save(order);
       }
     }
   }

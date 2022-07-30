@@ -30,14 +30,12 @@ import {StorageBlobService} from './services';
   imports: [
     TypeOrmModule.forFeature([
       Customer,
-      OrderRepository,
       Order,
       OrderItem,
       Product,
       Category,
       GetirOrder,
       Menu,
-      MerchantRepository,
       Merchant,
       Permission,
       Product,
@@ -54,6 +52,8 @@ import {StorageBlobService} from './services';
     DevextremeLoadOptionsService,
     StorageBlobService,
     CustomerRepository,
+    MerchantRepository,
+    OrderRepository,
     FirstMessageHandler,
   ],
   exports: [
@@ -61,6 +61,8 @@ import {StorageBlobService} from './services';
     TypeOrmModule,
     StorageBlobService,
     CustomerRepository,
+    MerchantRepository,
+    OrderRepository,
     FirstMessageHandler,
   ],
 })

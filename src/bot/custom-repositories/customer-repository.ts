@@ -3,15 +3,16 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {Customer} from 'src/db/models/customer';
 import {Repository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
+import {BaseRepository} from './base-repository';
 
 @Injectable()
-export class CustomerRepository {
-  public ds: Repository<Customer>;
+export class CustomerRepository extends BaseRepository<Customer> {
   constructor(
     @InjectRepository(Customer)
-    private customer: Repository<Customer>,
+    private _: Repository<Customer>,
   ) {
-    this.ds = customer;
+    super();
+    this.orm = _;
   }
 
   async getCustomerByTelegramId(ctx: BotContext, relations: string[] = []) {
@@ -21,7 +22,7 @@ export class CustomerRepository {
       relations.push('merchant');
     }
     if (relations && relations.length > 0) {
-      return await this.ds.findOne({
+      return await this.orm.findOne({
         where: {
           telegramId: userInfo.id,
           merchant: {botUserName: ctx.botInfo.username},
@@ -29,7 +30,7 @@ export class CustomerRepository {
         relations: relations,
       });
     } else {
-      return await this.ds.findOne({
+      return await this.orm.findOne({
         where: {
           telegramId: userInfo.id,
           merchant: {botUserName: ctx.botInfo.username},
@@ -41,7 +42,7 @@ export class CustomerRepository {
 
   async getCustomerOrdersInBasket(ctx: BotContext) {
     const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-    return await this.ds.findOne({
+    return await this.orm.findOne({
       where: {
         telegramId: userInfo.id,
         merchant: {botUserName: ctx.botInfo.username},

@@ -1,9 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Customer, OrderStatus} from 'src/db/models';
-import {Order} from 'src/db/models/order';
+import {OrderStatus} from 'src/db/models';
 import {Scenes} from 'telegraf';
-import {Repository} from 'typeorm';
 import {OrderRepository} from '../custom-repositories';
 import {CustomerRepository} from '../custom-repositories/customer-repository';
 import {ConfirmOrderHandler} from '../helpers/confirm-order.handler';
@@ -12,9 +9,7 @@ import {BotContext} from '../interfaces/bot-context';
 @Injectable()
 export class AddnoteToOrderWizardService {
   constructor(
-    @InjectRepository(Order)
     private orderRepository: OrderRepository,
-    @InjectRepository(Customer)
     private customerRepository: CustomerRepository,
   ) {}
 
@@ -29,7 +24,7 @@ export class AddnoteToOrderWizardService {
           // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
           const customer =
             await this.customerRepository.getCustomerByTelegramId(ctx);
-          await this.orderRepository.update(
+          await this.orderRepository.orm.update(
             {customerId: customer.id, orderStatus: OrderStatus.New},
             {note: ctx.message.text},
           );

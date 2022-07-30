@@ -1,15 +1,16 @@
 import {HttpService} from '@nestjs/axios';
+import {Injectable} from '@nestjs/common';
 import dayjs from 'dayjs';
 import {MerchantRepository} from 'src/bot/custom-repositories/merchant-repository';
 import {Merchant} from 'src/db/models/merchant';
-import {getCustomRepository} from 'typeorm';
 import {Endpoints} from '../controllers/entegrations-management/getir/getir.enums';
 import {UIResponseBase} from '../dtos/ui-response-base';
 
-export default class GetirToken {
-  static async getToken(merchantId: number) {
-    const merchantRepository = getCustomRepository(MerchantRepository);
-    const merchant = await merchantRepository.findOne({
+@Injectable()
+export default class GetirTokenService {
+  constructor(private merchantRepository: MerchantRepository) {}
+  async getToken(merchantId: number) {
+    const merchant = await this.merchantRepository.orm.findOne({
       where: {id: merchantId},
     });
     let token = '';
@@ -35,7 +36,7 @@ export default class GetirToken {
     }
   }
 
-  private static async getAndUpdateToken(merchant: Merchant) {
+  private async getAndUpdateToken(merchant: Merchant) {
     const httpService = new HttpService();
     const response = await httpService
       .post(process.env.GetirApi + Endpoints.auth, {
@@ -44,8 +45,7 @@ export default class GetirToken {
       })
       .toPromise();
     if (response.status === 200) {
-      const merchantRepository = getCustomRepository(MerchantRepository);
-      merchantRepository.update(
+      this.merchantRepository.orm.update(
         {id: merchant.id},
         {
           getirAccessToken: response.data.token,

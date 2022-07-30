@@ -20,7 +20,6 @@ import {OrderRepository} from 'src/bot/custom-repositories';
 export class OrderService {
   constructor(
     private devextremeLoadOptions: DevextremeLoadOptionsService,
-    @InjectRepository(Order)
     private orderRepository: OrderRepository,
     private getirService: GetirService,
   ) {}
@@ -39,7 +38,7 @@ export class OrderService {
 
     // eslint-disable-next-line dot-notation
     findOptions.where['merchantId'] = merchantId;
-    const orders: Order[] = await this.orderRepository.find(findOptions);
+    const orders: Order[] = await this.orderRepository.orm.find(findOptions);
 
     const response: UIResponseBase<Order> = {
       isError: false,
@@ -74,7 +73,7 @@ export class OrderService {
       entity.createDate = new Date();
 
       console.log(entity);
-      await this.orderRepository.insert(entity);
+      await this.orderRepository.orm.insert(entity);
       return response;
     } catch (error) {
       throw new Error(error);
@@ -82,7 +81,7 @@ export class OrderService {
   }
 
   async Update(updateDetails: Order) {
-    const order = await this.orderRepository.findOne({
+    const order = await this.orderRepository.orm.findOne({
       where: {id: updateDetails.id},
       relations: ['getirOrder', 'merchant', 'customer'],
     });
@@ -105,7 +104,7 @@ export class OrderService {
         }
 
         if (response.result === true) {
-          await this.orderRepository.update({id: order.id}, updateDetails);
+          await this.orderRepository.orm.update({id: order.id}, updateDetails);
           return <UIResponseBase<Order>>{
             isError: false,
             result: updateDetails,
@@ -139,7 +138,7 @@ export class OrderService {
         }
 
         if (response.result === true) {
-          await this.orderRepository.update({id: order.id}, updateDetails);
+          await this.orderRepository.orm.update({id: order.id}, updateDetails);
         }
       }
       if (response.result === false) {
@@ -170,7 +169,7 @@ export class OrderService {
         }
       }
     } else if (order.orderChannel === OrderChannel.Telegram) {
-      await this.orderRepository.update({id: order.id}, updateDetails);
+      await this.orderRepository.orm.update({id: order.id}, updateDetails);
 
       switch (updateDetails.orderStatus) {
         case OrderStatus.MerchantConfirmed:
@@ -216,7 +215,7 @@ export class OrderService {
 
   async Delete(Id: number, merchantId: number) {
     try {
-      await this.orderRepository.delete({id: Id, merchantId: merchantId});
+      await this.orderRepository.orm.delete({id: Id, merchantId: merchantId});
       return <UIResponseBase<Order>>{
         isError: false,
         messageKey: 'SUCCESS',
@@ -229,13 +228,13 @@ export class OrderService {
 
   async CancelOrder(orderId: string) {
     try {
-      const order = await this.orderRepository.findOne({
+      const order = await this.orderRepository.orm.findOne({
         where: {id: Number.parseInt(orderId)},
         relations: ['getirOrder', 'merchant', 'customer'],
       });
 
       if (order.orderChannel === OrderChannel.Telegram) {
-        await this.orderRepository.update(orderId, {
+        await this.orderRepository.orm.update(orderId, {
           orderStatus: OrderStatus.Canceled,
         });
 
@@ -251,7 +250,7 @@ export class OrderService {
         );
 
         if (response.result === true) {
-          await this.orderRepository.update(orderId, {
+          await this.orderRepository.orm.update(orderId, {
             orderStatus: OrderStatus.Canceled,
           });
         } else {

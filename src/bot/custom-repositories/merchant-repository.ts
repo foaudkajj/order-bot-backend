@@ -1,10 +1,19 @@
+import {InjectRepository} from '@nestjs/typeorm';
 import {Merchant} from 'src/db/models/merchant';
-import {EntityRepository, Repository} from 'typeorm';
+import {Repository} from 'typeorm';
+import {BaseRepository} from './base-repository';
 
-@EntityRepository(Merchant)
-export class MerchantRepository extends Repository<Merchant> {
+export class MerchantRepository extends BaseRepository<Merchant> {
+  constructor(
+    @InjectRepository(Merchant)
+    private _: Repository<Merchant>,
+  ) {
+    super();
+    this.orm = _;
+  }
+
   async getGetirToken(merchatId: number) {
-    const merchant = await this.findOne({where: {id: merchatId}});
+    const merchant = await this.orm.findOne({where: {id: merchatId}});
     if (merchant?.getirAccessToken) {
       return merchant.getirAccessToken;
     } else {
@@ -13,6 +22,6 @@ export class MerchantRepository extends Repository<Merchant> {
   }
 
   async getMerchantIdByBotUserName(botUserName: string): Promise<Merchant> {
-    return await this.findOne({where: {botUserName: botUserName}});
+    return await this.orm.findOne({where: {botUserName: botUserName}});
   }
 }
