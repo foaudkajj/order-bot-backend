@@ -26,7 +26,6 @@ import {CustomNamingStrategy} from './naming-strategy';
       database: 'orderbot',
       synchronize: false,
       logging: false,
-      entities: ['dist/**/*.js'],
       extra: {
         decimalNumbers: true,
       },
