@@ -61,10 +61,6 @@ export class AppService implements OnModuleInit {
     this.InitlizeAndLunchBot();
   }
 
-  getHello(): string {
-    return 'Hello Fuat!';
-  }
-
   composer = new Composer<BotContext>();
 
   async InitlizeAndLunchBot() {
