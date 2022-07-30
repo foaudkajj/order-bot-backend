@@ -6,21 +6,19 @@ import {CallBackQueryResult} from './bot/models/enums';
 import {AddressWizardService} from './bot/wiards/address-wizard.service';
 import {Product} from './db/models/product';
 import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
-import {CustomerRepository} from './bot/custom-repositories/customer-repository';
 import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
 import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-cb-handler';
-import {FirstMessageHandler} from './bot/helpers/first-message-handler';
 import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
 import {OrderRepository} from './bot/custom-repositories/order-repository';
 import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
 import {OrderItem} from './db/models/order-item';
 import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
-import {MerchantRepository} from './bot/custom-repositories';
+import {
+  CustomerRepository,
+  MerchantRepository,
+} from './bot/custom-repositories';
 import {
   Category,
-  Customer,
-  Merchant,
-  Order,
   OrderChannel,
   OrderStatus,
   PaymentMethod,
@@ -29,6 +27,7 @@ import {
 import {InjectRepository} from '@nestjs/typeorm';
 import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
 import {InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
+import {FirstMessageHandler} from './bot/helpers';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -42,15 +41,18 @@ export class AppService implements OnModuleInit {
     private productRepository: Repository<Product>,
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
-    @InjectRepository(Customer)
     private customerRepository: CustomerRepository,
-    @InjectRepository(Order)
     private orderRepository: OrderRepository,
-    @InjectRepository(Merchant)
     private merchantRepository: MerchantRepository,
+    private fmh: FirstMessageHandler,
+    private completeOrderHandler: CompleteOrderHandler,
+    private confirmOrderHandler: ConfirmOrderHandler,
+    private getConfirmedOrderCb: GetConfirmedOrderCb,
+    private ordersInBasketCb: OrdersInBasketCb,
+    private startOrderingCb: StartOrderingCb,
   ) {}
 
-  static botMap: Map<string, Telegraf<BotContext>> = new Map<
+  botMap: Map<string, Telegraf<BotContext>> = new Map<
     string,
     Telegraf<BotContext>
   >();
@@ -59,14 +61,10 @@ export class AppService implements OnModuleInit {
     this.InitlizeAndLunchBot();
   }
 
-  getHello(): string {
-    return 'Hello Fuat!';
-  }
-
   composer = new Composer<BotContext>();
 
   async InitlizeAndLunchBot() {
-    const merchantList = await this.merchantRepository.find({
+    const merchantList = await this.merchantRepository.orm.find({
       where: {isActive: true},
     });
 
@@ -81,16 +79,13 @@ export class AppService implements OnModuleInit {
 
         bot.use(this.composer);
         await bot.launch();
-        AppService.botMap.set(bot.botInfo.username, bot);
+        this.botMap.set(bot.botInfo.username, bot);
       }
     }
   }
 
   InilizeBotEventsHandlers(composer: Composer<BotContext>) {
-    composer.command(
-      'start',
-      async ctx => await FirstMessageHandler.startOptions(ctx),
-    );
+    composer.command('start', async ctx => await this.fmh.startOptions(ctx));
 
     composer.on('callback_query', async ctx => {
       try {
@@ -98,7 +93,7 @@ export class AppService implements OnModuleInit {
           switch (ctx.callbackQuery.data) {
             case CallBackQueryResult.StartOrdering:
               await ctx.answerCbQuery();
-              await StartOrderingCb.StartOrdering(ctx);
+              await this.startOrderingCb.StartOrdering(ctx);
               break;
 
             // case CallBackQueryResult.AddProductAndCompleteOrder:
@@ -127,7 +122,7 @@ export class AppService implements OnModuleInit {
             case CallBackQueryResult.MyBasket:
               {
                 const orderDetails =
-                  await OrdersInBasketCb.GetOrdersInBasketByStatus(
+                  await this.ordersInBasketCb.GetOrdersInBasketByStatus(
                     ctx,
                     OrderStatus.New,
                   );
@@ -178,8 +173,8 @@ export class AppService implements OnModuleInit {
               break;
 
             case CallBackQueryResult.ConfirmOrder:
-              await ConfirmOrderHandler.ConfirmOrder(ctx);
-              // await FirstMessageHandler.startOptions(ctx);
+              await this.confirmOrderHandler.ConfirmOrder(ctx);
+              // await this.fmh.startOptions(ctx);
               break;
 
             case CallBackQueryResult.EmptyBakset:
@@ -188,7 +183,7 @@ export class AppService implements OnModuleInit {
 
             case CallBackQueryResult.MainMenu:
               await ctx.answerCbQuery();
-              await FirstMessageHandler.startOptions(ctx);
+              await this.fmh.startOptions(ctx);
               break;
 
             case CallBackQueryResult.TrackOrder:
@@ -200,8 +195,8 @@ export class AppService implements OnModuleInit {
               break;
 
             case CallBackQueryResult.GetConfirmedOrders:
-              await GetConfirmedOrderCb.GetConfirmedOrders(ctx);
-              // await FirstMessageHandler.startOptions(ctx);
+              await this.getConfirmedOrderCb.GetConfirmedOrders(ctx);
+              // await this.fmh.startOptions(ctx);
               break;
 
             default:
@@ -299,7 +294,7 @@ export class AppService implements OnModuleInit {
         ctx,
       );
       if (order) {
-        await this.orderRepository.delete({id: order.id});
+        await this.orderRepository.orm.delete({id: order.id});
         await ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.');
       } else {
         await ctx.answerCbQuery('Sepetiniz Boştur.');
@@ -317,12 +312,12 @@ export class AppService implements OnModuleInit {
       const customer = await this.customerRepository.getCustomerByTelegramId(
         ctx,
       );
-      await this.orderRepository.update(
+      await this.orderRepository.orm.update(
         {customerId: customer.id, orderStatus: OrderStatus.New},
         {orderStatus: OrderStatus.UserConfirmed},
       );
       await ctx.answerCbQuery('Siparişiniz Gönderilmiştir');
-      await FirstMessageHandler.startOptions(ctx);
+      await this.fmh.startOptions(ctx);
     } catch (error) {
       console.log(error);
       await ctx.answerCbQuery('Bir hata oluştu. Lütfen tekrar deneyiniz.');
@@ -340,7 +335,7 @@ export class AppService implements OnModuleInit {
 
   async AddToBasketAndContinueShopping(ctx: BotContext) {
     await this.AddNewOrder(ctx);
-    await StartOrderingCb.StartOrdering(ctx);
+    await this.startOrderingCb.StartOrdering(ctx);
   }
 
   InitlizeWizards(composer: Composer<BotContext>) {
@@ -355,7 +350,7 @@ export class AppService implements OnModuleInit {
     ]);
     stage.command('iptal', async ctx => {
       await ctx.scene.leave();
-      await FirstMessageHandler.startOptions(ctx);
+      await this.fmh.startOptions(ctx);
     });
     composer.use(session());
     composer.use(stage.middleware());
@@ -389,7 +384,7 @@ export class AppService implements OnModuleInit {
           amount: 1,
           orderId: order.id,
         });
-        await this.orderRepository.save(order);
+        await this.orderRepository.orm.save(order);
       } else {
         // let telegramUser = await this.telegramUserRepository.getTelegramUserTelegramId(
         //   ctx,
@@ -402,7 +397,7 @@ export class AppService implements OnModuleInit {
         //     TelegramId: ctx.from.id,
         //   };
         // }
-        await this.orderRepository.save({
+        await this.orderRepository.orm.save({
           customerId: customer.id,
           merchantId: customer.merchantId,
           orderNo: new Date().getTime().toString(36),
@@ -514,7 +509,7 @@ export class AppService implements OnModuleInit {
           productExists.amount += 1;
         }
         selectedProduct.productStatus = ProductStatus.InBasket;
-        await this.orderRepository.save(order);
+        await this.orderRepository.orm.save(order);
       }
     }
   }
@@ -557,7 +552,7 @@ export class AppService implements OnModuleInit {
         // }),
       );
     } else {
-      await CompleteOrderHandler.CompleteOrder(ctx);
+      await this.completeOrderHandler.CompleteOrder(ctx);
     }
   }
 }

@@ -1,19 +1,27 @@
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
 import {Category} from 'src/db/models';
 import {OrderStatus} from 'src/db/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
-import {getRepository} from 'typeorm';
+import {Repository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
 
-export abstract class StartOrderingCb {
-  public static async StartOrdering(ctx: BotContext) {
+@Injectable()
+export class StartOrderingCb {
+  constructor(
+    private ordersInBasket: OrdersInBasketCb,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+  ) {}
+  public async StartOrdering(ctx: BotContext) {
     try {
       // const customerRepository = getCustomRepository(CustomerRepository);
       // let cutsomer = await customerRepository.getCustomer(ctx);
       // user.SelectedProducts = null;
       // await customerRepository.update({ TelegramId: cutsomer.TelegramId }, cutsomer);
-      const orderDetails = await OrdersInBasketCb.GetOrdersInBasketByStatus(
+      const orderDetails = await this.ordersInBasket.GetOrdersInBasketByStatus(
         ctx,
         OrderStatus.New,
       );
@@ -23,11 +31,12 @@ export abstract class StartOrderingCb {
     }
   }
 
-  static async ShowProductCategories(ctx: BotContext, orderDetails: string) {
+  async ShowProductCategories(ctx: BotContext, orderDetails: string) {
     try {
       const orders =
         orderDetails === null ? 'Lütfen bir ürün seçiniz' : orderDetails;
-      const categories: Category[] = await getRepository(Category).find();
+
+      const categories = await this.categoryRepository.find();
       await ctx.editMessageText(orders, {
         parse_mode: 'HTML',
         reply_markup: {

@@ -3,7 +3,7 @@ import {MerchantRepository} from 'src/bot/custom-repositories/merchant-repositor
 import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {In, Repository} from 'typeorm';
-import GetirToken from 'src/panel/helpers/getir-token-helper';
+import GetirTokenService from 'src/panel/helpers/getir-token-helper';
 import {GetirOrder} from 'src/db/models/getir-order';
 import {Order} from 'src/db/models/order';
 import {FoodOrderDto} from './getir-dtos/food-order-dto';
@@ -35,9 +35,7 @@ export class GetirService {
   constructor(
     public devextremeLoadOptions: DevextremeLoadOptionsService,
     public httpService: HttpService,
-    @InjectRepository(Order)
     private orderRepository: OrderRepository,
-    @InjectRepository(Merchant)
     private merchantRepository: MerchantRepository,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
@@ -47,10 +45,11 @@ export class GetirService {
     private optionCategoryRepository: Repository<OptionCategory>,
     @InjectRepository(Option)
     private optionRepository: Repository<Option>,
+    private getirToken: GetirTokenService,
   ) {}
 
   // async AddOrDeletePaymentMethod(merchantId, body) {
-  //     const token = await GetirToken.getToken(merchantId);
+  //     const token = await this.getirToken.getToken(merchantId);
   //     let changePaymentMethodResponse;
   //     if (body.status == true) {
   //         changePaymentMethodResponse = await this.httpService.post<any[]>(process.env.GetirApi + Endpoints.AddRestaurantPaymentMethod, { paymentMethodId: body.paymentMethodId }, { headers: { 'token': token.Result, } }).toPromise();
@@ -67,7 +66,7 @@ export class GetirService {
   // }
 
   // async GetRestaurantPaymentMethods(merchantId: number) {
-  //     const token = await GetirToken.getToken(merchantId);
+  //     const token = await this.getirToken.getToken(merchantId);
   //     const restaurantPaymentMethods = await this.httpService.get<any[]>(process.env.GetirApi + Endpoints.GetRestaurantPaymentMethods, { headers: { 'token': token.Result } }).toPromise();
   //     const availablePaymentMethods = await this.httpService.get<any[]>(process.env.GetirApi + Endpoints.listPaymentMethods, { headers: { 'token': token.Result } }).toPromise();
 
@@ -86,7 +85,7 @@ export class GetirService {
   // }
 
   async GetRestaurantPaymentMethods(merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
     const restaurantPaymentMethods = await this.httpService
       .get<any[]>(
         process.env.GetirApi + Endpoints.GetRestaurantPaymentMethods,
@@ -104,7 +103,7 @@ export class GetirService {
 
   async ActivateDeactivateRestaurantPaymentMethods(merchantId: number, body) {
     const {id, active} = body as {id; active};
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     const activeRequest = this.httpService.post<any>(
       process.env.GetirApi + Endpoints.ActivateRestaurantPaymentMethod,
@@ -140,7 +139,7 @@ export class GetirService {
 
   async ActivateDeactivateProductStatus(merchantId: number, body) {
     const {productId, status} = body as {productId; status};
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
     const updateProductStatusRequest = await this.httpService
       .put<any>(
         process.env.GetirApi +
@@ -171,7 +170,7 @@ export class GetirService {
   // async ActivateDeactivateCategoryStatus(merchantId: number, body) {
   //     try {
   //         const { productId, status } = body as { productId, status };
-  //         const token = await GetirToken.getToken(merchantId);
+  //         const token = await this.getirToken.getToken(merchantId);
 
   //         const activeRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.ActiveProductCategory.replace("{categoryId}", productId), {}, { headers: { 'token': token.Result } });
   //         const deactiveRequest = this.httpService.post<any>(process.env.GetirApi + Endpoints.InActiveProductCategory.replace("{categoryId}", productId), {}, { headers: { 'token': token.Result } });
@@ -190,7 +189,7 @@ export class GetirService {
 
   async AddPaymentMethod(merchantId: number, values: string) {
     const {id} = JSON.parse(values) as {id};
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     const restaurantAddPaymentMethods = await this.httpService
       .post<any>(
@@ -222,7 +221,7 @@ export class GetirService {
     merchantId: number,
     paymentMethodId: number,
   ) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
     const restaurantPaymentMethods = await this.httpService
       .delete<any[]>(
         process.env.GetirApi + Endpoints.DeleteRestaurantPaymentMethod,
@@ -242,7 +241,7 @@ export class GetirService {
   }
 
   async GetAllPaymentMethods(merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
     const availablePaymentMethods = await this.httpService
       .get<any[]>(process.env.GetirApi + Endpoints.listPaymentMethods, {
         headers: {token: token.result},
@@ -258,7 +257,7 @@ export class GetirService {
   }
 
   async GetRestaurantDetails(merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
     const restaurantInformation = await this.httpService
       .get<any>(process.env.GetirApi + Endpoints.GetRestaurantInformation, {
         headers: {token: token.result},
@@ -274,7 +273,7 @@ export class GetirService {
   }
 
   async GetRestaurantMenusAndOptions(merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
     const restaurantMenusAndOptions = await this.httpService
       .get<any>(process.env.GetirApi + Endpoints.GetRestaurantMenuAndOptions, {
         headers: {token: token.result},
@@ -304,7 +303,7 @@ export class GetirService {
   }
 
   async GetOptionProdcuts(merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
     const optionProducts = await this.httpService
       .get<any>(process.env.GetirApi + Endpoints.GetRestaurantOptionProducts, {
         headers: {token: token.result},
@@ -322,7 +321,7 @@ export class GetirService {
   async ActivateDeactivateOptionProduct(merchantId: number, body) {
     try {
       const {optionProductId, status} = body as {optionProductId; status};
-      const token = await GetirToken.getToken(merchantId);
+      const token = await this.getirToken.getToken(merchantId);
       const activeRequest = this.httpService.post<any>(
         process.env.GetirApi +
           Endpoints.activateRestaurantOptionsWithOptionProductId.replace(
@@ -375,7 +374,7 @@ export class GetirService {
       isCourierAvailable: boolean;
     },
   ) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     try {
       let RestaurantStatus;
@@ -452,7 +451,7 @@ export class GetirService {
 
   async ActivateInActiveProductsAsOptions(merchantId, body) {
     try {
-      const token = await GetirToken.getToken(merchantId);
+      const token = await this.getirToken.getToken(merchantId);
       const {productId, status} = body;
 
       let activateProduct;
@@ -497,7 +496,7 @@ export class GetirService {
 
   async ActivateInActiveOptionProducts(merchantId, body) {
     try {
-      const token = await GetirToken.getToken(merchantId);
+      const token = await this.getirToken.getToken(merchantId);
       const {optionProductId, status} = body;
 
       let activateOption;
@@ -542,7 +541,7 @@ export class GetirService {
 
   // async ActivateDeactivateAltOptions(merchantId, body) {
   //     try {
-  //         const token = await GetirToken.getToken(merchantId);
+  //         const token = await this.getirToken.getToken(merchantId);
   //         const { optionProductId, optionCategoryId, optionId, status } = body;
   //         const result = await this.httpService.put<any[]>(process.env.GetirApi + Endpoints.UpdateOptionProductOptionStatus.replace("{optionProductId}", optionProductId).replace("{optionCategoryId}", optionCategoryId).replace("{optionId}", optionId), { status: status ? 100 : 200 }, { headers: { 'token': token.Result } }).toPromise();
   //         return <UIResponseBase<any>>{ Result: { ...result.data }, IsError: false };
@@ -553,7 +552,7 @@ export class GetirService {
 
   async UpdateOptionStatusInSpecificProductAndCategory(merchantId, body) {
     try {
-      const token = await GetirToken.getToken(merchantId);
+      const token = await this.getirToken.getToken(merchantId);
       const {productId, optionCategoryId, optionId, status} = body;
       const result = await this.httpService
         .put<any[]>(
@@ -577,17 +576,17 @@ export class GetirService {
   }
 
   async OrderReceived(orderDetails: FoodOrderDto) {
-    const existingOrder = await this.orderRepository.findOne({
+    const existingOrder = await this.orderRepository.orm.findOne({
       where: {getirOrderId: orderDetails.foodOrder.id},
     });
 
     if (existingOrder) {
-      await this.orderRepository.update(
+      await this.orderRepository.orm.update(
         {id: existingOrder.id},
         {orderStatus: 1},
       );
     } else {
-      const merchant = await this.merchantRepository.findOne({
+      const merchant = await this.merchantRepository.orm.findOne({
         where: {getirRestaurantId: orderDetails.foodOrder.restaurant.id},
       });
 
@@ -697,7 +696,7 @@ export class GetirService {
           restaurantId: orderDetails.foodOrder.restaurant.id,
         },
       };
-      const createdOrder = await this.orderRepository.save(order);
+      const createdOrder = await this.orderRepository.orm.save(order);
       createdOrder.orderItems = getirProductList.map(
         pp =>
           <OrderItem>{
@@ -716,7 +715,7 @@ export class GetirService {
             ),
           },
       );
-      await this.orderRepository.save(createdOrder);
+      await this.orderRepository.orm.save(createdOrder);
     }
   }
 
@@ -887,7 +886,7 @@ export class GetirService {
   }
 
   async verifyOrder(foodOrderId: string, merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     try {
       const response = await firstValueFrom(
@@ -911,7 +910,7 @@ export class GetirService {
   }
 
   async verifyFutureOrder(foodOrderId: string, merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     try {
       const response = await firstValueFrom(
@@ -939,7 +938,7 @@ export class GetirService {
   }
 
   async prepareOrder(foodOrderId: string, merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     try {
       const response = await firstValueFrom(
@@ -963,7 +962,7 @@ export class GetirService {
   }
 
   async deliverOrder(foodOrderId: string, merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     try {
       const response = await firstValueFrom(
@@ -988,7 +987,7 @@ export class GetirService {
   }
 
   async handoverOrder(foodOrderId: string, merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     try {
       const result = await firstValueFrom(
@@ -1012,7 +1011,7 @@ export class GetirService {
   }
 
   async cancelOrder(foodOrderId: string, merchantId: number) {
-    const token = await GetirToken.getToken(merchantId);
+    const token = await this.getirToken.getToken(merchantId);
 
     try {
       const response = await firstValueFrom(

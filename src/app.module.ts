@@ -14,19 +14,27 @@ import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
 import {MerchantInterceptor} from './panel/interceptors/merchant.interceptor';
 import * as fs from 'fs';
 import {CustomNamingStrategy} from './naming-strategy';
+import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
+import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
+import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
+import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-cb-handler';
+import {InformationMessages} from './bot/helpers/informtaion-msgs';
+import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'orderbot.mysql.database.azure.com',
-      port: 3306,
-      username: 'orderbot_root@orderbot',
-      password: 'Fouad@Fouad1',
-      database: 'orderbot',
+      host: process.env.DB_HOST,
+      port: Number.parseInt(process.env.DB_PORT) || 3306,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
       synchronize: false,
       logging: false,
-      entities: ['dist/**/*.js'],
       extra: {
         decimalNumbers: true,
       },
@@ -34,11 +42,7 @@ import {CustomNamingStrategy} from './naming-strategy';
       autoLoadEntities: true,
       keepConnectionAlive: true,
       migrationsRun: true,
-      ssl: {
-        ca: fs.readFileSync('BaltimoreCyberTrustRoot.crt.pem'),
-      },
     }),
-    ConfigModule.forRoot({isGlobal: true}),
     PanelModule,
     SharedModule,
   ],
@@ -60,6 +64,12 @@ import {CustomNamingStrategy} from './naming-strategy';
     AddressWizardService,
     AddnoteToOrderWizardService,
     PhoneNumberService,
+    CompleteOrderHandler,
+    ConfirmOrderHandler,
+    GetConfirmedOrderCb,
+    StartOrderingCb,
+    OrdersInBasketCb,
+    InformationMessages,
   ],
 })
 export class AppModule {}

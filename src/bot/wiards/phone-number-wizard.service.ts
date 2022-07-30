@@ -6,7 +6,10 @@ import {BotContext} from '../interfaces/bot-context';
 
 @Injectable()
 export class PhoneNumberService {
-  constructor(private customerRepository: CustomerRepository) {}
+  constructor(
+    private customerRepository: CustomerRepository,
+    private completeOrderHandler: CompleteOrderHandler,
+  ) {}
 
   InitilizePhoneNumberWizard() {
     const phoneNumber = new Scenes.WizardScene(
@@ -15,14 +18,13 @@ export class PhoneNumberService {
         if (ctx.updateType === 'callback_query') ctx.answerCbQuery();
 
         if (ctx?.message && 'contact' in ctx?.message) {
-          const customer = await this.customerRepository.getCustomerByTelegramId(
-            ctx,
-          );
+          const customer =
+            await this.customerRepository.getCustomerByTelegramId(ctx);
           customer.phoneNumber = ctx.message.contact.phone_number;
-          await this.customerRepository.update({id: customer.id}, customer);
+          await this.customerRepository.orm.update({id: customer.id}, customer);
           // ctx.scene.session.address = ctx.message.contact.phone_number;
           await ctx.scene.leave();
-          await CompleteOrderHandler.CompleteOrder(ctx);
+          await this.completeOrderHandler.CompleteOrder(ctx);
         } else {
           await ctx.reply('Lütfen telefon numarınızı gönderiniz. /iptal', {
             reply_markup: {
@@ -30,8 +32,7 @@ export class PhoneNumberService {
                 [
                   {
                     request_contact: true,
-                    text:
-                      'Bu butona tıklayarak telefon numaranızı gönderebilirsiniz.',
+                    text: 'Bu butona tıklayarak telefon numaranızı gönderebilirsiniz.',
                   },
                 ],
               ],

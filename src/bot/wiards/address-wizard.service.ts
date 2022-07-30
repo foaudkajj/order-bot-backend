@@ -75,7 +75,7 @@ export class AddressWizardService {
           longitude: ctx.scene.session.longitude,
         });
       }
-      await this.orderRepository.save(order);
+      await this.orderRepository.orm.save(order);
     }
     await ctx.scene.leave();
     await this.AskIfUserWantsToAddNote(ctx);

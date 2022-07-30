@@ -1,10 +1,12 @@
+import {Injectable} from '@nestjs/common';
 import {OrderStatus} from 'src/db/models';
-import {getCustomRepository} from 'typeorm';
 import {OrderRepository} from '../custom-repositories/order-repository';
 import {BotContext} from '../interfaces/bot-context';
 
-export abstract class OrdersInBasketCb {
-  public static async GetOrdersInBasketByStatus(
+@Injectable()
+export class OrdersInBasketCb {
+  constructor(private orderRepository: OrderRepository) {}
+  public async GetOrdersInBasketByStatus(
     ctx: BotContext,
     // eslint-disable-next-line unused-imports/no-unused-vars
     orderStatus: OrderStatus,
@@ -13,13 +15,12 @@ export abstract class OrdersInBasketCb {
       let isCbQuyer = false;
       if (ctx.updateType === 'callback_query') isCbQuyer = true;
 
-      const orderRepository = getCustomRepository(OrderRepository);
       let orderDetailsMessage = '';
 
-      const order = await orderRepository.getOrderInBasketByTelegramId(ctx, [
-        'orderItems',
-        'orderItems.product',
-      ]);
+      const order = await this.orderRepository.getOrderInBasketByTelegramId(
+        ctx,
+        ['orderItems', 'orderItems.product'],
+      );
       if (!order || order?.orderItems?.length === 0) {
         orderDetailsMessage = null; // 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';
 
