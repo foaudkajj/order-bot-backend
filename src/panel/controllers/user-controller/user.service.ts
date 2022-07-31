@@ -1,27 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { User } from 'src/db/models/user';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { Repository } from 'typeorm';
+import {Injectable} from '@nestjs/common';
+import {User} from 'src/db/models/user';
+import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
-import { InjectRepository } from '@nestjs/typeorm';
+import {UserRepository} from 'src/bot/repositories';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) { }
+  constructor(private userRepository: UserRepository) {}
 
   async Get(query: DataSourceLoadOptionsBase) {
     let users: User[];
     if (query.take && query.skip) {
-      users = await this.userRepository.find({
+      users = await this.userRepository.orm.find({
         take: query.take,
         skip: query.skip,
       });
     } else {
-      users = await this.userRepository.find();
+      users = await this.userRepository.orm.find();
     }
     const response: UIResponseBase<User> = {
       isError: false,
@@ -45,7 +41,7 @@ export class UserService {
       const hash = await bcrypt.hash(user.password, salt);
       user.salt = salt;
       user.password = hash;
-      await this.userRepository.insert(user);
+      await this.userRepository.orm.insert(user);
       return response;
     } catch (error) {
       throw new Error(error);
@@ -54,8 +50,8 @@ export class UserService {
 
   async Update(updateDetails: User) {
     try {
-      const user = await this.userRepository.findOne({
-        where: { id: updateDetails.id },
+      const user = await this.userRepository.orm.findOne({
+        where: {id: updateDetails.id},
       });
       if (updateDetails.password) {
         const salt = await bcrypt.genSalt();
@@ -63,8 +59,8 @@ export class UserService {
         updateDetails.salt = salt;
         updateDetails.password = hash;
       }
-      const { id: _, ...updatedUser } = { ...user, ...updateDetails };
-      await this.userRepository.update({ id: user.id }, updatedUser);
+      const {id: _, ...updatedUser} = {...user, ...updateDetails};
+      await this.userRepository.orm.update({id: user.id}, updatedUser);
       return <UIResponseBase<User>>{
         isError: false,
         result: updatedUser,
@@ -78,7 +74,7 @@ export class UserService {
 
   async Delete(Id: number) {
     try {
-      await this.userRepository.delete({ id: Id });
+      await this.userRepository.orm.delete({id: Id});
       return <UIResponseBase<User>>{
         isError: false,
         messageKey: 'SUCCESS',

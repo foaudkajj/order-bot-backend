@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {OrderStatus} from 'src/db/models';
-import {OrderRepository} from '../custom-repositories/order-repository';
+import {OrderRepository} from '../repositories/order.repository';
 import {BotContext} from '../interfaces/bot-context';
 
 @Injectable()

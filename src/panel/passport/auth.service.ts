@@ -1,28 +1,24 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
-import {User} from 'src/db/models/user';
-import {Repository} from 'typeorm';
 import {LoginRequest} from '../dtos/login-request-dto';
 import {LoginResponse} from '../dtos/login-response';
 import {UIResponseBase} from '../dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
 import {Menu} from 'src/db/models/menu';
 import {NavigationItem} from '../dtos/navigation-items';
-import {InjectRepository} from '@nestjs/typeorm';
+import {MenuRepository, UserRepository} from 'src/bot/repositories';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(Menu)
-    private menusRepository: Repository<Menu>,
+    private userRepository: UserRepository,
+    private menuRepository: MenuRepository,
     private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(loginRequest: LoginRequest): Promise<any> {
-    // let user: User = await this.userRepository.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('role.roleAndPermissions', 'roleAndPermissions').getOne();
-    const user = await this.userRepository.findOne({
+    // let user: User = await this.userRepository.orm.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('role.roleAndPermissions', 'roleAndPermissions').getOne();
+    const user = await this.userRepository.orm.findOne({
       where: {userName: loginRequest.UserName},
       relations: [
         'role',
@@ -39,7 +35,7 @@ export class AuthService {
     let menus = user.role.roleAndPermissions
       .filter(fi => fi.permission.menu)
       .map(fi => fi.permission.menu);
-    const parentMenus = await this.menusRepository.find({
+    const parentMenus = await this.menuRepository.orm.find({
       where: {isParent: true},
     });
     menus = menus.concat(parentMenus);

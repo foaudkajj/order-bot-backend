@@ -1,7 +1,7 @@
 import {InjectRepository} from '@nestjs/typeorm';
 import {Merchant} from 'src/db/models/merchant';
 import {Repository} from 'typeorm';
-import {BaseRepository} from './base-repository';
+import {BaseRepository} from './base.repository';
 
 export class MerchantRepository extends BaseRepository<Merchant> {
   constructor(

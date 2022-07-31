@@ -1,19 +1,16 @@
 import {Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Category} from 'src/db/models';
 import {OrderStatus} from 'src/db/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
-import {Repository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
+import {CategoryRepository} from '../repositories';
 import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
 
 @Injectable()
 export class StartOrderingCb {
   constructor(
     private ordersInBasket: OrdersInBasketCb,
-    @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
+    private categoryRepository: CategoryRepository,
   ) {}
   public async StartOrdering(ctx: BotContext) {
     try {
@@ -36,7 +33,7 @@ export class StartOrderingCb {
       const orders =
         orderDetails === null ? 'Lütfen bir ürün seçiniz' : orderDetails;
 
-      const categories = await this.categoryRepository.find();
+      const categories = await this.categoryRepository.orm.find();
       await ctx.editMessageText(orders, {
         parse_mode: 'HTML',
         reply_markup: {

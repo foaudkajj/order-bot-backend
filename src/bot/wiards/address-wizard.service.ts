@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {Scenes} from 'telegraf';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
-import {OrderRepository} from '../custom-repositories/order-repository';
+import {OrderRepository} from '../repositories/order.repository';
 
 @Injectable()
 export class AddressWizardService {

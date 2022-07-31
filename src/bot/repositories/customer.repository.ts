@@ -3,7 +3,7 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {Customer} from 'src/db/models/customer';
 import {Repository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
-import {BaseRepository} from './base-repository';
+import {BaseRepository} from './base.repository';
 
 @Injectable()
 export class CustomerRepository extends BaseRepository<Customer> {

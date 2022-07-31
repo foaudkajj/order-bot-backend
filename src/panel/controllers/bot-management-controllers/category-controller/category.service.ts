@@ -1,28 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Category } from 'src/db/models';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { Repository } from 'typeorm';
+import {Injectable} from '@nestjs/common';
+import {CategoryRepository} from 'src/bot/repositories';
+import {Category} from 'src/db/models';
+import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 
 @Injectable()
 export class CategoryService {
-  constructor(
-    @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
-  ) { }
+  constructor(private categoryRepository: CategoryRepository) {}
 
   async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let categories: Category[];
     if (query.take && query.skip) {
-      categories = await this.categoryRepository.find({
+      categories = await this.categoryRepository.orm.find({
         take: query.take,
         skip: query.skip,
-        where: { merchantId: merchantId },
+        where: {merchantId: merchantId},
       });
     } else {
-      categories = await this.categoryRepository.find({
-        where: { merchantId: merchantId },
+      categories = await this.categoryRepository.orm.find({
+        where: {merchantId: merchantId},
       });
     }
     const response: UIResponseBase<Category> = {
@@ -43,8 +39,8 @@ export class CategoryService {
         messageKey: 'SUCCESS',
         statusCode: 200,
       };
-      const sameCategory = await this.categoryRepository.findOne({
-        where: { categoryKey: category.categoryKey },
+      const sameCategory = await this.categoryRepository.orm.findOne({
+        where: {categoryKey: category.categoryKey},
       });
       if (sameCategory) {
         const err = <UIResponseBase<Category>>{
@@ -54,7 +50,7 @@ export class CategoryService {
         };
         throw new Error(JSON.stringify(err));
       } else {
-        await this.categoryRepository.insert(category);
+        await this.categoryRepository.orm.insert(category);
       }
       return response;
     } catch (error) {
@@ -64,12 +60,12 @@ export class CategoryService {
 
   async Update(updateDetails: Category) {
     try {
-      const category = await this.categoryRepository.findOne({
-        where: { id: updateDetails.id },
+      const category = await this.categoryRepository.orm.findOne({
+        where: {id: updateDetails.id},
       });
-      const { id: _, ...updatedEntity } = { ...category, ...updateDetails };
-      await this.categoryRepository.update(
-        { id: category.id, merchantId: updateDetails.merchantId },
+      const {id: _, ...updatedEntity} = {...category, ...updateDetails};
+      await this.categoryRepository.orm.update(
+        {id: category.id, merchantId: updateDetails.merchantId},
         updatedEntity,
       );
       return <UIResponseBase<Category>>{
@@ -85,7 +81,10 @@ export class CategoryService {
 
   async Delete(Id: number, merchantId: number) {
     try {
-      await this.categoryRepository.delete({ id: Id, merchantId: merchantId });
+      await this.categoryRepository.orm.delete({
+        id: Id,
+        merchantId: merchantId,
+      });
       return <UIResponseBase<Category>>{
         isError: false,
         messageKey: 'SUCCESS',

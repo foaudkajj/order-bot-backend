@@ -4,8 +4,8 @@ import {OrderStatus} from 'src/db/models';
 import {Order} from 'src/db/models/order';
 import {Repository} from 'typeorm';
 import {BotContext} from '../interfaces/bot-context';
-import {BaseRepository} from './base-repository';
-import {CustomerRepository} from './customer-repository';
+import {BaseRepository} from './base.repository';
+import {CustomerRepository} from './customer.repository';
 
 @Injectable()
 export class OrderRepository extends BaseRepository<Order> {

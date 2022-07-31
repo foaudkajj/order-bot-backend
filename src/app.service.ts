@@ -1,30 +1,30 @@
 import {Injectable, OnModuleInit} from '@nestjs/common';
 import {Composer, Scenes, session, Telegraf} from 'telegraf';
-import {Like, Repository} from 'typeorm';
+import {Like} from 'typeorm';
 import {BotContext} from './bot/interfaces/bot-context';
 import {CallBackQueryResult} from './bot/models/enums';
 import {AddressWizardService} from './bot/wiards/address-wizard.service';
-import {Product} from './db/models/product';
 import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
 import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
 import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-cb-handler';
 import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
-import {OrderRepository} from './bot/custom-repositories/order-repository';
 import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
 import {OrderItem} from './db/models/order-item';
 import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
 import {
+  CategoryRepository,
   CustomerRepository,
   MerchantRepository,
-} from './bot/custom-repositories';
+  OrderItemRepository,
+  ProductRepository,
+  OrderRepository,
+} from './bot/repositories';
 import {
-  Category,
   OrderChannel,
   OrderStatus,
   PaymentMethod,
   ProductStatus,
 } from './db/models';
-import {InjectRepository} from '@nestjs/typeorm';
 import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
 import {InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
 import {FirstMessageHandler} from './bot/helpers';
@@ -35,12 +35,9 @@ export class AppService implements OnModuleInit {
     private addressWizard: AddressWizardService,
     private addNoteToOrderWizard: AddnoteToOrderWizardService,
     private phoneNumberService: PhoneNumberService,
-    @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>,
-    @InjectRepository(OrderItem)
-    private orderItemRepository: Repository<OrderItem>,
+    private categoryRepository: CategoryRepository,
+    private productRepository: ProductRepository,
+    private orderItemRepository: OrderItemRepository,
     private customerRepository: CustomerRepository,
     private orderRepository: OrderRepository,
     private merchantRepository: MerchantRepository,
@@ -219,7 +216,7 @@ export class AppService implements OnModuleInit {
           ctx,
         );
         if (customer) {
-          const category = await this.categoryRepository.findOne({
+          const category = await this.categoryRepository.orm.findOne({
             where: {
               categoryKey: Like(ctx.inlineQuery.query),
               merchantId: customer.merchantId,
@@ -372,7 +369,7 @@ export class AppService implements OnModuleInit {
         // let selectedProducts: string[] = [selectedProduct];
         // selectedProducts.push(ctx.message.text);
         // order.SelectedProducts = JSON.stringify(selectedProducts);
-        await this.orderItemRepository.delete({
+        await this.orderItemRepository.orm.delete({
           orderId: order.id,
           productStatus: ProductStatus.Selected,
         });
@@ -422,7 +419,7 @@ export class AppService implements OnModuleInit {
       }
 
       // Get Prodcut Details From DB and Show Them
-      const product = await this.productRepository.findOne({
+      const product = await this.productRepository.orm.findOne({
         where: {
           id: Number.parseInt(selectedProduct),
           merchantId: customer.merchantId,
@@ -502,7 +499,7 @@ export class AppService implements OnModuleInit {
             fi.productStatus !== ProductStatus.Selected,
         );
         if (productExists) {
-          await this.orderItemRepository.delete({id: selectedProduct.id});
+          await this.orderItemRepository.orm.delete({id: selectedProduct.id});
           order.orderItems = order.orderItems.filter(
             fi => fi.id !== selectedProduct.id,
           );

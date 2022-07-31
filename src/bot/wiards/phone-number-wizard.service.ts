@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {Scenes} from 'telegraf';
-import {CustomerRepository} from '../custom-repositories';
+import {CustomerRepository} from '../repositories';
 import {CompleteOrderHandler} from '../helpers/complete-order-handler';
 import {BotContext} from '../interfaces/bot-context';
 

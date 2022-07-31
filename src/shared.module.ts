@@ -1,10 +1,19 @@
 import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {
+  CategoryRepository,
   CustomerRepository,
+  MenuRepository,
   MerchantRepository,
+  OptionCategoryRepository,
+  OptionRepository,
+  OrderItemRepository,
   OrderRepository,
-} from './bot/custom-repositories';
+  PermissionRepository,
+  ProductRepository,
+  RoleRepository,
+  UserRepository,
+} from './bot/repositories';
 import {FirstMessageHandler} from './bot/helpers';
 import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
 import {
@@ -54,6 +63,15 @@ import {StorageBlobService} from './services';
     CustomerRepository,
     MerchantRepository,
     OrderRepository,
+    CategoryRepository,
+    ProductRepository,
+    OrderItemRepository,
+    OptionCategoryRepository,
+    OptionRepository,
+    PermissionRepository,
+    RoleRepository,
+    UserRepository,
+    MenuRepository,
     FirstMessageHandler,
   ],
   exports: [
@@ -63,6 +81,15 @@ import {StorageBlobService} from './services';
     CustomerRepository,
     MerchantRepository,
     OrderRepository,
+    CategoryRepository,
+    ProductRepository,
+    OrderItemRepository,
+    OptionCategoryRepository,
+    OptionRepository,
+    PermissionRepository,
+    RoleRepository,
+    UserRepository,
+    MenuRepository,
     FirstMessageHandler,
   ],
 })
