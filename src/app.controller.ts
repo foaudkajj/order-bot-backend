@@ -9,6 +9,6 @@ export class AppController {
   @Get()
   @AllowAnonymous()
   getHello(): string {
-    return `env: ${process.env.NODE_ENV} - db: ${process.env.DB_HOST}`;
+    return `env: ${process.env.NODE_ENV} - db: ${process.env.DB_HOST} - version: ${process.env.npm_package_version}`;
   }
 }
