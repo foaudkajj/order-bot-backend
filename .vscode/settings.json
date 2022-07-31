@@ -1,3 +1,8 @@
 {
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/f8af22c6-48ac-4527-a97d-8985bde9df88/microsoft.web/sites/subscriptions/f8af22c6-48ac-4527-a97d-8985bde9df88/resourceGroups/bot/providers/Microsoft.Web/sites/botappbe",
 }
