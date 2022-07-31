@@ -31,6 +31,7 @@
     "@nestjs/platform-express": "^9.0.5",
     "@nestjs/swagger": "^6.0.4",
     "@nestjs/typeorm": "^9.0.0",
+    "@nestjs/cli": "^9.0.0",
     "bcrypt": "^5.0.1",
     "dayjs": "^1.11.4",
     "guid-typescript": "^1.0.9",
@@ -49,7 +50,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.1",
     "@nestjs/testing": "^9.0.5",
     "@types/bcrypt": "^5.0.0",
