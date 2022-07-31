@@ -1,8 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {OrderStatus} from 'src/db/models';
 import {Scenes} from 'telegraf';
-import {OrderRepository} from '../custom-repositories';
-import {CustomerRepository} from '../custom-repositories/customer-repository';
+import {OrderRepository, CustomerRepository} from '../repositories';
 import {ConfirmOrderHandler} from '../helpers/confirm-order.handler';
 import {BotContext} from '../interfaces/bot-context';
 

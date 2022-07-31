@@ -1,33 +1,31 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Permission } from 'src/db/models/permission';
-import { Role } from 'src/db/models/role';
-import { RoleAndPermission } from 'src/db/models/role-and-permission';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { GetRolesDto } from 'src/panel/dtos/get-roles-dto';
-import { RoleIdAndPermissions } from 'src/panel/dtos/role-id-and-permissions';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { getManager, Repository } from 'typeorm';
+import {Injectable} from '@nestjs/common';
+import {PermissionRepository, RoleRepository} from 'src/bot/repositories';
+import {Permission} from 'src/db/models/permission';
+import {Role} from 'src/db/models/role';
+import {RoleAndPermission} from 'src/db/models/role-and-permission';
+import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
+import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
+import {RoleIdAndPermissions} from 'src/panel/dtos/role-id-and-permissions';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
+import {getManager} from 'typeorm';
 
 @Injectable()
 export class RoleService {
   constructor(
-    @InjectRepository(Permission)
-    private permissionRepository: Repository<Permission>,
-    @InjectRepository(Role)
-    private roleRepository: Repository<Role>,
-  ) { }
+    private permissionRepository: PermissionRepository,
+    private roleRepository: RoleRepository,
+  ) {}
 
   async GetRoles(query: DataSourceLoadOptionsBase) {
     let roles: Role[];
     if (query.take && query.skip) {
-      roles = await this.roleRepository.find({
+      roles = await this.roleRepository.orm.find({
         take: query.take,
         skip: query.skip,
         relations: ['roleAndPermissions', 'roleAndPermissions.permission'],
       });
     } else {
-      roles = await this.roleRepository.find({
+      roles = await this.roleRepository.orm.find({
         relations: ['roleAndPermissions', 'roleAndPermissions.permission'],
       });
     }
@@ -55,12 +53,12 @@ export class RoleService {
   async GetPermissions(query: DataSourceLoadOptionsBase) {
     let result;
     if (query.take && query.skip) {
-      result = await this.permissionRepository.find({
+      result = await this.permissionRepository.orm.find({
         take: query.take,
         skip: query.skip,
       });
     } else {
-      result = await this.permissionRepository.find();
+      result = await this.permissionRepository.orm.find();
     }
     const response: UIResponseBase<Permission> = {
       isError: false,
@@ -107,7 +105,7 @@ export class RoleService {
         messageKey: 'SUCCESS',
         statusCode: 200,
       };
-      await this.roleRepository.insert(role);
+      await this.roleRepository.orm.insert(role);
       return response;
     } catch (error) {
       throw new Error(error);
@@ -116,11 +114,11 @@ export class RoleService {
 
   async Update(updateDetails: Role) {
     try {
-      const role = await this.roleRepository.findOne({
-        where: { id: updateDetails.id },
+      const role = await this.roleRepository.orm.findOne({
+        where: {id: updateDetails.id},
       });
-      const { id: _, ...updatedRole } = { ...role, ...updateDetails };
-      await this.roleRepository.update({ id: role.id }, updatedRole);
+      const {id: _, ...updatedRole} = {...role, ...updateDetails};
+      await this.roleRepository.orm.update({id: role.id}, updatedRole);
       return <UIResponseBase<Role>>{
         isError: false,
         result: updatedRole,
@@ -134,7 +132,7 @@ export class RoleService {
 
   async Delete(Id: number) {
     try {
-      await this.roleRepository.delete({ id: Id });
+      await this.roleRepository.orm.delete({id: Id});
       return <UIResponseBase<Role>>{
         isError: false,
         messageKey: 'SUCCESS',

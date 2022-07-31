@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
-import {MerchantRepository} from 'src/bot/custom-repositories/merchant-repository';
+import {MerchantRepository} from 'src/bot/repositories/merchant.repository';
 import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {In, Repository} from 'typeorm';
+import {In} from 'typeorm';
 import GetirTokenService from 'src/panel/helpers/getir-token-helper';
 import {GetirOrder} from 'src/db/models/getir-order';
 import {Order} from 'src/db/models/order';
@@ -10,7 +10,6 @@ import {FoodOrderDto} from './getir-dtos/food-order-dto';
 import {Customer} from 'src/db/models/customer';
 import {
   Category,
-  Merchant,
   Option,
   OrderChannel,
   OrderItem,
@@ -20,13 +19,18 @@ import {
   ProductStatus,
 } from 'src/db/models';
 import {GetirOrderStatus, Endpoints, GetirResult} from './getir.enums';
-import {InjectRepository} from '@nestjs/typeorm';
 import {ProductCategory} from './getir-dtos/restaurant-menu';
 import {firstValueFrom} from 'rxjs';
 import {OptionCategory} from 'src/db/models/option-category';
 import {OrderOption} from 'src/db/models/order-option';
 import {HttpService} from '@nestjs/axios';
-import {OrderRepository} from 'src/bot/custom-repositories';
+import {
+  CategoryRepository,
+  OptionCategoryRepository,
+  OptionRepository,
+  OrderRepository,
+  ProductRepository,
+} from 'src/bot/repositories';
 
 @Injectable()
 export class GetirService {
@@ -37,14 +41,10 @@ export class GetirService {
     public httpService: HttpService,
     private orderRepository: OrderRepository,
     private merchantRepository: MerchantRepository,
-    @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>,
-    @InjectRepository(OptionCategory)
-    private optionCategoryRepository: Repository<OptionCategory>,
-    @InjectRepository(Option)
-    private optionRepository: Repository<Option>,
+    private categoryRepository: CategoryRepository,
+    private productRepository: ProductRepository,
+    private optionCategoryRepository: OptionCategoryRepository,
+    private optionRepository: OptionRepository,
     private getirToken: GetirTokenService,
   ) {}
 
@@ -590,7 +590,7 @@ export class GetirService {
         where: {getirRestaurantId: orderDetails.foodOrder.restaurant.id},
       });
 
-      let optionList = await this.optionRepository.find({
+      let optionList = await this.optionRepository.orm.find({
         select: ['id', 'getirOptionId'],
       });
 
@@ -619,7 +619,7 @@ export class GetirService {
         if (notExistingOptions.length > 0) {
           try {
             await this.importUpdateGetirProducts(merchant.id);
-            optionList = await this.optionRepository.find({
+            optionList = await this.optionRepository.orm.find({
               select: ['id', 'getirOptionId'],
             });
           } catch (e) {}
@@ -628,7 +628,7 @@ export class GetirService {
         productOptionListMap.set(getirProduct.product, tempOptionList);
       }
 
-      const products = await this.productRepository.find({
+      const products = await this.productRepository.orm.find({
         where: {getirProductId: In(getirProductList.map(pr => pr.product))},
       });
 
@@ -734,7 +734,7 @@ export class GetirService {
       category => category.id,
     );
 
-    const categoryList = await this.categoryRepository.find({
+    const categoryList = await this.categoryRepository.orm.find({
       where: {getirCategoryId: In(getirCategoryList)},
     });
 
@@ -743,7 +743,7 @@ export class GetirService {
       .reduce((prev, curr) => prev.concat(curr))
       .map(m => m.id);
 
-    const productList = await this.productRepository.find({
+    const productList = await this.productRepository.orm.find({
       where: {getirProductId: In(getirProductIdList)},
     });
 
@@ -770,13 +770,13 @@ export class GetirService {
       });
 
     const optionCategoryList = getirOptionCategotyIdList
-      ? await this.optionCategoryRepository.find({
+      ? await this.optionCategoryRepository.orm.find({
           where: {getirOptionCategoryId: In(getirOptionCategotyIdList)},
         })
       : [];
 
     const optionList = getirOptionIdList
-      ? await this.optionRepository.find({
+      ? await this.optionRepository.orm.find({
           where: {getirOptionId: In(getirOptionIdList)},
         })
       : [];
@@ -798,7 +798,7 @@ export class GetirService {
         getirCategory.categoryKey =
           categoryList.find(fi => fi.getirCategoryId === productCategory.id)
             ?.categoryKey ?? getirCategory.categoryKey;
-        await this.categoryRepository.update(
+        await this.categoryRepository.orm.update(
           {getirCategoryId: productCategory.id},
           getirCategory,
         );
@@ -807,7 +807,7 @@ export class GetirService {
           fi => fi.getirCategoryId === productCategory.id,
         );
       } else {
-        fetchedCategory = await this.categoryRepository.save(getirCategory);
+        fetchedCategory = await this.categoryRepository.orm.save(getirCategory);
       }
 
       for await (const getirProduct of productCategory.products) {
@@ -825,12 +825,12 @@ export class GetirService {
           productId = productList.find(
             fi => fi.getirProductId === getirProduct.id,
           )?.id;
-          await this.productRepository.update(
+          await this.productRepository.orm.update(
             {getirProductId: getirProduct.id},
             newGetirProduct,
           );
         } else {
-          const craetedProduct = await this.productRepository.save(
+          const craetedProduct = await this.productRepository.orm.save(
             newGetirProduct,
           );
           productId = craetedProduct.id;
@@ -848,7 +848,7 @@ export class GetirService {
               .map(mp => mp.getirOptionCategoryId)
               .includes(optionCategory.id)
           ) {
-            await this.optionCategoryRepository.update(
+            await this.optionCategoryRepository.orm.update(
               {getirOptionCategoryId: optionCategory.id},
               newOptionCategory,
             );
@@ -856,9 +856,8 @@ export class GetirService {
               mp => mp.getirOptionCategoryId,
             ).id;
           } else {
-            const createdCategory = await this.optionCategoryRepository.save(
-              newOptionCategory,
-            );
+            const createdCategory =
+              await this.optionCategoryRepository.orm.save(newOptionCategory);
             optionCategoryId = createdCategory.id;
           }
 
@@ -872,12 +871,12 @@ export class GetirService {
             };
 
             if (optionList.map(mp => mp.getirOptionId).includes(option.id)) {
-              await this.optionRepository.update(
+              await this.optionRepository.orm.update(
                 {getirOptionId: option.id},
                 newOption,
               );
             } else {
-              await this.optionRepository.save(newOption);
+              await this.optionRepository.orm.save(newOption);
             }
           }
         }

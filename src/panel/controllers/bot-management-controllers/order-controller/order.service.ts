@@ -14,7 +14,7 @@ import {
 } from '../../entegrations-management/getir/getir.enums';
 import {GetirService} from '../../entegrations-management/getir/getir.service';
 import {UIResponseError} from 'src/panel/dtos';
-import {OrderRepository} from 'src/bot/custom-repositories';
+import {OrderRepository} from 'src/bot/repositories';
 
 @Injectable()
 export class OrderService {
