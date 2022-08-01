@@ -16,11 +16,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Remove node_modules folder
+        run: |
+          rm package-lock.json
+          rm -r node_modules
+
       - name: Set up Node.js version
         uses: actions/setup-node@v2
         with:
           node-version: '14.x'
-          # cache: 'npm' # github actions can cache node_modules automatically to speed the build by about ~45s
+          cache: 'npm' # github actions can cache node_modules automatically to speed the build by about ~45s
 
       - name: npm install, build
         run: |
