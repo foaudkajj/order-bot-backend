@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Customer} from 'src/db/models/customer';
 import {Repository} from 'typeorm';
-import {BotContext} from '../interfaces/bot-context';
+import {BotContext} from '../../bot/interfaces/bot-context';
 import {BaseRepository} from './base.repository';
 
 @Injectable()

@@ -6,7 +6,7 @@ import {UIResponseBase} from '../dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
 import {Menu} from 'src/db/models/menu';
 import {NavigationItem} from '../dtos/navigation-items';
-import {MenuRepository, UserRepository} from 'src/bot/repositories';
+import {MenuRepository, UserRepository} from 'src/db/repositories';
 
 @Injectable()
 export class AuthService {

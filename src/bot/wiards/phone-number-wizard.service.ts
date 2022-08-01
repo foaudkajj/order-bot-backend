@@ -1,11 +1,11 @@
 import {Injectable} from '@nestjs/common';
 import {Scenes} from 'telegraf';
-import {CustomerRepository} from '../repositories';
+import {CustomerRepository} from '../../db/repositories';
 import {CompleteOrderHandler} from '../helpers/complete-order-handler';
 import {BotContext} from '../interfaces/bot-context';
 
 @Injectable()
-export class PhoneNumberService {
+export class PhoneNumberWizardService {
   constructor(
     private customerRepository: CustomerRepository,
     private completeOrderHandler: CompleteOrderHandler,

@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {PermissionRepository, RoleRepository} from 'src/bot/repositories';
+import {PermissionRepository, RoleRepository} from 'src/db/repositories';
 import {Permission} from 'src/db/models/permission';
 import {Role} from 'src/db/models/role';
 import {RoleAndPermission} from 'src/db/models/role-and-permission';
