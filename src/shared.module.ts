@@ -14,7 +14,6 @@ import {
   RoleRepository,
   UserRepository,
 } from './db/repositories';
-import {FirstMessageHandler} from './bot/helpers';
 import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
 import {
   OrderItem,
@@ -33,7 +32,6 @@ import {
   Order,
   OrderOption,
 } from './db/models';
-import {StorageBlobService} from './services';
 
 @Module({
   imports: [
@@ -59,7 +57,6 @@ import {StorageBlobService} from './services';
   controllers: [],
   providers: [
     DevextremeLoadOptionsService,
-    StorageBlobService,
     CustomerRepository,
     MerchantRepository,
     OrderRepository,
@@ -72,12 +69,10 @@ import {StorageBlobService} from './services';
     RoleRepository,
     UserRepository,
     MenuRepository,
-    FirstMessageHandler,
   ],
   exports: [
     DevextremeLoadOptionsService,
     TypeOrmModule,
-    StorageBlobService,
     CustomerRepository,
     MerchantRepository,
     OrderRepository,
@@ -90,7 +85,9 @@ import {StorageBlobService} from './services';
     RoleRepository,
     UserRepository,
     MenuRepository,
-    FirstMessageHandler,
   ],
 })
+/**
+ * This module contains only system wide used services (like repositories)
+ */
 export class SharedModule {}

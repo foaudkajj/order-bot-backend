@@ -5,7 +5,7 @@ import {CompleteOrderHandler} from '../helpers/complete-order-handler';
 import {BotContext} from '../interfaces/bot-context';
 
 @Injectable()
-export class PhoneNumberService {
+export class PhoneNumberWizardService {
   constructor(
     private customerRepository: CustomerRepository,
     private completeOrderHandler: CompleteOrderHandler,

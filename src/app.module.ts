@@ -2,24 +2,15 @@ import {Module} from '@nestjs/common';
 import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
-import {AddressWizardService} from './bot/wiards/address-wizard.service';
-import {AddnoteToOrderWizardService} from './bot/wiards/order-note.-wizard.service';
 import {PermissionsGuard} from './panel/passport/guards/permissions.guard';
 import {PanelModule} from './panel/panel.module';
 import {JwtAuthGuard} from './panel/passport/guards/jwt-auth.guard';
 import {ConfigModule} from '@nestjs/config';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {SharedModule} from './shared.module';
-import {PhoneNumberService} from './bot/wiards/phone-number-wizard.service';
 import {MerchantInterceptor} from './panel/interceptors/merchant.interceptor';
-import * as fs from 'fs';
 import {CustomNamingStrategy} from './naming-strategy';
-import {CompleteOrderHandler} from './bot/helpers/complete-order-handler';
-import {ConfirmOrderHandler} from './bot/helpers/confirm-order.handler';
-import {GetConfirmedOrderCb} from './bot/helpers/get-confirmed-orders-handler';
-import {OrdersInBasketCb} from './bot/helpers/get-orders-in-basket-cb-handler';
-import {InformationMessages} from './bot/helpers/informtaion-msgs';
-import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
+import {BotModule} from './bot/bot.module';
 
 @Module({
   imports: [
@@ -45,6 +36,7 @@ import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
     }),
     PanelModule,
     SharedModule,
+    BotModule,
   ],
   controllers: [AppController],
   providers: [
@@ -61,15 +53,6 @@ import {StartOrderingCb} from './bot/helpers/start-ordering-cb-handler';
       useClass: MerchantInterceptor,
     },
     AppService,
-    AddressWizardService,
-    AddnoteToOrderWizardService,
-    PhoneNumberService,
-    CompleteOrderHandler,
-    ConfirmOrderHandler,
-    GetConfirmedOrderCb,
-    StartOrderingCb,
-    OrdersInBasketCb,
-    InformationMessages,
   ],
 })
 export class AppModule {}
