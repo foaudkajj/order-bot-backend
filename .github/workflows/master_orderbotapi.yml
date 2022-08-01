@@ -18,8 +18,8 @@ jobs:
 
       - name: Remove node_modules folder
         run: |
-          rm package-lock.json
-          rm -r node_modules
+          rm ./package-lock.json
+          rm -r ./node_modules
 
       - name: Set up Node.js version
         uses: actions/setup-node@v2
