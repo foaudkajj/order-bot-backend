@@ -13,7 +13,7 @@ import {
   ProductRepository,
   RoleRepository,
   UserRepository,
-} from './bot/repositories';
+} from './db/repositories';
 import {FirstMessageHandler} from './bot/helpers';
 import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
 import {

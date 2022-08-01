@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {CategoryRepository} from 'src/bot/repositories';
+import {CategoryRepository} from 'src/db/repositories';
 import {Category} from 'src/db/models';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';

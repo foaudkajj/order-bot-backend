@@ -3,7 +3,7 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {OrderStatus} from 'src/db/models';
 import {Order} from 'src/db/models/order';
 import {Repository} from 'typeorm';
-import {BotContext} from '../interfaces/bot-context';
+import {BotContext} from '../../bot/interfaces/bot-context';
 import {BaseRepository} from './base.repository';
 import {CustomerRepository} from './customer.repository';
 

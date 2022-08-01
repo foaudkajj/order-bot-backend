@@ -3,7 +3,7 @@ import {User} from 'src/db/models/user';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
-import {UserRepository} from 'src/bot/repositories';
+import {UserRepository} from 'src/db/repositories';
 
 @Injectable()
 export class UserService {

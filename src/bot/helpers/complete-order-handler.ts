@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {OrderRepository} from '../repositories/order.repository';
+import {OrderRepository} from '../../db/repositories/order.repository';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 

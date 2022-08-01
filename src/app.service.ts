@@ -18,7 +18,7 @@ import {
   OrderItemRepository,
   ProductRepository,
   OrderRepository,
-} from './bot/repositories';
+} from './db/repositories';
 import {
   OrderChannel,
   OrderStatus,

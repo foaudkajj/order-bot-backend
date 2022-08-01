@@ -3,7 +3,7 @@ import {OrderStatus} from 'src/db/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
-import {CategoryRepository} from '../repositories';
+import {CategoryRepository} from '../../db/repositories';
 import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
 
 @Injectable()

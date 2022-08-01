@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {MerchantRepository} from 'src/bot/repositories/merchant.repository';
+import {MerchantRepository} from 'src/db/repositories/merchant.repository';
 import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {In} from 'typeorm';
@@ -30,7 +30,7 @@ import {
   OptionRepository,
   OrderRepository,
   ProductRepository,
-} from 'src/bot/repositories';
+} from 'src/db/repositories';
 
 @Injectable()
 export class GetirService {
