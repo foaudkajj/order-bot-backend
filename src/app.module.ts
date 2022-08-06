@@ -33,6 +33,7 @@ import {BotModule} from './bot/bot.module';
       autoLoadEntities: true,
       keepConnectionAlive: true,
       migrationsRun: true,
+      migrations: ['migration/*.js'],
     }),
     PanelModule,
     SharedModule,
