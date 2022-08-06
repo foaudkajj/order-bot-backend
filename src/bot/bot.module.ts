@@ -14,7 +14,7 @@ import {
   AddressWizardService,
   AddnoteToOrderWizardService,
   PhoneNumberWizardService,
-} from './wiards';
+} from './wizards';
 
 @Module({
   imports: [SharedModule],

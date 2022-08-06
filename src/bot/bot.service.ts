@@ -28,7 +28,7 @@ import {
   AddnoteToOrderWizardService,
   AddressWizardService,
   PhoneNumberWizardService,
-} from './wiards';
+} from './wizards';
 import {Composer, Scenes, session, Telegraf} from 'telegraf';
 import {InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
 import {Like} from 'typeorm';
