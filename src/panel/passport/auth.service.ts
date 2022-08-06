@@ -20,13 +20,10 @@ export class AuthService {
     // let user: User = await this.userRepository.orm.createQueryBuilder('user').innerJoinAndSelect('user.Role', 'Role').innerJoinAndSelect('role.roleAndPermissions', 'roleAndPermissions').getOne();
     const user = await this.userRepository.orm.findOne({
       where: {userName: loginRequest.UserName},
-      relations: [
-        'role',
-        'merchant',
-        'role.roleAndPermissions',
-        'role.roleAndPermissions.permission',
-        'role.roleAndPermissions.permission.menu',
-      ],
+      relations: {
+        merchant: true,
+        role: {roleAndPermissions: {permission: {menu: true}}},
+      },
     });
     if (!user) {
       // TODO: return error

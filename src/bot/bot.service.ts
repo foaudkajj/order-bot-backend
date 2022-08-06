@@ -226,7 +226,7 @@ export class BotService implements OnModuleInit {
               categoryKey: Like(ctx.inlineQuery.query),
               merchantId: customer.merchantId,
             },
-            relations: ['products'],
+            relations: {products: true},
           });
           await ctx.answerInlineQuery(
             category?.products?.map(
@@ -367,7 +367,7 @@ export class BotService implements OnModuleInit {
       );
       const order = await this.orderRepository.getOrderInBasketByTelegramId(
         ctx,
-        ['orderItems'],
+        {orderItems: true},
       );
       if (order) {
         // let selectedProducts: string[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
@@ -483,10 +483,9 @@ export class BotService implements OnModuleInit {
   // }
 
   async AddNewOrder(ctx: BotContext) {
-    const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, [
-      'orderItems',
-      'orderItems.product',
-    ]);
+    const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, {
+      orderItems: {product: true},
+    });
     if (order) {
       const selectedProduct = order.orderItems.find(
         fi => fi.productStatus === ProductStatus.Selected,
