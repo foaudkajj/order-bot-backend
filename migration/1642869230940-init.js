@@ -5,8 +5,7 @@ const { MigrationInterface, QueryRunner } = require("typeorm");
 module.exports = class init1642869230940 {
     name = 'init1642869230940'
     
-    // please create new db before run the migrations
-    // to excecute the following SQL commands, run `typeorm migration:run` (without quotes)
+    // please create new db before starting the app.
     async up(queryRunner) {
         
         await queryRunner.query(`CREATE TABLE \`menu\` (\`id\` int NOT NULL AUTO_INCREMENT, \`menuKey\` varchar(50) NOT NULL, \`icon\` varchar(20) NULL, \`title\` varchar(50) NULL, \`translate\` varchar(200) NULL, \`url\` varchar(300) NULL, \`parentId\` varchar(50) NULL, \`isParent\` tinyint NOT NULL, \`priority\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
