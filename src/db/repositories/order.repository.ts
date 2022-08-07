@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {OrderStatus} from 'src/db/models';
 import {Order} from 'src/db/models/order';
-import {Repository} from 'typeorm';
+import {FindOptionsRelations, Repository} from 'typeorm';
 import {BotContext} from '../../bot/interfaces/bot-context';
 import {BaseRepository} from './base.repository';
 import {CustomerRepository} from './customer.repository';
@@ -20,7 +20,7 @@ export class OrderRepository extends BaseRepository<Order> {
   async getOrdersInBasketByStatus(
     ctx: BotContext,
     orderStatus: OrderStatus,
-    relations?: string[],
+    relations?: FindOptionsRelations<Order>,
   ) {
     // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
     const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
@@ -32,10 +32,13 @@ export class OrderRepository extends BaseRepository<Order> {
     return order;
   }
 
-  async getOrderInBasketByTelegramId(ctx: BotContext, relations?: string[]) {
+  async getOrderInBasketByTelegramId(
+    ctx: BotContext,
+    relations?: FindOptionsRelations<Order>,
+  ) {
     // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
     const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
-    if (relations && relations.length > 0) {
+    if (relations) {
       return await this.orm.findOne({
         where: {customerId: customer.id, orderStatus: OrderStatus.New},
         relations: relations,

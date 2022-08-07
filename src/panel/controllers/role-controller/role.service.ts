@@ -22,11 +22,11 @@ export class RoleService {
       roles = await this.roleRepository.orm.find({
         take: query.take,
         skip: query.skip,
-        relations: ['roleAndPermissions', 'roleAndPermissions.permission'],
+        relations: {roleAndPermissions: {permission: true}},
       });
     } else {
       roles = await this.roleRepository.orm.find({
-        relations: ['roleAndPermissions', 'roleAndPermissions.permission'],
+        relations: {roleAndPermissions: {permission: true}},
       });
     }
     const result = roles.map(

@@ -84,7 +84,7 @@ export class OrderService {
   async Update(updateDetails: Order) {
     const order = await this.orderRepository.orm.findOne({
       where: {id: updateDetails.id},
-      relations: ['getirOrder', 'merchant', 'customer'],
+      relations: {getirOrder: true, merchant: true, customer: true},
     });
 
     if (order.orderChannel === OrderChannel.Getir) {
@@ -231,7 +231,7 @@ export class OrderService {
     try {
       const order = await this.orderRepository.orm.findOne({
         where: {id: Number.parseInt(orderId)},
-        relations: ['getirOrder', 'merchant', 'customer'],
+        relations: {getirOrder: true, merchant: true, customer: true},
       });
 
       if (order.orderChannel === OrderChannel.Telegram) {

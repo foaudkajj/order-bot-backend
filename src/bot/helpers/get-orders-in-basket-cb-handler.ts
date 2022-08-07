@@ -19,7 +19,7 @@ export class OrdersInBasketCb {
 
       const order = await this.orderRepository.getOrderInBasketByTelegramId(
         ctx,
-        ['orderItems', 'orderItems.product'],
+        {orderItems: {product: true}},
       );
       if (!order || order?.orderItems?.length === 0) {
         orderDetailsMessage = null; // 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';

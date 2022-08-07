@@ -10,9 +10,9 @@ export class CompleteOrderHandler {
   async CompleteOrder(ctx: BotContext) {
     try {
       const ordersInBasket =
-        await this.orderRepository.getOrderInBasketByTelegramId(ctx, [
-          'customer',
-        ]);
+        await this.orderRepository.getOrderInBasketByTelegramId(ctx, {
+          customer: true,
+        });
       if (ordersInBasket) {
         const customer = ordersInBasket.customer;
         if (ctx.updateType === 'callback_query') await ctx.answerCbQuery();
