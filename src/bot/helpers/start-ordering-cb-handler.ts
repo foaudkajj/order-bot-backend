@@ -14,49 +14,49 @@ export class StartOrderingCb {
   ) {}
   public async StartOrdering(ctx: BotContext) {
     try {
-      // const customerRepository = getCustomRepository(CustomerRepository);
-      // let cutsomer = await customerRepository.getCustomer(ctx);
-      // user.SelectedProducts = null;
-      // await customerRepository.update({ TelegramId: cutsomer.TelegramId }, cutsomer);
       const orderDetails = await this.ordersInBasket.GetOrdersInBasketByStatus(
         ctx,
         OrderStatus.New,
       );
-      await this.ShowProductCategories(ctx, orderDetails);
+      await this.showProductCategories(ctx, orderDetails);
     } catch (e) {
       console.log(e);
     }
   }
 
-  async ShowProductCategories(ctx: BotContext, orderDetails: string) {
+  async showProductCategories(ctx: BotContext, orderDetails: string) {
     try {
-      const orders =
-        orderDetails === null ? 'Lütfen bir ürün seçiniz' : orderDetails;
-
       const categories = await this.categoryRepository.orm.find();
-      await ctx.editMessageText(orders, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          // one_time_keyboard: true,
-          inline_keyboard: [
-            ...categories.map(
-              mp =>
-                <InlineKeyboardButton[]>[
-                  {
-                    text: mp.name,
-                    switch_inline_query_current_chat: mp.categoryKey,
-                  },
-                ],
-            ),
-            [
-              {
-                text: '◀️ Ana Menüye Dön ◀️',
-                callback_data: CallBackQueryResult.MainMenu,
-              },
+      if (categories?.length > 0) {
+        const orders =
+          orderDetails === null ? 'Lütfen seçim yapınız:' : orderDetails;
+
+        await ctx.editMessageText(orders, {
+          parse_mode: 'HTML',
+          reply_markup: {
+            // one_time_keyboard: true,
+            inline_keyboard: [
+              ...categories.map(
+                mp =>
+                  <InlineKeyboardButton[]>[
+                    {
+                      text: mp.name,
+                      switch_inline_query_current_chat: mp.categoryKey,
+                    },
+                  ],
+              ),
+              [
+                {
+                  text: '◀️ Ana Menüye Dön ◀️',
+                  callback_data: CallBackQueryResult.MainMenu,
+                },
+              ],
             ],
-          ],
-        },
-      });
+          },
+        });
+      } else {
+        await ctx.editMessageText('Satıcı hiç ürün yüklememiştir.');
+      }
     } catch (error) {
       // Loglama
       console.log(error);
