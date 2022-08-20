@@ -1,4 +1,4 @@
-import {HttpStatus, Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {Order} from 'src/models/order';
 import {Customer} from 'src/models/customer';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
@@ -6,13 +6,11 @@ import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {FindManyOptions, Repository} from 'typeorm';
 import {InformationMessages} from 'src/bot/helpers/informtaion-msgs';
 import {OrderChannel, OrderStatus} from 'src/models';
-import {InjectRepository} from '@nestjs/typeorm';
 import {
   DeliveryType,
   GetirResult,
 } from '../../entegrations-management/getir/getir.enums';
 import {GetirService} from '../../entegrations-management/getir/getir.service';
-import {UIResponseError} from 'src/panel/dtos';
 import {OrderRepository} from 'src/db/repositories';
 import {DevextremeService} from 'src/services/devextreme.service';
 
@@ -41,12 +39,9 @@ export class OrderService {
     findOptions.where['merchantId'] = merchantId;
     const orders: Order[] = await this.orderRepository.orm.find(findOptions);
 
-    const response: UIResponseBase<Order> = {
-      isError: false,
+    const response: UIResponseBase<Order[]> = {
       data: orders,
       totalCount: orders.length,
-      messageKey: 'SUCCESS',
-      statusCode: 200,
     };
     return response;
   }
@@ -54,10 +49,7 @@ export class OrderService {
   async Insert(MerchantId: number, entity: Order) {
     try {
       const response: UIResponseBase<Order> = {
-        isError: false,
-        result: entity,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
+        data: entity,
       };
       console.log(entity);
       if (entity.customer) {
@@ -77,7 +69,7 @@ export class OrderService {
       await this.orderRepository.orm.insert(entity);
       return response;
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -107,10 +99,7 @@ export class OrderService {
         if (response.result === true) {
           await this.orderRepository.orm.update({id: order.id}, updateDetails);
           return <UIResponseBase<Order>>{
-            isError: false,
-            result: updateDetails,
-            messageKey: 'SUCCESS',
-            statusCode: 200,
+            data: updateDetails,
           };
         }
       } else {
@@ -146,26 +135,26 @@ export class OrderService {
         switch (updateDetails.orderStatus) {
           case OrderStatus.Prepared:
             if (response.code === 74) {
-              throw new UIResponseError(
+              throw new HttpException(
                 'GETIR.ERRORS.FAST_PREPARE',
-                response.code.toString(),
+                response.code,
               );
             }
             break;
 
           case OrderStatus.Delivered:
             if (response.code === 62) {
-              throw new UIResponseError(
+              throw new HttpException(
                 'GETIR.ERRORS.FAST_DELIVER',
-                response.code.toString(),
+                response.code,
               );
             }
             break;
 
           default:
-            throw new UIResponseError(
+            throw new HttpException(
               'GETIR.ERRORS.GENERAL_ERROR',
-              response.code.toString(),
+              response.code,
             );
         }
       }
@@ -207,23 +196,15 @@ export class OrderService {
     }
 
     return <UIResponseBase<Order>>{
-      isError: false,
-      result: updateDetails,
-      messageKey: 'SUCCESS',
-      statusCode: 200,
+      data: updateDetails,
     };
   }
 
   async Delete(Id: number, merchantId: number) {
     try {
       await this.orderRepository.orm.delete({id: Id, merchantId: merchantId});
-      return <UIResponseBase<Order>>{
-        isError: false,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
-      };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -255,16 +236,14 @@ export class OrderService {
             orderStatus: OrderStatus.Canceled,
           });
         } else {
-          const error = <UIResponseBase<Order>>{
-            isError: true,
-            messageKey: 'Getir service error',
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          };
-          throw new Error(JSON.stringify(error));
+          throw new HttpException(
+            'Getir service error',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
         }
       }
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

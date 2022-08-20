@@ -17,7 +17,7 @@ export class CategoryController {
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
-  ): Promise<UIResponseBase<Category>> {
+  ): Promise<UIResponseBase<Category[]>> {
     const result = await this.categoryService.Get(query, request.merchantId);
     return result;
   }
@@ -54,11 +54,7 @@ export class CategoryController {
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
     @Request() request,
-  ): Promise<UIResponseBase<Category>> {
-    const result = await this.categoryService.Delete(
-      deleteRequest.key,
-      request.merchantId,
-    );
-    return result;
+  ): Promise<void> {
+    return this.categoryService.Delete(deleteRequest.key, request.merchantId);
   }
 }

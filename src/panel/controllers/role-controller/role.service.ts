@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {PermissionRepository, RoleRepository} from 'src/db/repositories';
 import {Permission} from 'src/models/permission';
 import {Role} from 'src/models/role';
@@ -40,12 +40,9 @@ export class RoleService {
           ),
         },
     );
-    const response: UIResponseBase<GetRolesDto> = {
-      isError: false,
+    const response: UIResponseBase<GetRolesDto[]> = {
       data: result,
       totalCount: result.length,
-      messageKey: 'SUCCESS',
-      statusCode: 200,
     };
     return response;
   }
@@ -61,11 +58,8 @@ export class RoleService {
       result = await this.permissionRepository.orm.find();
     }
     const response: UIResponseBase<Permission> = {
-      isError: false,
       data: result,
       totalCount: result.length,
-      messageKey: 'SUCCESS',
-      statusCode: 200,
     };
     return response;
   }
@@ -87,28 +81,20 @@ export class RoleService {
           ),
         );
       });
-      return <UIResponseBase<Permission>>{
-        isError: false,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
-      };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async Insert(role: Role) {
     try {
       const response: UIResponseBase<Role> = {
-        isError: false,
-        result: role,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
+        data: role,
       };
       await this.roleRepository.orm.insert(role);
       return response;
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -120,26 +106,18 @@ export class RoleService {
       const {id: _, ...updatedRole} = {...role, ...updateDetails};
       await this.roleRepository.orm.update({id: role.id}, updatedRole);
       return <UIResponseBase<Role>>{
-        isError: false,
-        result: updatedRole,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
+        data: updatedRole,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async Delete(Id: number) {
     try {
       await this.roleRepository.orm.delete({id: Id});
-      return <UIResponseBase<Role>>{
-        isError: false,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
-      };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

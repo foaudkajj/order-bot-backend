@@ -35,7 +35,7 @@ export class ProductController {
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
-  ): Promise<UIResponseBase<Product>> {
+  ): Promise<UIResponseBase<Product[]>> {
     const result = await this.productService.Get(query, request.merchantId);
     return result;
   }
@@ -77,12 +77,8 @@ export class ProductController {
   async Delete(
     @Body() deleteBody: DxGridDeleteRequest,
     @Request() request,
-  ): Promise<UIResponseBase<Product>> {
-    const result = await this.productService.Delete(
-      deleteBody.key,
-      request.merchantId,
-    );
-    return result;
+  ): Promise<void> {
+    return this.productService.Delete(deleteBody.key, request.merchantId);
   }
 
   @Post('upload')

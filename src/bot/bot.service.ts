@@ -72,7 +72,6 @@ export class BotService implements OnModuleInit {
     this.InitlizeWizards(this.composer);
     this.InilizeBotEventsHandlers(this.composer);
 
-    console.log('here');
     for await (const merchant of merchantList) {
       if (merchant.botToken) {
         const bot: Telegraf<BotContext> = new Telegraf<BotContext>(

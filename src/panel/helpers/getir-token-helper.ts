@@ -30,9 +30,9 @@ export default class GetirTokenService {
       token = await this.getAndUpdateToken(merchant);
     }
     if (!token) {
-      return <UIResponseBase<string>>{result: token, isError: true};
+      return <UIResponseBase<string>>{data: token, isError: true};
     } else {
-      return <UIResponseBase<string>>{result: token, isError: false};
+      return <UIResponseBase<string>>{data: token, isError: false};
     }
   }
 

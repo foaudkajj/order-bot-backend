@@ -18,7 +18,7 @@ export class RoleController {
   @PermissionsGuard(PermissionEnum.SHOW_ROLE)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
-  ): Promise<UIResponseBase<GetRolesDto>> {
+  ): Promise<UIResponseBase<GetRolesDto[]>> {
     const result = await this.roleService.GetRoles(query);
     return result;
   }
@@ -63,10 +63,7 @@ export class RoleController {
 
   @Post('Delete')
   @PermissionsGuard(PermissionEnum.DELETE_ROLE)
-  async Delete(
-    @Body() deleteRequest: DxGridDeleteRequest,
-  ): Promise<UIResponseBase<Role>> {
-    const result = await this.roleService.Delete(deleteRequest.key);
-    return result;
+  async Delete(@Body() deleteRequest: DxGridDeleteRequest): Promise<void> {
+    return this.roleService.Delete(deleteRequest.key);
   }
 }

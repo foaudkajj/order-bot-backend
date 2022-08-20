@@ -25,7 +25,7 @@ export class OrderController {
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
-  ): Promise<UIResponseBase<Order>> {
+  ): Promise<UIResponseBase<Order[]>> {
     const result = await this.orderService.Get(query, request.merchantId);
     return result;
   }
@@ -57,12 +57,8 @@ export class OrderController {
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
     @Request() request,
-  ): Promise<UIResponseBase<Order>> {
-    const result = await this.orderService.Delete(
-      deleteRequest.key,
-      request.merchantId,
-    );
-    return result;
+  ): Promise<void> {
+    return this.orderService.Delete(deleteRequest.key, request.merchantId);
   }
 
   @Get('Cancel/:orderId')
