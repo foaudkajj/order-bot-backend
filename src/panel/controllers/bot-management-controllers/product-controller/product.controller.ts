@@ -21,14 +21,10 @@ import {
   UIResponseBase,
 } from 'src/panel/dtos';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {StorageBlobService} from 'src/services';
 
 @Controller('api/Products')
 export class ProductController {
-  constructor(
-    private productService: ProductService,
-    private storageBlobService: StorageBlobService,
-  ) {}
+  constructor(private productService: ProductService) {}
 
   @Get('Get')
   @PermissionsGuard(PermissionEnum.SHOW_PRODUCT)
@@ -85,10 +81,7 @@ export class ProductController {
   @UseInterceptors(FileInterceptor('files[]'))
   @PermissionsGuard(PermissionEnum.UPDATE_PRODUCT)
   async uploadPicture(@UploadedFile() file: Express.Multer.File) {
-    await this.storageBlobService.uploadProductPicture(
-      file.originalname,
-      file.buffer,
-    );
+    await this.productService.uploadPicture(file);
 
     return HttpStatus.OK;
   }

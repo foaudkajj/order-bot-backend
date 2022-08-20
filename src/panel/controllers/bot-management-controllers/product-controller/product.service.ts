@@ -1,11 +1,16 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {ProductRepository} from 'src/db/repositories';
+import {StoragePrefix} from 'src/models';
 import {Product} from 'src/models/product';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
+import {StorageBlobService} from 'src/services';
 @Injectable()
 export class ProductService {
-  constructor(private productRepository: ProductRepository) {}
+  constructor(
+    private productRepository: ProductRepository,
+    private storageBlobService: StorageBlobService,
+  ) {}
 
   async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let entities: Product[];
@@ -56,9 +61,24 @@ export class ProductService {
 
   async Delete(Id: number, MerchantId: number) {
     try {
+      const product = await this.productRepository.orm.findOne({
+        where: {id: Id},
+      });
+      if (product.thumbUrl) {
+        await this.storageBlobService.deleteFile(
+          `${StoragePrefix.Products}/${product.thumbUrl}`,
+        );
+      }
       await this.productRepository.orm.delete({id: Id, merchantId: MerchantId});
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async uploadPicture(file: Express.Multer.File) {
+    await this.storageBlobService.uploadProductPicture(
+      file.originalname,
+      file.buffer,
+    );
   }
 }
