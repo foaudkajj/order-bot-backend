@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {CategoryRepository} from 'src/db/repositories';
 import {Category} from 'src/models';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
@@ -21,12 +21,9 @@ export class CategoryService {
         where: {merchantId: merchantId},
       });
     }
-    const response: UIResponseBase<Category> = {
-      isError: false,
+    const response: UIResponseBase<Category[]> = {
       data: categories,
       totalCount: categories.length,
-      messageKey: 'SUCCESS',
-      statusCode: 200,
     };
     return response;
   }
@@ -34,27 +31,22 @@ export class CategoryService {
   async Insert(category: Category) {
     try {
       const response: UIResponseBase<Category> = {
-        isError: false,
-        result: category,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
+        data: category,
       };
       const sameCategory = await this.categoryRepository.orm.findOne({
         where: {categoryKey: category.categoryKey},
       });
       if (sameCategory) {
-        const err = <UIResponseBase<Category>>{
-          isError: true,
-          messageKey: 'CATEGORY_KEY_EXISTS',
-          statusCode: 500,
-        };
-        throw new Error(JSON.stringify(err));
+        throw new HttpException(
+          'CATEGORY_KEY_EXISTS',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       } else {
         await this.categoryRepository.orm.insert(category);
       }
       return response;
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -69,13 +61,10 @@ export class CategoryService {
         updatedEntity,
       );
       return <UIResponseBase<Category>>{
-        isError: false,
-        result: updatedEntity,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
+        data: updatedEntity,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -85,13 +74,8 @@ export class CategoryService {
         id: Id,
         merchantId: merchantId,
       });
-      return <UIResponseBase<Category>>{
-        isError: false,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
-      };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

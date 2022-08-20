@@ -45,7 +45,7 @@ export class AuthService {
     const isMatch = bcrypt.compareSync(loginRequest.Password, user?.password);
     if (user && isMatch) {
       const loginReponse: UIResponseBase<LoginResponse> = {
-        result: {
+        data: {
           isAuthenticated: true,
           token: this.jwtService.sign({
             userName: user.userName,
@@ -59,9 +59,6 @@ export class AuthService {
           permissions: JSON.stringify(permissions),
           navigationItems: navigationItems,
         },
-        statusCode: 200,
-        isError: false,
-        messageKey: 'SUCCESS',
       };
 
       return loginReponse;

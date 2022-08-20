@@ -38,7 +38,7 @@ export class UserController {
   @PermissionsGuard(PermissionEnum.SHOW_USER)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
-  ): Promise<UIResponseBase<User>> {
+  ): Promise<UIResponseBase<User[]>> {
     const result = await this.userService.Get(query);
     return result;
   }
@@ -69,10 +69,7 @@ export class UserController {
 
   @Post('Delete')
   @PermissionsGuard(PermissionEnum.DELETE_USER)
-  async Delete(
-    @Body() deleteRequest: DxGridDeleteRequest,
-  ): Promise<UIResponseBase<User>> {
-    const result = await this.userService.Delete(deleteRequest.key);
-    return result;
+  async Delete(@Body() deleteRequest: DxGridDeleteRequest): Promise<void> {
+    return this.userService.Delete(deleteRequest.key);
   }
 }

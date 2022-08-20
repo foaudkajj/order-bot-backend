@@ -16,7 +16,7 @@ export class Product {
   id?: number;
 
   @Column({nullable: true})
-  thumbUrl: string;
+  thumbUrl?: string;
 
   @Column({length: 50})
   title: string;

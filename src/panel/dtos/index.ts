@@ -8,4 +8,3 @@ export * from './login-response';
 export * from './navigation-items';
 export * from './role-id-and-permissions';
 export * from './ui-response-base';
-export * from './ui-response-error';

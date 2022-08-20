@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {ProductRepository} from 'src/db/repositories';
 import {Product} from 'src/models/product';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
@@ -20,12 +20,9 @@ export class ProductService {
         where: {merchantId: merchantId},
       });
     }
-    const response: UIResponseBase<Product> = {
-      isError: false,
+    const response: UIResponseBase<Product[]> = {
       data: entities,
       totalCount: entities.length,
-      messageKey: 'SUCCESS',
-      statusCode: 200,
     };
     return response;
   }
@@ -33,15 +30,12 @@ export class ProductService {
   async Insert(product: Product) {
     try {
       const response: UIResponseBase<Product> = {
-        isError: false,
-        result: product,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
+        data: product,
       };
       await this.productRepository.orm.insert(product);
       return response;
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -53,26 +47,18 @@ export class ProductService {
       const {id: _, ...updatedEntity} = {...product, ...updateDetails};
       await this.productRepository.orm.update({id: product.id}, updatedEntity);
       return <UIResponseBase<Product>>{
-        isError: false,
-        result: updatedEntity,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
+        data: updatedEntity,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async Delete(Id: number, MerchantId: number) {
     try {
       await this.productRepository.orm.delete({id: Id, merchantId: MerchantId});
-      return <UIResponseBase<Product>>{
-        isError: false,
-        messageKey: 'SUCCESS',
-        statusCode: 200,
-      };
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
