@@ -38,3 +38,7 @@ export enum PaymentMethod {
   OnDelivery = 'OnDelivery',
   Online = 'ONLINE',
 }
+
+export enum StoragePrefix {
+  Products = 'products',
+}

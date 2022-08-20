@@ -1,5 +1,6 @@
 import {BlobBatch, BlobServiceClient} from '@azure/storage-blob';
 import {Injectable, Scope} from '@nestjs/common';
+import {StoragePrefix} from 'src/models';
 /**
  * @class StorageBlobService provides methods for data manipulation in
  * Azure blob storage.
@@ -113,14 +114,12 @@ export class StorageBlobService {
    * */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async copyFile(sourceBlobName: string, targetBlobName: string): Promise<any> {
-    const blockBlobClient = this.containerClient.getBlockBlobClient(
-      sourceBlobName,
-    );
+    const blockBlobClient =
+      this.containerClient.getBlockBlobClient(sourceBlobName);
     const blobUrl = blockBlobClient.url;
 
-    const newBlobClient = this.containerClient.getBlockBlobClient(
-      targetBlobName,
-    );
+    const newBlobClient =
+      this.containerClient.getBlockBlobClient(targetBlobName);
     return newBlobClient.syncCopyFromURL(blobUrl);
   }
 
@@ -134,6 +133,11 @@ export class StorageBlobService {
     fileName: string,
     data: Buffer,
   ): Promise<string | undefined> {
-    return this.uploadFile(fileName, data, 'products', 'image/jpeg');
+    return this.uploadFile(
+      fileName,
+      data,
+      StoragePrefix.Products,
+      'image/jpeg',
+    );
   }
 }
