@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
-import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
+import {DevextremeService} from 'src/services/devextreme.service';
 
 @Injectable()
 export class YemekSepetiService {
-  constructor(private devextremeLoadOptions: DevextremeLoadOptionsService) {}
+  constructor(private devextremeLoadOptions: DevextremeService) {}
 }

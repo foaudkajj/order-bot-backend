@@ -1,13 +1,12 @@
 import {Injectable} from '@nestjs/common';
 import {MerchantRepository} from 'src/db/repositories/merchant.repository';
-import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {In} from 'typeorm';
 import GetirTokenService from 'src/panel/helpers/getir-token-helper';
-import {GetirOrder} from 'src/db/models/getir-order';
-import {Order} from 'src/db/models/order';
+import {GetirOrder} from 'src/models/getir-order';
+import {Order} from 'src/models/order';
 import {FoodOrderDto} from './getir-dtos/food-order-dto';
-import {Customer} from 'src/db/models/customer';
+import {Customer} from 'src/models/customer';
 import {
   Category,
   Option,
@@ -17,12 +16,12 @@ import {
   PaymentMethod,
   Product,
   ProductStatus,
-} from 'src/db/models';
+} from 'src/models';
 import {GetirOrderStatus, Endpoints, GetirResult} from './getir.enums';
 import {ProductCategory} from './getir-dtos/restaurant-menu';
 import {firstValueFrom} from 'rxjs';
-import {OptionCategory} from 'src/db/models/option-category';
-import {OrderOption} from 'src/db/models/order-option';
+import {OptionCategory} from 'src/models/option-category';
+import {OrderOption} from 'src/models/order-option';
 import {HttpService} from '@nestjs/axios';
 import {
   CategoryRepository,
@@ -31,13 +30,14 @@ import {
   OrderRepository,
   ProductRepository,
 } from 'src/db/repositories';
+import {DevextremeService} from 'src/services/devextreme.service';
 
 @Injectable()
 export class GetirService {
   GetirAppSecretKey: string;
   GetirRestaurantSecretKey: string;
   constructor(
-    public devextremeLoadOptions: DevextremeLoadOptionsService,
+    public devextremeLoadOptions: DevextremeService,
     public httpService: HttpService,
     private orderRepository: OrderRepository,
     private merchantRepository: MerchantRepository,

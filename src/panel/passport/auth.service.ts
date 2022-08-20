@@ -4,7 +4,7 @@ import {LoginRequest} from '../dtos/login-request-dto';
 import {LoginResponse} from '../dtos/login-response';
 import {UIResponseBase} from '../dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
-import {Menu} from 'src/db/models/menu';
+import {Menu} from 'src/models/menu';
 import {NavigationItem} from '../dtos/navigation-items';
 import {MenuRepository, UserRepository} from 'src/db/repositories';
 

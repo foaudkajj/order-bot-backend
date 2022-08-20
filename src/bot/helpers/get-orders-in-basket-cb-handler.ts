@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {OrderStatus} from 'src/db/models';
+import {OrderStatus} from 'src/models';
 import {OrderRepository} from '../../db/repositories/order.repository';
 import {BotContext} from '../interfaces/bot-context';
 

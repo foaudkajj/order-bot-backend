@@ -7,18 +7,18 @@ import {
   Request,
   Param,
 } from '@nestjs/common';
-import { Order } from 'src/db/models/order';
-import { PermissionsGuard } from 'src/panel/decorators/permissions.decorator';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
-import { DxGridUpdateRequest } from 'src/panel/dtos/dx-grid-update-request';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { PermissionEnum } from 'src/panel/enums/permissions-enum';
-import { OrderService } from './order.service';
+import {Order} from 'src/models/order';
+import {PermissionsGuard} from 'src/panel/decorators/permissions.decorator';
+import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
+import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
+import {PermissionEnum} from 'src/panel/enums/permissions-enum';
+import {OrderService} from './order.service';
 
 @Controller('api/Orders')
 export class OrderController {
-  constructor(private orderService: OrderService) { }
+  constructor(private orderService: OrderService) {}
 
   @Get('Get')
   @PermissionsGuard(PermissionEnum.SHOW_ORDER)
@@ -33,7 +33,7 @@ export class OrderController {
   @Post('Insert')
   @PermissionsGuard(PermissionEnum.ADD_ORDER)
   async Insert(@Body() body): Promise<UIResponseBase<Order>> {
-    const { MerchantId } = body.user;
+    const {MerchantId} = body.user;
     const entity = JSON.parse(body.values) as Order;
     const result = await this.orderService.Insert(MerchantId, entity);
     return result;
@@ -45,7 +45,7 @@ export class OrderController {
     @Body() body: DxGridUpdateRequest,
     @Request() request,
   ): Promise<UIResponseBase<Order>> {
-    const entity = { ...JSON.parse(body.values) } as Order;
+    const entity = {...JSON.parse(body.values)} as Order;
     entity.id = body.key;
     entity.merchantId = request.merchantId;
     const result = await this.orderService.Update(entity);

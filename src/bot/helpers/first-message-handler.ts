@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
-import {OrderChannel} from 'src/db/models';
-import {Customer} from 'src/db/models/customer';
+import {OrderChannel} from 'src/models';
+import {Customer} from 'src/models/customer';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {MerchantRepository, CustomerRepository} from '../../db/repositories';
 import {BotContext} from '../interfaces/bot-context';

@@ -14,7 +14,6 @@ import {
   RoleRepository,
   UserRepository,
 } from './db/repositories';
-import {DevextremeLoadOptionsService} from './db/helpers/devextreme-loadoptions';
 import {
   OrderItem,
   Product,
@@ -31,7 +30,8 @@ import {
   Customer,
   Order,
   OrderOption,
-} from './db/models';
+} from './models';
+import {DevextremeService} from './services/devextreme.service';
 
 @Module({
   imports: [
@@ -56,7 +56,7 @@ import {
   ],
   controllers: [],
   providers: [
-    DevextremeLoadOptionsService,
+    DevextremeService,
     CustomerRepository,
     MerchantRepository,
     OrderRepository,
@@ -71,7 +71,7 @@ import {
     MenuRepository,
   ],
   exports: [
-    DevextremeLoadOptionsService,
+    DevextremeService,
     TypeOrmModule,
     CustomerRepository,
     MerchantRepository,

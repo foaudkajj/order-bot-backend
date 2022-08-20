@@ -5,7 +5,7 @@ import {
   OrderStatus,
   PaymentMethod,
   ProductStatus,
-} from 'src/db/models';
+} from 'src/models';
 import {
   CategoryRepository,
   CustomerRepository,

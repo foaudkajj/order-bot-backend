@@ -1,16 +1,16 @@
-import { Controller, Get, Post, Query, Body, Request } from '@nestjs/common';
-import { Category } from 'src/db/models';
-import { DataSourceLoadOptionsBase } from 'src/panel/dtos/devextreme-query';
-import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
-import { DxGridUpdateRequest } from 'src/panel/dtos/dx-grid-update-request';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { PermissionsGuard } from '../../../decorators/permissions.decorator';
-import { PermissionEnum } from '../../../enums/permissions-enum';
-import { CategoryService } from './category.service';
+import {Controller, Get, Post, Query, Body, Request} from '@nestjs/common';
+import {Category} from 'src/models';
+import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
+import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
+import {PermissionsGuard} from '../../../decorators/permissions.decorator';
+import {PermissionEnum} from '../../../enums/permissions-enum';
+import {CategoryService} from './category.service';
 
 @Controller('api/Category')
 export class CategoryController {
-  constructor(private categoryService: CategoryService) { }
+  constructor(private categoryService: CategoryService) {}
 
   @Get('Get')
   @PermissionsGuard(PermissionEnum.SHOW_CATEGORY)
@@ -42,7 +42,7 @@ export class CategoryController {
     @Body() body: DxGridUpdateRequest,
     @Request() request,
   ): Promise<UIResponseBase<Category>> {
-    const entity = { ...JSON.parse(body.values) } as Category;
+    const entity = {...JSON.parse(body.values)} as Category;
     entity.id = body.key;
     entity.merchantId = request.merchantId;
     const result = await this.categoryService.Update(entity);
@@ -55,7 +55,6 @@ export class CategoryController {
     @Body() deleteRequest: DxGridDeleteRequest,
     @Request() request,
   ): Promise<UIResponseBase<Category>> {
-
     const result = await this.categoryService.Delete(
       deleteRequest.key,
       request.merchantId,

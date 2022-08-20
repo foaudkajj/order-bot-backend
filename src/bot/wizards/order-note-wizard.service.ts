@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {OrderStatus} from 'src/db/models';
+import {OrderStatus} from 'src/models';
 import {Scenes} from 'telegraf';
 import {OrderRepository, CustomerRepository} from '../../db/repositories';
 import {ConfirmOrderHandler} from '../helpers/confirm-order.handler';

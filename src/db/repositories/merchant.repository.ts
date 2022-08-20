@@ -1,5 +1,5 @@
 import {InjectRepository} from '@nestjs/typeorm';
-import {Merchant} from 'src/db/models/merchant';
+import {Merchant} from 'src/models/merchant';
 import {Repository} from 'typeorm';
 import {BaseRepository} from './base.repository';
 

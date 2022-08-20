@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {OrderStatus} from 'src/db/models/enums';
+import {OrderStatus} from 'src/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';

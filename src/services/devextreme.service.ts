@@ -3,7 +3,7 @@ import {DataSourceLoadOptionsBase, SortingInfo} from 'src/panel/dtos';
 import {FindManyOptions, FindOptionsWhere, MoreThan} from 'typeorm';
 
 @Injectable()
-export class DevextremeLoadOptionsService {
+export class DevextremeService {
   constructor() {}
 
   GetFindOptionsFromQuery<T>(
