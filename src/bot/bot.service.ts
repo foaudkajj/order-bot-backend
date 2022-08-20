@@ -5,7 +5,7 @@ import {
   OrderStatus,
   PaymentMethod,
   ProductStatus,
-} from 'src/db/models';
+} from 'src/models';
 import {
   CategoryRepository,
   CustomerRepository,
@@ -53,7 +53,7 @@ export class BotService implements OnModuleInit {
     private startOrderingCb: StartOrderingCb,
   ) {}
 
-  botMap: Map<string, Telegraf<BotContext>> = new Map<
+  static botMap: Map<string, Telegraf<BotContext>> = new Map<
     string,
     Telegraf<BotContext>
   >();
@@ -81,7 +81,7 @@ export class BotService implements OnModuleInit {
 
         bot.use(this.composer);
         await bot.launch();
-        this.botMap.set(bot.botInfo.username, bot);
+        BotService.botMap.set(bot.botInfo.username, bot);
       }
     }
   }
@@ -454,7 +454,7 @@ export class BotService implements OnModuleInit {
               // ],
               [
                 {
-                  text: '🍛 Başka Ürün Seç 🍝',
+                  text: '🍛 Başka bir ürün seç 🍝',
                   callback_data: CallBackQueryResult.StartOrdering,
                 },
               ],

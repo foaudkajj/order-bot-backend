@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {OrderStatus} from 'src/db/models';
+import {OrderStatus} from 'src/models';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';

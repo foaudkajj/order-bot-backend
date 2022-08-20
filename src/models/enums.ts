@@ -18,7 +18,9 @@ export enum OrderStatus {
 }
 
 export enum ProductStatus {
+  // means the prduct is selected from the menu appears to the user by the Telegram.
   Selected = 'SELECTED',
+  // means that the user added the product to the basket by clicking on the related button.
   InBasket = 'INBASKET',
 }
 

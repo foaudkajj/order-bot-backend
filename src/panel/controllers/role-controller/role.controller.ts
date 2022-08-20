@@ -1,5 +1,5 @@
 import {Controller, Get, Post, Query, Body} from '@nestjs/common';
-import {Role} from 'src/db/models/role';
+import {Role} from 'src/models/role';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
 import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';

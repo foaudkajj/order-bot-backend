@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {ProductRepository} from 'src/db/repositories';
-import {Product} from 'src/db/models/product';
+import {Product} from 'src/models/product';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 @Injectable()

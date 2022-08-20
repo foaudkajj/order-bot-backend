@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {User} from 'src/db/models/user';
+import {User} from 'src/models/user';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';

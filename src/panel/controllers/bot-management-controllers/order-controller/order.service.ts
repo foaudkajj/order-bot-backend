@@ -1,12 +1,11 @@
 import {HttpStatus, Injectable} from '@nestjs/common';
-import {DevextremeLoadOptionsService} from 'src/db/helpers/devextreme-loadoptions';
-import {Order} from 'src/db/models/order';
-import {Customer} from 'src/db/models/customer';
+import {Order} from 'src/models/order';
+import {Customer} from 'src/models/customer';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {FindManyOptions, Repository} from 'typeorm';
 import {InformationMessages} from 'src/bot/helpers/informtaion-msgs';
-import {OrderChannel, OrderStatus} from 'src/db/models';
+import {OrderChannel, OrderStatus} from 'src/models';
 import {InjectRepository} from '@nestjs/typeorm';
 import {
   DeliveryType,
@@ -15,11 +14,12 @@ import {
 import {GetirService} from '../../entegrations-management/getir/getir.service';
 import {UIResponseError} from 'src/panel/dtos';
 import {OrderRepository} from 'src/db/repositories';
+import {DevextremeService} from 'src/services/devextreme.service';
 
 @Injectable()
 export class OrderService {
   constructor(
-    private devextremeLoadOptions: DevextremeLoadOptionsService,
+    private devextremeLoadOptions: DevextremeService,
     private orderRepository: OrderRepository,
     private getirService: GetirService,
     private informationMessages: InformationMessages,

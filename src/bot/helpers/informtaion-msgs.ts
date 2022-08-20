@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {BotService} from '../bot.service';
 
 @Injectable()
 export class InformationMessages {
@@ -9,12 +10,11 @@ export class InformationMessages {
     telegramId: number,
     text: string,
   ) {
-    //TODO
-    // if (botUserName && text) {
-    //   const botInstance = this.botService.botMap.get(botUserName);
-    //   if (botInstance) {
-    //     await botInstance.telegram.sendMessage(telegramId, text);
-    //   }
-    // }
+    if (botUserName && text) {
+      const botInstance = BotService.botMap.get(botUserName);
+      if (botInstance) {
+        await botInstance.telegram.sendMessage(telegramId, text);
+      }
+    }
   }
 }

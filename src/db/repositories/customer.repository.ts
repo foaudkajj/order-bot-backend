@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {Customer} from 'src/db/models/customer';
+import {Customer} from 'src/models/customer';
 import {FindOptionsRelations, Repository} from 'typeorm';
 import {BotContext} from '../../bot/interfaces/bot-context';
 import {BaseRepository} from './base.repository';

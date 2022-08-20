@@ -2,7 +2,7 @@ import {HttpService} from '@nestjs/axios';
 import {Injectable} from '@nestjs/common';
 import dayjs from 'dayjs';
 import {MerchantRepository} from 'src/db/repositories/merchant.repository';
-import {Merchant} from 'src/db/models/merchant';
+import {Merchant} from 'src/models/merchant';
 import {Endpoints} from '../controllers/entegrations-management/getir/getir.enums';
 import {UIResponseBase} from '../dtos/ui-response-base';
 

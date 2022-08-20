@@ -1,8 +1,8 @@
 import {Injectable} from '@nestjs/common';
 import {PermissionRepository, RoleRepository} from 'src/db/repositories';
-import {Permission} from 'src/db/models/permission';
-import {Role} from 'src/db/models/role';
-import {RoleAndPermission} from 'src/db/models/role-and-permission';
+import {Permission} from 'src/models/permission';
+import {Role} from 'src/models/role';
+import {RoleAndPermission} from 'src/models/role-and-permission';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
 import {RoleIdAndPermissions} from 'src/panel/dtos/role-id-and-permissions';
