@@ -4,8 +4,8 @@ import {Permission} from 'src/models/permission';
 import {Role} from 'src/models/role';
 import {RoleAndPermission} from 'src/models/role-and-permission';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
-import {RoleIdAndPermissions} from 'src/panel/dtos/role-id-and-permissions';
+import {GetRolesDto} from 'src/panel/dtos/get-roles.dto';
+import {RoleIdAndPermissionsRequest} from 'src/panel/dtos/role-id-and-permissions.request';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {DataSource} from 'typeorm';
 
@@ -65,7 +65,7 @@ export class RoleService {
     return response;
   }
 
-  async SaveRolePermissions(roleIdAndPermissions: RoleIdAndPermissions) {
+  async SaveRolePermissions(roleIdAndPermissions: RoleIdAndPermissionsRequest) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();

@@ -1,4 +1,4 @@
-export interface RoleIdAndPermissions {
+export interface RoleIdAndPermissionsRequest {
   roleId: number;
   rolePermissions: number[];
 }

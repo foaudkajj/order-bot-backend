@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
-import {LoginRequest} from '../dtos/login-request-dto';
-import {LoginResponse} from '../dtos/login-response';
+import {LoginRequest} from '../dtos/login-request.dto';
+import {LoginResponse} from '../dtos/login.response';
 import {UIResponseBase} from '../dtos/ui-response-base';
 import * as bcrypt from 'bcrypt';
 import {Menu} from 'src/models/menu';

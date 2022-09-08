@@ -10,9 +10,9 @@ import {
 import {User} from 'src/models/user';
 import {PermissionsGuard} from 'src/panel/decorators/permissions.decorator';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
-import {LoginResponse} from 'src/panel/dtos/login-response';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete.request';
+import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update.request';
+import {LoginResponse} from 'src/panel/dtos/login.response';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {PermissionEnum} from 'src/panel/enums/permissions-enum';
 import {AllowAnonymous} from '../../decorators/public.decorator';

@@ -3,7 +3,7 @@ import {Order} from 'src/models/order';
 import {Customer} from 'src/models/customer';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {FindManyOptions, Repository} from 'typeorm';
+import {FindManyOptions, MoreThan} from 'typeorm';
 import {InformationMessages} from 'src/bot/helpers/informtaion-msgs';
 import {OrderChannel, OrderStatus} from 'src/models';
 import {
@@ -13,6 +13,7 @@ import {
 import {GetirService} from '../../entegrations-management/getir/getir.service';
 import {OrderRepository} from 'src/db/repositories';
 import {DevextremeService} from 'src/services/devextreme.service';
+import {CancelOrderRequest} from 'src/panel/dtos';
 
 @Injectable()
 export class OrderService {
@@ -24,8 +25,7 @@ export class OrderService {
   ) {}
 
   async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
-    const findOptions: FindManyOptions<Order> =
-      this.devextremeLoadOptions.GetFindOptionsFromQuery(query);
+    const findOptions: FindManyOptions<Order> = {};
     findOptions.relations = [
       'customer',
       'getirOrder',
@@ -35,8 +35,7 @@ export class OrderService {
       'orderItems.orderOptions.option',
     ];
 
-    // eslint-disable-next-line dot-notation
-    findOptions.where['merchantId'] = merchantId;
+    findOptions.where = {orderStatus: MoreThan(0), merchantId: merchantId};
     const orders: Order[] = await this.orderRepository.orm.find(findOptions);
 
     const response: UIResponseBase<Order[]> = {
@@ -208,22 +207,28 @@ export class OrderService {
     }
   }
 
-  async CancelOrder(orderId: string) {
+  async CancelOrder(cancelOrder: CancelOrderRequest, merchantId: number) {
     try {
+      const orderId = cancelOrder.orderId;
       const order = await this.orderRepository.orm.findOne({
-        where: {id: Number.parseInt(orderId)},
+        where: {id: orderId, merchantId: merchantId},
         relations: {getirOrder: true, merchant: true, customer: true},
       });
 
       if (order.orderChannel === OrderChannel.Telegram) {
         await this.orderRepository.orm.update(orderId, {
           orderStatus: OrderStatus.Canceled,
+          cancelReason: cancelOrder.cancelReason,
         });
+
+        if (!cancelOrder.cancelReason) {
+          cancelOrder.cancelReason = 'Belirtilmemiş';
+        }
 
         this.informationMessages.SendInformationMessage(
           order.merchant.botUserName,
           order.customer.telegramId,
-          'Siparişiniz İptal Edilmiştir.',
+          `Siparişiniz İptal Edilmiştir. Sebep: ${cancelOrder.cancelReason}`,
         );
       } else if (order.orderChannel === OrderChannel.Getir) {
         const response = await this.getirService.cancelOrder(
@@ -234,6 +239,7 @@ export class OrderService {
         if (response.result === true) {
           await this.orderRepository.orm.update(orderId, {
             orderStatus: OrderStatus.Canceled,
+            cancelReason: cancelOrder.cancelReason,
           });
         } else {
           throw new HttpException(

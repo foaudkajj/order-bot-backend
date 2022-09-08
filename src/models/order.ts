@@ -39,6 +39,9 @@ export class Order {
   @Column({length: 4000, nullable: true})
   note?: string;
 
+  @Column({length: 4000, nullable: true, name: 'cancel_reason'})
+  cancelReason?: string;
+
   @OneToMany(() => OrderItem, order => order.order, {
     cascade: ['insert', 'update', 'remove'],
     onDelete: 'CASCADE',

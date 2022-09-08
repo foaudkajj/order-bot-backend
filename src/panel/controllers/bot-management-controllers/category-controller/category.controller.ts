@@ -1,8 +1,8 @@
 import {Controller, Get, Post, Query, Body, Request} from '@nestjs/common';
 import {Category} from 'src/models';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete.request';
+import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update.request';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {PermissionsGuard} from '../../../decorators/permissions.decorator';
 import {PermissionEnum} from '../../../enums/permissions-enum';
