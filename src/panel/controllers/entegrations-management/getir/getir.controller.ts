@@ -9,15 +9,15 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { AllowAnonymous } from 'src/panel/decorators/public.decorator';
-import { DxGridDeleteRequest } from 'src/panel/dtos/dx-grid-delete-request';
-import { UIResponseBase } from 'src/panel/dtos/ui-response-base';
-import { FoodOrderDto } from './getir-dtos/food-order-dto';
-import { GetirService } from './getir.service';
+import {AllowAnonymous} from 'src/panel/decorators/public.decorator';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete.request';
+import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
+import {FoodOrderDto} from './getir-dtos/food-order-dto';
+import {GetirService} from './getir.service';
 
 @Controller('api/Getir')
 export class GetirController {
-  constructor(public getirService: GetirService) { }
+  constructor(public getirService: GetirService) {}
 
   // @Post('AddOrDeletePaymentMethod')
   // async AddOrDeletePaymentMethod(@Body() body: AddOrDeletePaymentMethodDto, @Request() request): Promise<UIResponseBase<string>> {
@@ -28,7 +28,9 @@ export class GetirController {
   async GetRestaurantPaymentMethods(
     @Request() request,
   ): Promise<UIResponseBase<string>> {
-    return await this.getirService.GetRestaurantPaymentMethods(request.merchantId);
+    return await this.getirService.GetRestaurantPaymentMethods(
+      request.merchantId,
+    );
   }
 
   @Delete('DeleteRestaurantPaymentMethods')
@@ -66,10 +68,11 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const result = await this.getirService.ActivateDeactivateRestaurantPaymentMethods(
-      request.merchantId,
-      body,
-    );
+    const result =
+      await this.getirService.ActivateDeactivateRestaurantPaymentMethods(
+        request.merchantId,
+        body,
+      );
     return result;
   }
 
@@ -160,18 +163,17 @@ export class GetirController {
     @Request() request,
     @Body() body,
   ): Promise<UIResponseBase<any>> {
-    const result = await this.getirService.UpdateOptionStatusInSpecificProductAndCategory(
-      request.merchantId,
-      body,
-    );
+    const result =
+      await this.getirService.UpdateOptionStatusInSpecificProductAndCategory(
+        request.merchantId,
+        body,
+      );
     return result;
   }
 
   @Post('OrderReceived')
   @AllowAnonymous()
-  async OrderReceived(
-    @Body() body: FoodOrderDto,
-  ): Promise<number> {
+  async OrderReceived(@Body() body: FoodOrderDto): Promise<number> {
     await this.getirService.OrderReceived(body);
     return HttpStatus.OK;
   }

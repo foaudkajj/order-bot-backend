@@ -1,10 +1,10 @@
 import {Controller, Get, Post, Query, Body} from '@nestjs/common';
 import {Role} from 'src/models/role';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
-import {GetRolesDto} from 'src/panel/dtos/get-roles-dto';
-import {RoleIdAndPermissions} from 'src/panel/dtos/role-id-and-permissions';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete.request';
+import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update.request';
+import {GetRolesDto} from 'src/panel/dtos/get-roles.dto';
+import {RoleIdAndPermissionsRequest} from 'src/panel/dtos/role-id-and-permissions.request';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {PermissionsGuard} from '../../decorators/permissions.decorator';
 import {PermissionEnum} from '../../enums/permissions-enum';
@@ -33,7 +33,7 @@ export class RoleController {
   @Post('SaveRolePermissions')
   @PermissionsGuard(PermissionEnum.UPDATE_ROLE)
   async SaveRolePermissions(
-    @Body() roleIdAndPermissions: RoleIdAndPermissions,
+    @Body() roleIdAndPermissions: RoleIdAndPermissionsRequest,
   ) {
     const result = await this.roleService.SaveRolePermissions(
       roleIdAndPermissions,
