@@ -72,7 +72,20 @@ export class BotService implements OnModuleInit {
     this.InitlizeWizards(this.composer);
     this.InilizeBotEventsHandlers(this.composer);
 
+    const isProd = process.env.NODE_ENV === 'production';
+
     for await (const merchant of merchantList) {
+      // the following if-else block is used to prevent running the same bots on prod and test environments.
+      if (isProd) {
+        if (merchant.id === 1) {
+          merchant.botToken = null;
+        }
+      } else {
+        if (merchant.id === 2) {
+          merchant.botToken = null;
+        }
+      }
+
       if (merchant.botToken) {
         const bot: Telegraf<BotContext> = new Telegraf<BotContext>(
           merchant.botToken,

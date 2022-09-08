@@ -6,12 +6,15 @@ import {
   Body,
   Request,
   Param,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import {Order} from 'src/models/order';
 import {PermissionsGuard} from 'src/panel/decorators/permissions.decorator';
+import {CancelOrderRequest} from 'src/panel/dtos';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
-import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete-request';
-import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update-request';
+import {DxGridDeleteRequest} from 'src/panel/dtos/dx-grid-delete.request';
+import {DxGridUpdateRequest} from 'src/panel/dtos/dx-grid-update.request';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {PermissionEnum} from 'src/panel/enums/permissions-enum';
 import {OrderService} from './order.service';
@@ -61,9 +64,15 @@ export class OrderController {
     return this.orderService.Delete(deleteRequest.key, request.merchantId);
   }
 
-  @Get('Cancel/:orderId')
+  @Post('cancel')
   @PermissionsGuard(PermissionEnum.SHOW_ORDER)
-  async Cancel(@Param('orderId') orderId: string): Promise<void> {
-    return await this.orderService.CancelOrder(orderId);
+  async Cancel(
+    @Body() cancelOrder: CancelOrderRequest,
+    @Request() request,
+  ): Promise<void> {
+    if (!cancelOrder || !cancelOrder.orderId) {
+      throw new HttpException('ORDER_ID_NOT_PROVIDED', HttpStatus.BAD_REQUEST);
+    }
+    return await this.orderService.CancelOrder(cancelOrder, request.merchantId);
   }
 }
