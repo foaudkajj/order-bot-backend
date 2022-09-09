@@ -5,6 +5,7 @@ import {Product} from 'src/models/product';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {StorageBlobService} from 'src/services';
+import {removeHtmlTags} from 'src/utils';
 @Injectable()
 export class ProductService {
   constructor(
@@ -37,6 +38,7 @@ export class ProductService {
       const response: UIResponseBase<Product> = {
         data: product,
       };
+      product.description = removeHtmlTags(product.description);
       await this.productRepository.orm.insert(product);
       return response;
     } catch (error) {
@@ -50,6 +52,7 @@ export class ProductService {
         where: {id: updateDetails.id},
       });
       const {id: _, ...updatedEntity} = {...product, ...updateDetails};
+      product.description = removeHtmlTags(product.description);
       await this.productRepository.orm.update({id: product.id}, updatedEntity);
       return <UIResponseBase<Product>>{
         data: updatedEntity,
