@@ -6,12 +6,12 @@ module.exports = class removeUserIdFromMerchant1662822665520 {
         await queryRunner.query(
             `ALTER TABLE merchant DROP FOREIGN KEY FK_4973a7acae8e2f6bfac7a781ceb`,
           );
+          await queryRunner.query(
+            `ALTER TABLE merchant DROP COLUMN userId`,
+          );
     }
 
     async down(queryRunner) {
-
-        // not possilbe to re-add a foreign key when the table contains rows.
-
-
+            // not possilbe to re-add a foreign key when the table contains rows.
     }
 }
