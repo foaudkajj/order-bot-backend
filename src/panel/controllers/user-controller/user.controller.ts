@@ -20,30 +20,31 @@ import {AuthService} from '../../passport/auth.service';
 import {LocalAuthGuard} from '../../passport/guards/local-auth.guard';
 import {UserService} from './user.service';
 
-@Controller('api/User')
+@Controller('api/user')
 export class UserController {
   constructor(
     private authService: AuthService,
     private userService: UserService,
   ) {}
 
-  @Post('Login')
+  @Post('login')
   @AllowAnonymous()
   @UseGuards(LocalAuthGuard)
   async login(@Request() req): Promise<LoginResponse> {
     return this.authService.login(req.user);
   }
 
-  @Get('Get')
+  @Get('get')
   @PermissionsGuard(PermissionEnum.SHOW_USER)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
+    @Request() request,
   ): Promise<UIResponseBase<User[]>> {
-    const result = await this.userService.Get(query);
+    const result = await this.userService.get(query, request.merchantId);
     return result;
   }
 
-  @Post('Insert')
+  @Post('insert')
   @PermissionsGuard(PermissionEnum.ADD_USER)
   async Insert(
     @Body() body,
@@ -52,24 +53,27 @@ export class UserController {
     const user = JSON.parse(body.values) as User;
     user.merchantId = request.merchantId;
     user.lastSuccesfulLoginDate = new Date();
-    const result = await this.userService.Insert(user);
+    const result = await this.userService.insert(user);
     return result;
   }
 
-  @Post('Update')
+  @Post('update')
   @PermissionsGuard(PermissionEnum.UPDATE_USER)
   async Update(
     @Body() update: DxGridUpdateRequest,
   ): Promise<UIResponseBase<User>> {
     const user = {...JSON.parse(update.values)} as User;
     user.id = update.key;
-    const result = await this.userService.Update(user);
+    const result = await this.userService.update(user);
     return result;
   }
 
-  @Post('Delete')
+  @Post('delete')
   @PermissionsGuard(PermissionEnum.DELETE_USER)
-  async Delete(@Body() deleteRequest: DxGridDeleteRequest): Promise<void> {
-    return this.userService.Delete(deleteRequest.key);
+  async Delete(
+    @Body() deleteRequest: DxGridDeleteRequest,
+    @Request() request,
+  ): Promise<void> {
+    return this.userService.delete(deleteRequest.key, request.merchantId);
   }
 }

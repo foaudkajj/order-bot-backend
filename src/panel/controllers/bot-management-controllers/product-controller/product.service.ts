@@ -13,7 +13,7 @@ export class ProductService {
     private storageBlobService: StorageBlobService,
   ) {}
 
-  async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
+  async get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let entities: Product[];
     if (query.take && query.skip) {
       entities = await this.productRepository.orm.find({
@@ -33,7 +33,7 @@ export class ProductService {
     return response;
   }
 
-  async Insert(product: Product) {
+  async insert(product: Product) {
     try {
       const response: UIResponseBase<Product> = {
         data: product,
@@ -46,7 +46,7 @@ export class ProductService {
     }
   }
 
-  async Update(updateDetails: Product) {
+  async update(updateDetails: Product) {
     try {
       const product = await this.productRepository.orm.findOne({
         where: {id: updateDetails.id},

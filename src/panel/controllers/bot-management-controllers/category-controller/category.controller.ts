@@ -8,21 +8,21 @@ import {PermissionsGuard} from '../../../decorators/permissions.decorator';
 import {PermissionEnum} from '../../../enums/permissions-enum';
 import {CategoryService} from './category.service';
 
-@Controller('api/Category')
+@Controller('api/category')
 export class CategoryController {
   constructor(private categoryService: CategoryService) {}
 
-  @Get('Get')
+  @Get('get')
   @PermissionsGuard(PermissionEnum.SHOW_CATEGORY)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
   ): Promise<UIResponseBase<Category[]>> {
-    const result = await this.categoryService.Get(query, request.merchantId);
+    const result = await this.categoryService.get(query, request.merchantId);
     return result;
   }
 
-  @Post('Insert')
+  @Post('insert')
   @PermissionsGuard(PermissionEnum.ADD_CATEGORY)
   async Insert(
     @Body() body,
@@ -32,11 +32,11 @@ export class CategoryController {
     if (entity) {
       entity.merchantId = request.merchantId;
     }
-    const result = await this.categoryService.Insert(entity);
+    const result = await this.categoryService.insert(entity);
     return result;
   }
 
-  @Post('Update')
+  @Post('update')
   @PermissionsGuard(PermissionEnum.UPDATE_CATEGORY)
   async Update(
     @Body() body: DxGridUpdateRequest,
@@ -45,16 +45,16 @@ export class CategoryController {
     const entity = {...JSON.parse(body.values)} as Category;
     entity.id = body.key;
     entity.merchantId = request.merchantId;
-    const result = await this.categoryService.Update(entity);
+    const result = await this.categoryService.update(entity);
     return result;
   }
 
-  @Post('Delete')
+  @Post('delete')
   @PermissionsGuard(PermissionEnum.DELETE_CATEGORY)
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
     @Request() request,
   ): Promise<void> {
-    return this.categoryService.Delete(deleteRequest.key, request.merchantId);
+    return this.categoryService.delete(deleteRequest.key, request.merchantId);
   }
 }

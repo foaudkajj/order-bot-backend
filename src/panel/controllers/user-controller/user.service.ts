@@ -9,15 +9,18 @@ import {UserRepository} from 'src/db/repositories';
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  async Get(query: DataSourceLoadOptionsBase) {
+  async get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let users: User[];
     if (query.take && query.skip) {
       users = await this.userRepository.orm.find({
         take: query.take,
         skip: query.skip,
+        where: {merchantId: merchantId},
       });
     } else {
-      users = await this.userRepository.orm.find();
+      users = await this.userRepository.orm.find({
+        where: {merchantId: merchantId},
+      });
     }
     const response: UIResponseBase<User[]> = {
       data: users,
@@ -26,7 +29,7 @@ export class UserService {
     return response;
   }
 
-  async Insert(user: User) {
+  async insert(user: User) {
     try {
       const response: UIResponseBase<User> = {
         data: user,
@@ -42,8 +45,10 @@ export class UserService {
     }
   }
 
-  async Update(updateDetails: User) {
+  async update(updateDetails: User) {
     try {
+      delete updateDetails.merchantId;
+      delete updateDetails.merchant;
       const user = await this.userRepository.orm.findOne({
         where: {id: updateDetails.id},
       });
@@ -63,9 +68,9 @@ export class UserService {
     }
   }
 
-  async Delete(Id: number) {
+  async delete(Id: number, merchantId: number) {
     try {
-      await this.userRepository.orm.delete({id: Id});
+      await this.userRepository.orm.delete({id: Id, merchantId: merchantId});
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }

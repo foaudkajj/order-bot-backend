@@ -24,7 +24,7 @@ export class OrderService {
     private informationMessages: InformationMessages,
   ) {}
 
-  async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
+  async get(query: DataSourceLoadOptionsBase, merchantId: number) {
     const findOptions: FindManyOptions<Order> = {};
     findOptions.relations = [
       'customer',
@@ -45,7 +45,7 @@ export class OrderService {
     return response;
   }
 
-  async Insert(MerchantId: number, entity: Order) {
+  async insert(MerchantId: number, entity: Order) {
     try {
       const response: UIResponseBase<Order> = {
         data: entity,
@@ -72,7 +72,7 @@ export class OrderService {
     }
   }
 
-  async Update(updateDetails: Order) {
+  async update(updateDetails: Order) {
     const order = await this.orderRepository.orm.findOne({
       where: {id: updateDetails.id},
       relations: {getirOrder: true, merchant: true, customer: true},
@@ -199,7 +199,7 @@ export class OrderService {
     };
   }
 
-  async Delete(Id: number, merchantId: number) {
+  async delete(Id: number, merchantId: number) {
     try {
       await this.orderRepository.orm.delete({id: Id, merchantId: merchantId});
     } catch (error) {
@@ -207,7 +207,7 @@ export class OrderService {
     }
   }
 
-  async CancelOrder(cancelOrder: CancelOrderRequest, merchantId: number) {
+  async cancelOrder(cancelOrder: CancelOrderRequest, merchantId: number) {
     try {
       const orderId = cancelOrder.orderId;
       const order = await this.orderRepository.orm.findOne({
