@@ -42,7 +42,10 @@ module.exports = class init1642869230940 {
         await queryRunner.query(`ALTER TABLE \`option\` ADD CONSTRAINT \`FK_a166d02c05dd6e9ae2368fd8960\` FOREIGN KEY (\`optionCategoryId\`) REFERENCES \`option_category\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
 
 
+        //  Re-enable the next line to show rolemanagement page.
+        // TODO @see https://trello.com/c/FkuJVkcH/56-seperated-roles-for-each-merchant
         // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (1, 'ROLE_MANAGEMENT', 'key', NULL, 'NAV.ROLE_MANAGEMENT', '/rolemanagement', 'ADMIN_MENUS', 0, 0);`);
+        //---------------------------------------------------------------------------------
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (2, 'USER_MANAGEMENT', 'card', NULL, 'NAV.USER_MANAGEMENT', '/usermanagement', 'ADMIN_MENUS', 0, 0);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (3, 'ADMIN_MENUS', 'user', NULL, 'NAV.ADMIN_MENUS', NULL, NULL, 1, 3);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (4, 'PRODUCTS_MANAGEMENT', 'fa-solid fa-box', NULL, 'NAV.PRODUCTS_MANAGEMENT', NULL, NULL, 1, 4);`);
@@ -55,15 +58,17 @@ module.exports = class init1642869230940 {
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (12, 'DASHBOARD', 'home', NULL, 'NAV.DASHBOARD', '/home', NULL, 0, 1);`);
 
        
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (21, 'SHOW_ROLE', NULL, 1, 1);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (22, 'SHOW_USER', NULL, 1, 2);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (23, 'ADD_USER', 'SHOW_USER', 0, NULL);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (24, 'DELETE_USER', 'SHOW_USER', 0, NULL);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (25, 'UPDATE_USER', 'SHOW_USER', 0, NULL);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (26, 'ADD_ROLE', 'SHOW_ROLE', 0, NULL);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (27, 'DELETE_ROLE', 'SHOW_ROLE', 0, NULL);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (28, 'UPDATE_ROLE', 'SHOW_ROLE', 0, NULL);`);
-       await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (29, 'UPATE_PERMISSIONS', 'SHOW_ROLE', 0, NULL);`);
+        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (22, 'SHOW_USER', NULL, 1, 2);`);
+        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (23, 'ADD_USER', 'SHOW_USER', 0, NULL);`);
+        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (24, 'DELETE_USER', 'SHOW_USER', 0, NULL);`);
+        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (25, 'UPDATE_USER', 'SHOW_USER', 0, NULL);`);
+        // TODO @see https://trello.com/c/FkuJVkcH/56-seperated-roles-for-each-merchant
+    //     await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (21, 'SHOW_ROLE', NULL, 1, 1);`);
+    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (26, 'ADD_ROLE', 'SHOW_ROLE', 0, NULL);`);
+    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (27, 'DELETE_ROLE', 'SHOW_ROLE', 0, NULL);`);
+    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (28, 'UPDATE_ROLE', 'SHOW_ROLE', 0, NULL);`);
+    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (29, 'UPATE_PERMISSIONS', 'SHOW_ROLE', 0, NULL);`);
+       //---------------------------------------------------------------------------------
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (30, 'SHOW_CATEGORY', NULL, 1, 5);`);
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (31, 'ADD_CATEGORY', 'SHOW_CATEGORY', 0, NULL);`);
        await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (32, 'UPDATE_CATEGORY', 'SHOW_CATEGORY', 0, NULL);`);
@@ -85,15 +90,22 @@ module.exports = class init1642869230940 {
        await queryRunner.query(`INSERT INTO \`user\` (\`id\`, \`UserName\`, \`UserStatus\`, \`Password\`, \`ImagePath\`, \`Email\`, \`Cellphone\`, \`LastSuccesfulLoginDate\`, \`Salt\`, \`Name\`, \`LastName\`, \`roleId\`, \`merchantId\`) VALUES (3, 'fuat', 1, '$2b$10$OdaBo//bG2zmWqCq5rJ6QexvWOSWEoHNcZEGlVUEevzRYgTld8ne.', NULL, 'mfuatnuroglu@gmail.com', '5394679794', '2021-08-07 13:05:47', '$2b$10$OdaBo//bG2zmWqCq5rJ6Qe', 'M Fuat', 'NUROGLU', 1, 1);`);
 
 
+       // Roles and permission for Role menu ------------------------------------------
+       // TODO @see https://trello.com/c/FkuJVkcH/56-seperated-roles-for-each-merchant
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (1, 21, 1);`);
-       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (2, 22, 1);`);
-       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (3, 23, 1);`);
-       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (4, 24, 1);`);
-       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (5, 25, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (6, 26, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (7, 27, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (8, 28, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (9, 29, 1);`);
+       // --------------------------------------------------------------------------------
+       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (2, 22, 1);`);
+       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (3, 23, 1);`);
+       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (4, 24, 1);`);
+       await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (5, 25, 1);`);
+
+       
+
+       
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (10, 30, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (11, 31, 1);`);
        await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (12, 32, 1);`);
