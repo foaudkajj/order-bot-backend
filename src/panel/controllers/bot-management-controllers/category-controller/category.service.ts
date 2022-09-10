@@ -8,7 +8,7 @@ import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 export class CategoryService {
   constructor(private categoryRepository: CategoryRepository) {}
 
-  async Get(query: DataSourceLoadOptionsBase, merchantId: number) {
+  async get(query: DataSourceLoadOptionsBase, merchantId: number) {
     let categories: Category[];
     if (query.take && query.skip) {
       categories = await this.categoryRepository.orm.find({
@@ -28,7 +28,7 @@ export class CategoryService {
     return response;
   }
 
-  async Insert(category: Category) {
+  async insert(category: Category) {
     try {
       const response: UIResponseBase<Category> = {
         data: category,
@@ -50,7 +50,7 @@ export class CategoryService {
     }
   }
 
-  async Update(updateDetails: Category) {
+  async update(updateDetails: Category) {
     try {
       const category = await this.categoryRepository.orm.findOne({
         where: {id: updateDetails.id},
@@ -68,7 +68,7 @@ export class CategoryService {
     }
   }
 
-  async Delete(Id: number, merchantId: number) {
+  async delete(Id: number, merchantId: number) {
     try {
       await this.categoryRepository.orm.delete({
         id: Id,

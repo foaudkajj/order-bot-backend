@@ -22,21 +22,21 @@ import {
 } from 'src/panel/dtos';
 import {FileInterceptor} from '@nestjs/platform-express';
 
-@Controller('api/Products')
+@Controller('api/products')
 export class ProductController {
   constructor(private productService: ProductService) {}
 
-  @Get('Get')
+  @Get('get')
   @PermissionsGuard(PermissionEnum.SHOW_PRODUCT)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
     @Request() request,
   ): Promise<UIResponseBase<Product[]>> {
-    const result = await this.productService.Get(query, request.merchantId);
+    const result = await this.productService.get(query, request.merchantId);
     return result;
   }
 
-  @Post('Insert')
+  @Post('insert')
   @PermissionsGuard(PermissionEnum.ADD_PRODUCT)
   async Insert(
     @Body() body,
@@ -47,11 +47,11 @@ export class ProductController {
     if (entity) {
       entity.merchantId = request.merchantId;
     }
-    const result = await this.productService.Insert(entity);
+    const result = await this.productService.insert(entity);
     return result;
   }
 
-  @Post('Update')
+  @Post('update')
   @PermissionsGuard(PermissionEnum.UPDATE_PRODUCT)
   async Update(
     @Body() body: DxGridUpdateRequest,
@@ -64,11 +64,11 @@ export class ProductController {
       entity.merchantId = request.merchantId;
     }
 
-    const result = await this.productService.Update(entity);
+    const result = await this.productService.update(entity);
     return result;
   }
 
-  @Post('Delete')
+  @Post('delete')
   @PermissionsGuard(PermissionEnum.DELETE_PRODUCT)
   async Delete(
     @Body() deleteBody: DxGridDeleteRequest,

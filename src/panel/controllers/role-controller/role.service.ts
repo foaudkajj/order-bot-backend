@@ -17,7 +17,7 @@ export class RoleService {
     private dataSource: DataSource,
   ) {}
 
-  async GetRoles(query: DataSourceLoadOptionsBase) {
+  async getRoles(query: DataSourceLoadOptionsBase) {
     let roles: Role[];
     if (query.take && query.skip) {
       roles = await this.roleRepository.orm.find({
@@ -48,7 +48,7 @@ export class RoleService {
     return response;
   }
 
-  async GetPermissions(query: DataSourceLoadOptionsBase) {
+  async getPermissions(query: DataSourceLoadOptionsBase) {
     let result;
     if (query.take && query.skip) {
       result = await this.permissionRepository.orm.find({
@@ -65,7 +65,7 @@ export class RoleService {
     return response;
   }
 
-  async SaveRolePermissions(roleIdAndPermissions: RoleIdAndPermissionsRequest) {
+  async saveRolePermissions(roleIdAndPermissions: RoleIdAndPermissionsRequest) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -99,7 +99,7 @@ export class RoleService {
     }
   }
 
-  async Insert(role: Role) {
+  async insert(role: Role) {
     try {
       const response: UIResponseBase<Role> = {
         data: role,
@@ -111,7 +111,7 @@ export class RoleService {
     }
   }
 
-  async Update(updateDetails: Role) {
+  async update(updateDetails: Role) {
     try {
       const role = await this.roleRepository.orm.findOne({
         where: {id: updateDetails.id},
@@ -126,7 +126,7 @@ export class RoleService {
     }
   }
 
-  async Delete(Id: number) {
+  async delete(Id: number) {
     try {
       await this.roleRepository.orm.delete({id: Id});
     } catch (error) {

@@ -20,21 +20,21 @@ import {AuthService} from '../../passport/auth.service';
 import {LocalAuthGuard} from '../../passport/guards/local-auth.guard';
 import {UserService} from './user.service';
 
-@Controller('api/User')
+@Controller('api/user')
 export class UserController {
   constructor(
     private authService: AuthService,
     private userService: UserService,
   ) {}
 
-  @Post('Login')
+  @Post('login')
   @AllowAnonymous()
   @UseGuards(LocalAuthGuard)
   async login(@Request() req): Promise<LoginResponse> {
     return this.authService.login(req.user);
   }
 
-  @Get('Get')
+  @Get('get')
   @PermissionsGuard(PermissionEnum.SHOW_USER)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
@@ -44,7 +44,7 @@ export class UserController {
     return result;
   }
 
-  @Post('Insert')
+  @Post('insert')
   @PermissionsGuard(PermissionEnum.ADD_USER)
   async Insert(
     @Body() body,
@@ -57,7 +57,7 @@ export class UserController {
     return result;
   }
 
-  @Post('Update')
+  @Post('update')
   @PermissionsGuard(PermissionEnum.UPDATE_USER)
   async Update(
     @Body() update: DxGridUpdateRequest,
@@ -68,7 +68,7 @@ export class UserController {
     return result;
   }
 
-  @Post('Delete')
+  @Post('delete')
   @PermissionsGuard(PermissionEnum.DELETE_USER)
   async Delete(
     @Body() deleteRequest: DxGridDeleteRequest,
