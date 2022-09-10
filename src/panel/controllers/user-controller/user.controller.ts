@@ -38,8 +38,9 @@ export class UserController {
   @PermissionsGuard(PermissionEnum.SHOW_USER)
   async Get(
     @Query() query: DataSourceLoadOptionsBase,
+    @Request() request,
   ): Promise<UIResponseBase<User[]>> {
-    const result = await this.userService.Get(query);
+    const result = await this.userService.get(query, request.merchantId);
     return result;
   }
 
@@ -52,7 +53,7 @@ export class UserController {
     const user = JSON.parse(body.values) as User;
     user.merchantId = request.merchantId;
     user.lastSuccesfulLoginDate = new Date();
-    const result = await this.userService.Insert(user);
+    const result = await this.userService.insert(user);
     return result;
   }
 
@@ -63,13 +64,16 @@ export class UserController {
   ): Promise<UIResponseBase<User>> {
     const user = {...JSON.parse(update.values)} as User;
     user.id = update.key;
-    const result = await this.userService.Update(user);
+    const result = await this.userService.update(user);
     return result;
   }
 
   @Post('Delete')
   @PermissionsGuard(PermissionEnum.DELETE_USER)
-  async Delete(@Body() deleteRequest: DxGridDeleteRequest): Promise<void> {
-    return this.userService.Delete(deleteRequest.key);
+  async Delete(
+    @Body() deleteRequest: DxGridDeleteRequest,
+    @Request() request,
+  ): Promise<void> {
+    return this.userService.delete(deleteRequest.key, request.merchantId);
   }
 }
