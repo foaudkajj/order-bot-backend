@@ -42,7 +42,7 @@ module.exports = class init1642869230940 {
         await queryRunner.query(`ALTER TABLE \`option\` ADD CONSTRAINT \`FK_a166d02c05dd6e9ae2368fd8960\` FOREIGN KEY (\`optionCategoryId\`) REFERENCES \`option_category\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
 
 
-        await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (1, 'ROLE_MANAGEMENT', 'key', NULL, 'NAV.ROLE_MANAGEMENT', '/rolemanagement', 'ADMIN_MENUS', 0, 0);`);
+        // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (1, 'ROLE_MANAGEMENT', 'key', NULL, 'NAV.ROLE_MANAGEMENT', '/rolemanagement', 'ADMIN_MENUS', 0, 0);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (2, 'USER_MANAGEMENT', 'card', NULL, 'NAV.USER_MANAGEMENT', '/usermanagement', 'ADMIN_MENUS', 0, 0);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (3, 'ADMIN_MENUS', 'user', NULL, 'NAV.ADMIN_MENUS', NULL, NULL, 1, 3);`);
         await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (4, 'PRODUCTS_MANAGEMENT', 'fa-solid fa-box', NULL, 'NAV.PRODUCTS_MANAGEMENT', NULL, NULL, 1, 4);`);
