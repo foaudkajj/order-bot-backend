@@ -142,13 +142,6 @@ module.exports = class init20220122095400 {
     await queryRunner.query(
       `INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (25, 'UPDATE_USER', 'SHOW_USER', 0, NULL);`,
     );
-    // TODO @see https://trello.com/c/FkuJVkcH/56-seperated-roles-for-each-merchant
-    //     await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (21, 'SHOW_ROLE', NULL, 1, 1);`);
-    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (26, 'ADD_ROLE', 'SHOW_ROLE', 0, NULL);`);
-    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (27, 'DELETE_ROLE', 'SHOW_ROLE', 0, NULL);`);
-    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (28, 'UPDATE_ROLE', 'SHOW_ROLE', 0, NULL);`);
-    //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (29, 'UPATE_PERMISSIONS', 'SHOW_ROLE', 0, NULL);`);
-    //---------------------------------------------------------------------------------
     await queryRunner.query(
       `INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (30, 'SHOW_CATEGORY', NULL, 1, 5);`,
     );
@@ -204,24 +197,7 @@ module.exports = class init20220122095400 {
       `INSERT INTO \`user\` (\`id\`, \`UserName\`, \`UserStatus\`, \`Password\`, \`ImagePath\`, \`Email\`, \`Cellphone\`, \`LastSuccesfulLoginDate\`, \`Salt\`, \`Name\`, \`LastName\`, \`roleId\`, \`merchantId\`) VALUES (2, 'corbana', 1, '$2b$10$OdaBo//bG2zmWqCq5rJ6QexvWOSWEoHNcZEGlVUEevzRYgTld8ne.', NULL, NULL, NULL, '2021-08-07 13:05:47', '$2b$10$OdaBo//bG2zmWqCq5rJ6Qe', 'corbana', 'corbana', 1, 2);`,
     );
 
-    // Roles and permission for Role menu ------------------------------------------
-    // TODO @see https://trello.com/c/FkuJVkcH/56-seperated-roles-for-each-merchant
-    // await queryRunner.query(
-    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (1, 21, 1);`,
-    // );
-    // await queryRunner.query(
-    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (6, 26, 1);`,
-    // );
-    // await queryRunner.query(
-    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (7, 27, 1);`,
-    // );
-    // await queryRunner.query(
-    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (8, 28, 1);`,
-    // );
-    // await queryRunner.query(
-    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (9, 29, 1);`,
-    // );
-    // --------------------------------------------------------------------------------
+
     await queryRunner.query(
       `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (2, 22, 1);`,
     );
