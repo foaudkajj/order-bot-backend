@@ -6,6 +6,7 @@ export class NavigationItem {
   icon: string;
   url: string;
   priority: number;
+  role: string;
 
   children?: NavigationItem[] = [];
 }

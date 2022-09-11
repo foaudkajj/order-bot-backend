@@ -22,25 +22,21 @@ export class AuthService {
       where: {userName: loginRequest.UserName},
       relations: {
         merchant: true,
-        role: {roleAndPermissions: {permission: {menu: true}}},
+        role: {roleAndPermissions: {permission: true}},
       },
     });
     if (!user) {
       // TODO: return error
       return;
     }
-    let menus = user.role.roleAndPermissions
-      .filter(fi => fi.permission.menu)
-      .map(fi => fi.permission.menu);
-    const parentMenus = await this.menuRepository.orm.find({
-      where: {isParent: true},
-    });
-    menus = menus.concat(parentMenus);
-    const navigationItems = this.createMenus(menus);
 
-    const permissions = user.role.roleAndPermissions.map(
-      mp => mp.permission.permissionKey,
-    );
+    const permissions =
+      user.role.roleAndPermissions.map(mp => mp.permission.permissionKey) ?? [];
+
+    let menus = await this.menuRepository.orm.find({where: {enabled: true}});
+    menus = menus.filter(m => permissions.includes(m.role));
+
+    const navigationItems = this.createMenus(menus);
 
     const isMatch = bcrypt.compareSync(loginRequest.Password, user?.password);
     if (user && isMatch) {
@@ -80,7 +76,7 @@ export class AuthService {
     parentMenu: Menu,
     userPermissions: Menu[],
   ): NavigationItem {
-    const parentChildren = userPermissions.filter(
+    const children = userPermissions.filter(
       wh => wh.parentId === parentMenu.menuKey,
     );
     const navigationItems: NavigationItem = {
@@ -90,10 +86,12 @@ export class AuthService {
       translate: parentMenu.translate,
       url: parentMenu.url,
       priority: parentMenu.priority,
-      type: parentChildren.length > 0 ? 'collapsable' : 'item',
+      type: children.length > 0 ? 'collapsable' : 'item',
+      role: parentMenu.role,
       children: [],
     };
-    parentChildren.forEach(child => {
+
+    children.forEach(child => {
       if (child.isParent) {
         navigationItems.children.push(
           this.userPermissionsCreator(child, userPermissions),
@@ -107,6 +105,7 @@ export class AuthService {
           priority: child.priority,
           type: 'item',
           url: child.url,
+          role: child.role,
           children: [],
         });
       }
