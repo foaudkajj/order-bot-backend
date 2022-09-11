@@ -123,6 +123,7 @@ module.exports = class init1642869230940 {
     await queryRunner.query(
       `INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (7, 'ORDERS', 'cart', NULL, 'NAV.ORDERS', '/orders', NULL, 0, 2);`,
     );
+    // Yemek sepetei & getir
     // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (9, 'ENTEGRATIONS', NULL, NULL, 'NAV.ENTEGRATIONS', NULL, NULL, 1, 5);`);
     // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (10, 'GETIR', NULL, NULL, 'NAV.GETIR', '/entegrations/getir-entegration', 'ENTEGRATIONS', 0, 0);`);
     // await queryRunner.query(`INSERT INTO \`menu\` (\`id\`, \`MenuKey\`, \`Icon\`, \`Title\`, \`Translate\`, \`URL\`, \`ParentId\`, \`IsParent\`, \`Priority\`) VALUES (11, 'YEMEKSEPETI', NULL, NULL, 'NAV.YEMEKSEPETI', '/entegrations/yemeksepeti-entegration', 'ENTEGRATIONS', 0, 0);`);
@@ -185,6 +186,7 @@ module.exports = class init1642869230940 {
     await queryRunner.query(
       `INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (41, 'DELETE_ORDER', 'SHOW_ORDER', 0, NULL);`,
     );
+    // Yemek sepetei & getir
     //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (42, 'SHOW_GETIR_ENTEGRATION', NULL, 1, 10);`);
     //    await queryRunner.query(`INSERT INTO \`permission\` (\`id\`, \`PermissionKey\`, \`ParentKey\`, \`IsParent\`, \`menuId\`) VALUES (43, 'SHOW_YEMEK_SEPETI_ENTEGRATION', NULL, 1, 11);`);
     await queryRunner.query(
@@ -194,30 +196,32 @@ module.exports = class init1642869230940 {
     await queryRunner.query(
       `INSERT INTO \`role\` (\`id\`, \`RoleName\`, \`Description\`) VALUES (1, 'admin', 'Her şeyi kontrol eder.');`,
     );
+
+    // password 123456
     await queryRunner.query(
       `INSERT INTO \`user\` (\`id\`, \`UserName\`, \`UserStatus\`, \`Password\`, \`ImagePath\`, \`Email\`, \`Cellphone\`, \`LastSuccesfulLoginDate\`, \`Salt\`, \`Name\`, \`LastName\`, \`roleId\`, \`merchantId\`) VALUES (1, 'fuat', 1, '$2b$10$OdaBo//bG2zmWqCq5rJ6QexvWOSWEoHNcZEGlVUEevzRYgTld8ne.', NULL, 'mfuatnuroglu@gmail.com', '5394679794', '2021-08-07 13:05:47', '$2b$10$OdaBo//bG2zmWqCq5rJ6Qe', 'M Fuat', 'NUROGLU', 1, 1);`,
     );
     await queryRunner.query(
-      `INSERT INTO \`user\` (\`id\`, \`UserName\`, \`UserStatus\`, \`Password\`, \`ImagePath\`, \`Email\`, \`Cellphone\`, \`LastSuccesfulLoginDate\`, \`Salt\`, \`Name\`, \`LastName\`, \`roleId\`, \`merchantId\`) VALUES (3, 'fuat', 1, '$2b$10$OdaBo//bG2zmWqCq5rJ6QexvWOSWEoHNcZEGlVUEevzRYgTld8ne.', NULL, 'mfuatnuroglu@gmail.com', '5394679794', '2021-08-07 13:05:47', '$2b$10$OdaBo//bG2zmWqCq5rJ6Qe', 'M Fuat', 'NUROGLU', 1, 1);`,
+      `INSERT INTO \`user\` (\`id\`, \`UserName\`, \`UserStatus\`, \`Password\`, \`ImagePath\`, \`Email\`, \`Cellphone\`, \`LastSuccesfulLoginDate\`, \`Salt\`, \`Name\`, \`LastName\`, \`roleId\`, \`merchantId\`) VALUES (2, 'corbana', 1, '$2b$10$OdaBo//bG2zmWqCq5rJ6QexvWOSWEoHNcZEGlVUEevzRYgTld8ne.', NULL, NULL, NULL, '2021-08-07 13:05:47', '$2b$10$OdaBo//bG2zmWqCq5rJ6Qe', 'corbana', 'corbana', 1, 2);`,
     );
 
     // Roles and permission for Role menu ------------------------------------------
     // TODO @see https://trello.com/c/FkuJVkcH/56-seperated-roles-for-each-merchant
-    await queryRunner.query(
-      `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (1, 21, 1);`,
-    );
-    await queryRunner.query(
-      `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (6, 26, 1);`,
-    );
-    await queryRunner.query(
-      `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (7, 27, 1);`,
-    );
-    await queryRunner.query(
-      `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (8, 28, 1);`,
-    );
-    await queryRunner.query(
-      `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (9, 29, 1);`,
-    );
+    // await queryRunner.query(
+    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (1, 21, 1);`,
+    // );
+    // await queryRunner.query(
+    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (6, 26, 1);`,
+    // );
+    // await queryRunner.query(
+    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (7, 27, 1);`,
+    // );
+    // await queryRunner.query(
+    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (8, 28, 1);`,
+    // );
+    // await queryRunner.query(
+    //   `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (9, 29, 1);`,
+    // );
     // --------------------------------------------------------------------------------
     await queryRunner.query(
       `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (2, 22, 1);`,
@@ -268,6 +272,7 @@ module.exports = class init1642869230940 {
     await queryRunner.query(
       `INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (21, 41, 1);`,
     );
+    // Yemek sepetei & getir
     //    await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (22, 42, 1);`);
     //    await queryRunner.query(`INSERT INTO \`role_and_permission\` (\`id\`, \`permissionId\`, \`roleId\`) VALUES (23, 43, 1);`);
     await queryRunner.query(
@@ -278,9 +283,11 @@ module.exports = class init1642869230940 {
       `INSERT INTO \`merchant\` (\`id\`, \`GetirAppSecretKey\`, \`GetirRestaurantSecretKey\`, \`GetirAccessToken\`, \`GetirTokenLastCreated\`, \`userId\`, \`YSAppSecretKey\`, \`YSRestaurantSecretKey\`, \`botUserName\`, \`botToken\`, \`isActive\`, \`GetirRestaurantId\`) VALUES (1, '4490860edf764e1b7c376683f5d9f7fe26c6d724', 'f00a4c91f48c5adbf54cf4b40844199206a9489f', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXN0YXVyYW50S2V5Ijp7Iml2IjoiNjEzNzMwNjE2MTM2NjUzNjY0MzEzNTM0MzIzMjM5Mzk2NjYyNjQzNDM0MzEzMTM3NjMzOTY0MzczOTM0NjI2NCIsImRhdGEiOiJhZDM5NTcwMTI3YmY2MzY4YTgxNmM2Y2UyODkwMGJmOGRjYjgyMTk1NzVjOGIxNmVjMTkxYjAzMjU2N2Q3YWQ2MzE3YjExNWEzNjc5M2JmN2IwMjUzODM5MGIwMDM2YTVhNzY3MDZiODIwOWY1YmNiNDM4YWI1ZjU2MDRkMTVjMmM3MmJlZjVhNDdiMDQ0NDM4MTljOTJlNTQxYzU4Y2Y4In0sInB1YmxpY0tleSI6IjM1NTFkYTAxLTVmY2QtNDA0My04N2I3LWU5MDljMTUxYjgyOCIsImlhdCI6MTY0Mjg2MjM3MiwiZXhwIjoxNjQyODgwMzcyfQ.phIkuqqMnx1ijTwtvV8QXpzO5JH81A23jG38Oc82x8g', '2022-01-22 17:39:33', 1, NULL, NULL, 'SiparisVermeBot', '1572537123:AAHs1SWycLVjjdgwWFkDRrMDegJBLf5rfvs', 1, '607e897e204d6125f81bdfbb');`,
     );
     await queryRunner.query(
-      `INSERT INTO \`merchant\` (\`id\`, \`GetirAppSecretKey\`, \`GetirRestaurantSecretKey\`, \`GetirAccessToken\`, \`GetirTokenLastCreated\`, \`userId\`, \`YSAppSecretKey\`, \`YSRestaurantSecretKey\`, \`botUserName\`, \`botToken\`, \`isActive\`, \`GetirRestaurantId\`) VALUES (2, '4490860edf764e1b7c376683f5d9f7fe26c6d724', 'f00a4c91f48c5adbf54cf4b40844199206a9489f', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXN0YXVyYW50S2V5Ijp7Iml2IjoiNjEzNzMwNjE2MTM2NjUzNjY0MzEzNTM0MzIzMjM5Mzk2NjYyNjQzNDM0MzEzMTM3NjMzOTY0MzczOTM0NjI2NCIsImRhdGEiOiJhZDM5NTcwMTI3YmY2MzY4YTgxNmM2Y2UyODkwMGJmOGRjYjgyMTk1NzVjOGIxNmVjMTkxYjAzMjU2N2Q3YWQ2MzE3YjExNWEzNjc5M2JmN2IwMjUzODM5MGIwMDM2YTVhNzY3MDZiODIwOWY1YmNiNDM4YWI1ZjU2MDRkMTVjMmM3MmJlZjVhNDdiMDQ0NDM4MTljOTJlNTQxYzU4Y2Y4In0sInB1YmxpY0tleSI6ImM5YTcxOWU3LTBhM2YtNDk1MS1iNzE2LTFhYjUwMDY5MTlmZCIsImlhdCI6MTYzNjg5ODIzMCwiZXhwIjoxNjM2OTE2MjMwfQ.lWvlTcaT49fuwXe5HPipls2x69fQMDGoxaZ9iLsdlMY', '2021-11-14 16:57:11', 3, NULL, NULL, 'CorbanaBot', '1485687554:AAFbN5pD2h5hzi9o9eydQjh6l4RcVYTtp5c', 1, '607e897e204d6125f81bdfbb');`,
+      `INSERT INTO \`merchant\` (\`id\`, \`GetirAppSecretKey\`, \`GetirRestaurantSecretKey\`, \`GetirAccessToken\`, \`GetirTokenLastCreated\`, \`userId\`, \`YSAppSecretKey\`, \`YSRestaurantSecretKey\`, \`botUserName\`, \`botToken\`, \`isActive\`, \`GetirRestaurantId\`) VALUES (2, NULL, NULL, NULL, '2021-11-14 16:57:11', 2, NULL, NULL, 'CorbanaBot', '1485687554:AAFbN5pD2h5hzi9o9eydQjh6l4RcVYTtp5c', 1, NULL);`,
     );
   }
+
+
    async down(queryRunner) {
     await queryRunner.query(
       `ALTER TABLE \`option\` DROP FOREIGN KEY \`FK_a166d02c05dd6e9ae2368fd8960\``,
