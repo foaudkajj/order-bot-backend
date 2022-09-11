@@ -44,10 +44,6 @@ export class Merchant {
   @Column({length: 50, nullable: true})
   ysRestaurantSecretKey: string;
 
-  @OneToOne(() => User, user => user.merchant)
-  @JoinColumn()
-  user: User;
-
   @OneToMany(() => Product, product => product.merchant)
   products: Product[];
 
