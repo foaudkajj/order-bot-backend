@@ -1,6 +1,6 @@
 const { MigrationInterface, QueryRunner } = require("typeorm");
 
-module.exports = class removeUserIdFromMerchant1662822665520 {
+module.exports = class removeUserIdFromMerchant20221108150000 {
 
     async up(queryRunner) {
         await queryRunner.query(
