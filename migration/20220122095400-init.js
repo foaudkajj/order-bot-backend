@@ -1,7 +1,6 @@
 const {MigrationInterface, QueryRunner} = require('typeorm');
 
-module.exports = class init1642869230940 {
-  name = 'init1642869230940'
+module.exports = class init20220122095400 {
   // please create new db before starting the app.
   async up(queryRunner) {
     await queryRunner.query(
