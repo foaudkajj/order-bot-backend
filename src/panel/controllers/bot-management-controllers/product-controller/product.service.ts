@@ -5,7 +5,7 @@ import {Product} from 'src/models/product';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
 import {StorageBlobService} from 'src/services';
-import {removeHtmlTags} from 'src/utils';
+import {removeHtmlTags} from 'src/shared/utils';
 @Injectable()
 export class ProductService {
   constructor(
