@@ -46,30 +46,24 @@ export class OrderService {
   }
 
   async insert(MerchantId: number, entity: Order) {
-    try {
-      const response: UIResponseBase<Order> = {
-        data: entity,
+    const response: UIResponseBase<Order> = {
+      data: entity,
+    };
+    if (entity.customer) {
+      // Address: entity.customer.Address, FirstName: entity.customer.FirstName,LastName: entity.customer.LastName,Location: entity.customer.Location,, Username: entity.customer.Username
+      const NewCustomer: Customer = {
+        merchantId: MerchantId,
+        customerChannel: OrderChannel.Panel,
+        phoneNumber: entity.customer.phoneNumber,
+        fullName: entity.customer.fullName,
       };
-      console.log(entity);
-      if (entity.customer) {
-        // Address: entity.customer.Address, FirstName: entity.customer.FirstName,LastName: entity.customer.LastName,Location: entity.customer.Location,, Username: entity.customer.Username
-        const NewCustomer: Customer = {
-          merchantId: MerchantId,
-          customerChannel: OrderChannel.Panel,
-          phoneNumber: entity.customer.phoneNumber,
-          fullName: entity.customer.fullName,
-        };
-        entity.customer = NewCustomer;
-      }
-      if (!entity.orderNo) entity.orderNo = new Date().getTime().toString(36);
-      entity.createDate = new Date();
-
-      console.log(entity);
-      await this.orderRepository.orm.insert(entity);
-      return response;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+      entity.customer = NewCustomer;
     }
+    if (!entity.orderNo) entity.orderNo = new Date().getTime().toString(36);
+    entity.createDate = new Date();
+
+    await this.orderRepository.orm.insert(entity);
+    return response;
   }
 
   async update(updateDetails: Order) {
@@ -200,56 +194,48 @@ export class OrderService {
   }
 
   async delete(Id: number, merchantId: number) {
-    try {
-      await this.orderRepository.orm.delete({id: Id, merchantId: merchantId});
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.orderRepository.orm.delete({id: Id, merchantId: merchantId});
   }
 
   async cancelOrder(cancelOrder: CancelOrderRequest, merchantId: number) {
-    try {
-      const orderId = cancelOrder.orderId;
-      const order = await this.orderRepository.orm.findOne({
-        where: {id: orderId, merchantId: merchantId},
-        relations: {getirOrder: true, merchant: true, customer: true},
+    const orderId = cancelOrder.orderId;
+    const order = await this.orderRepository.orm.findOne({
+      where: {id: orderId, merchantId: merchantId},
+      relations: {getirOrder: true, merchant: true, customer: true},
+    });
+
+    if (order.orderChannel === OrderChannel.Telegram) {
+      await this.orderRepository.orm.update(orderId, {
+        orderStatus: OrderStatus.Canceled,
+        cancelReason: cancelOrder.cancelReason,
       });
 
-      if (order.orderChannel === OrderChannel.Telegram) {
+      if (!cancelOrder.cancelReason) {
+        cancelOrder.cancelReason = 'Belirtilmemiş';
+      }
+
+      this.informationMessages.SendInformationMessage(
+        order.merchant.botUserName,
+        order.customer.telegramId,
+        `Siparişiniz İptal Edilmiştir. Sebep: ${cancelOrder.cancelReason}`,
+      );
+    } else if (order.orderChannel === OrderChannel.Getir) {
+      const response = await this.getirService.cancelOrder(
+        order.getirOrder.id,
+        order.merchantId,
+      );
+
+      if (response.result === true) {
         await this.orderRepository.orm.update(orderId, {
           orderStatus: OrderStatus.Canceled,
           cancelReason: cancelOrder.cancelReason,
         });
-
-        if (!cancelOrder.cancelReason) {
-          cancelOrder.cancelReason = 'Belirtilmemiş';
-        }
-
-        this.informationMessages.SendInformationMessage(
-          order.merchant.botUserName,
-          order.customer.telegramId,
-          `Siparişiniz İptal Edilmiştir. Sebep: ${cancelOrder.cancelReason}`,
+      } else {
+        throw new HttpException(
+          'Getir service error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
         );
-      } else if (order.orderChannel === OrderChannel.Getir) {
-        const response = await this.getirService.cancelOrder(
-          order.getirOrder.id,
-          order.merchantId,
-        );
-
-        if (response.result === true) {
-          await this.orderRepository.orm.update(orderId, {
-            orderStatus: OrderStatus.Canceled,
-            cancelReason: cancelOrder.cancelReason,
-          });
-        } else {
-          throw new HttpException(
-            'Getir service error',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
       }
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

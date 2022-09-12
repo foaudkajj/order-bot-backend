@@ -34,48 +34,36 @@ export class ProductService {
   }
 
   async insert(product: Product) {
-    try {
-      const response: UIResponseBase<Product> = {
-        data: product,
-      };
-      product.description = removeHtmlTags(product.description);
-      await this.productRepository.orm.insert(product);
-      return response;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const response: UIResponseBase<Product> = {
+      data: product,
+    };
+    product.description = removeHtmlTags(product.description);
+    await this.productRepository.orm.insert(product);
+    return response;
   }
 
   async update(updateDetails: Product) {
-    try {
-      const product = await this.productRepository.orm.findOne({
-        where: {id: updateDetails.id},
-      });
-      const {id: _, ...updatedEntity} = {...product, ...updateDetails};
-      product.description = removeHtmlTags(product.description);
-      await this.productRepository.orm.update({id: product.id}, updatedEntity);
-      return <UIResponseBase<Product>>{
-        data: updatedEntity,
-      };
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const product = await this.productRepository.orm.findOne({
+      where: {id: updateDetails.id},
+    });
+    const {id: _, ...updatedEntity} = {...product, ...updateDetails};
+    product.description = removeHtmlTags(product.description);
+    await this.productRepository.orm.update({id: product.id}, updatedEntity);
+    return <UIResponseBase<Product>>{
+      data: updatedEntity,
+    };
   }
 
   async Delete(Id: number, MerchantId: number) {
-    try {
-      const product = await this.productRepository.orm.findOne({
-        where: {id: Id},
-      });
-      if (product.thumbUrl) {
-        await this.storageBlobService.deleteFile(
-          `${StoragePrefix.Products}/${product.thumbUrl}`,
-        );
-      }
-      await this.productRepository.orm.delete({id: Id, merchantId: MerchantId});
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    const product = await this.productRepository.orm.findOne({
+      where: {id: Id},
+    });
+    if (product.thumbUrl) {
+      await this.storageBlobService.deleteFile(
+        `${StoragePrefix.Products}/${product.thumbUrl}`,
+      );
     }
+    await this.productRepository.orm.delete({id: Id, merchantId: MerchantId});
   }
 
   async uploadPicture(file: Express.Multer.File) {
