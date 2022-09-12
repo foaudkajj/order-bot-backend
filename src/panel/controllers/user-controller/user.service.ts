@@ -30,49 +30,37 @@ export class UserService {
   }
 
   async insert(user: User) {
-    try {
-      const response: UIResponseBase<User> = {
-        data: user,
-      };
-      const salt = await bcrypt.genSalt();
-      const hash = await bcrypt.hash(user.password, salt);
-      user.salt = salt;
-      user.password = hash;
-      await this.userRepository.orm.insert(user);
-      return response;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const response: UIResponseBase<User> = {
+      data: user,
+    };
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(user.password, salt);
+    user.salt = salt;
+    user.password = hash;
+    await this.userRepository.orm.insert(user);
+    return response;
   }
 
   async update(updateDetails: User) {
-    try {
-      delete updateDetails.merchantId;
-      delete updateDetails.merchant;
-      const user = await this.userRepository.orm.findOne({
-        where: {id: updateDetails.id},
-      });
-      if (updateDetails.password) {
-        const salt = await bcrypt.genSalt();
-        const hash = await bcrypt.hash(updateDetails.password, salt);
-        updateDetails.salt = salt;
-        updateDetails.password = hash;
-      }
-      const {id: _, ...updatedUser} = {...user, ...updateDetails};
-      await this.userRepository.orm.update({id: user.id}, updatedUser);
-      return <UIResponseBase<User>>{
-        data: updatedUser,
-      };
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    delete updateDetails.merchantId;
+    delete updateDetails.merchant;
+    const user = await this.userRepository.orm.findOne({
+      where: {id: updateDetails.id},
+    });
+    if (updateDetails.password) {
+      const salt = await bcrypt.genSalt();
+      const hash = await bcrypt.hash(updateDetails.password, salt);
+      updateDetails.salt = salt;
+      updateDetails.password = hash;
     }
+    const {id: _, ...updatedUser} = {...user, ...updateDetails};
+    await this.userRepository.orm.update({id: user.id}, updatedUser);
+    return <UIResponseBase<User>>{
+      data: updatedUser,
+    };
   }
 
   async delete(Id: number, merchantId: number) {
-    try {
-      await this.userRepository.orm.delete({id: Id, merchantId: merchantId});
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.userRepository.orm.delete({id: Id, merchantId: merchantId});
   }
 }

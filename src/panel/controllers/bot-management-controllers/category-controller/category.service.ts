@@ -29,53 +29,41 @@ export class CategoryService {
   }
 
   async insert(category: Category) {
-    try {
-      const response: UIResponseBase<Category> = {
-        data: category,
-      };
-      const sameCategory = await this.categoryRepository.orm.findOne({
-        where: {categoryKey: category.categoryKey},
-      });
-      if (sameCategory) {
-        throw new HttpException(
-          'CATEGORY_KEY_EXISTS',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      } else {
-        await this.categoryRepository.orm.insert(category);
-      }
-      return response;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    const response: UIResponseBase<Category> = {
+      data: category,
+    };
+    const sameCategory = await this.categoryRepository.orm.findOne({
+      where: {categoryKey: category.categoryKey},
+    });
+    if (sameCategory) {
+      throw new HttpException(
+        'ERROR.CATEGORY_KEY_EXISTS',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } else {
+      await this.categoryRepository.orm.insert(category);
     }
+    return response;
   }
 
   async update(updateDetails: Category) {
-    try {
-      const category = await this.categoryRepository.orm.findOne({
-        where: {id: updateDetails.id},
-      });
-      const {id: _, ...updatedEntity} = {...category, ...updateDetails};
-      await this.categoryRepository.orm.update(
-        {id: category.id, merchantId: updateDetails.merchantId},
-        updatedEntity,
-      );
-      return <UIResponseBase<Category>>{
-        data: updatedEntity,
-      };
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const category = await this.categoryRepository.orm.findOne({
+      where: {id: updateDetails.id},
+    });
+    const {id: _, ...updatedEntity} = {...category, ...updateDetails};
+    await this.categoryRepository.orm.update(
+      {id: category.id, merchantId: updateDetails.merchantId},
+      updatedEntity,
+    );
+    return <UIResponseBase<Category>>{
+      data: updatedEntity,
+    };
   }
 
   async delete(Id: number, merchantId: number) {
-    try {
-      await this.categoryRepository.orm.delete({
-        id: Id,
-        merchantId: merchantId,
-      });
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.categoryRepository.orm.delete({
+      id: Id,
+      merchantId: merchantId,
+    });
   }
 }

@@ -100,37 +100,25 @@ export class RoleService {
   }
 
   async insert(role: Role) {
-    try {
-      const response: UIResponseBase<Role> = {
-        data: role,
-      };
-      await this.roleRepository.orm.insert(role);
-      return response;
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const response: UIResponseBase<Role> = {
+      data: role,
+    };
+    await this.roleRepository.orm.insert(role);
+    return response;
   }
 
   async update(updateDetails: Role) {
-    try {
-      const role = await this.roleRepository.orm.findOne({
-        where: {id: updateDetails.id},
-      });
-      const {id: _, ...updatedRole} = {...role, ...updateDetails};
-      await this.roleRepository.orm.update({id: role.id}, updatedRole);
-      return <UIResponseBase<Role>>{
-        data: updatedRole,
-      };
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const role = await this.roleRepository.orm.findOne({
+      where: {id: updateDetails.id},
+    });
+    const {id: _, ...updatedRole} = {...role, ...updateDetails};
+    await this.roleRepository.orm.update({id: role.id}, updatedRole);
+    return <UIResponseBase<Role>>{
+      data: updatedRole,
+    };
   }
 
   async delete(Id: number) {
-    try {
-      await this.roleRepository.orm.delete({id: Id});
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.roleRepository.orm.delete({id: Id});
   }
 }

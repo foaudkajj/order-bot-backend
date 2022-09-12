@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
+import {APP_FILTER, APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
 import {PermissionsGuard} from './panel/passport/guards/permissions.guard';
@@ -11,6 +11,7 @@ import {SharedModule} from './shared.module';
 import {MerchantInterceptor} from './panel/interceptors/merchant.interceptor';
 import {CustomNamingStrategy} from './naming-strategy';
 import {BotModule} from './bot/bot.module';
+import {HttpExceptionFilter} from './shared/exception-filter';
 
 @Module({
   imports: [
@@ -41,6 +42,10 @@ import {BotModule} from './bot/bot.module';
   ],
   controllers: [AppController],
   providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
