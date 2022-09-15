@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   UploadedFile,
   HttpStatus,
+  Headers,
 } from '@nestjs/common';
 import {Product} from 'src/models/product';
 import {PermissionsGuard} from 'src/panel/decorators/permissions.decorator';
@@ -80,7 +81,11 @@ export class ProductController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('files[]'))
   @PermissionsGuard(PermissionEnum.UPDATE_PRODUCT)
-  async uploadPicture(@UploadedFile() file: Express.Multer.File) {
+  async uploadPicture(
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('file-name') fileName,
+  ) {
+    file.originalname = fileName;
     await this.productService.uploadPicture(file);
 
     return HttpStatus.OK;
