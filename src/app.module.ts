@@ -12,6 +12,8 @@ import {MerchantInterceptor} from './panel/interceptors/merchant.interceptor';
 import {CustomNamingStrategy} from './naming-strategy';
 import {BotModule} from './bot/bot.module';
 import {HttpExceptionFilter} from './shared/exception-filter';
+import {ScheduleModule} from '@nestjs/schedule';
+import {CronModule} from './crons/cron.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import {HttpExceptionFilter} from './shared/exception-filter';
     PanelModule,
     SharedModule,
     BotModule,
+    ScheduleModule.forRoot(),
+    CronModule,
   ],
   controllers: [AppController],
   providers: [

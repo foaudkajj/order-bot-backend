@@ -1,4 +1,8 @@
-import {BlobBatch, BlobServiceClient} from '@azure/storage-blob';
+import {
+  BlobBatch,
+  BlobServiceClient,
+  ContainerClient,
+} from '@azure/storage-blob';
 import {Injectable, Scope} from '@nestjs/common';
 import {StoragePrefix} from 'src/models';
 /**
@@ -7,8 +11,8 @@ import {StoragePrefix} from 'src/models';
  */
 @Injectable({scope: Scope.DEFAULT})
 export class StorageBlobService {
-  private blobServiceClient;
-  private containerClient;
+  private blobServiceClient: BlobServiceClient;
+  private containerClient: ContainerClient;
 
   constructor() {
     this.blobServiceClient = BlobServiceClient.fromConnectionString(
@@ -81,15 +85,33 @@ export class StorageBlobService {
       await Promise.all(
         fileNames.map(async (fileName, index) => {
           const blobClient = this.containerClient.getBlockBlobClient(fileName);
-          if (index === 0) await batchRequest.deleteBlob(blobClient);
-          else
+          if (index === 0) {
+            await batchRequest.deleteBlob(blobClient);
+          } else {
             await batchRequest.deleteBlob(blobClient, {
               deleteSnapshots: 'include',
             });
+          }
         }),
       );
       await blobBatchClient.submitBatch(batchRequest);
     }
+  }
+
+  /**
+   * Lists all blobs under a specific prefix.
+   * @see https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-list-javascript#use-a-flat-listing
+   * @param {StoragePrefix} prefix a storage prefix
+   */
+  async listBlobs(prefix: StoragePrefix) {
+    const blobItems = this.containerClient
+      .listBlobsFlat({
+        prefix: prefix,
+        includeMetadata: true,
+      })
+      .byPage();
+    let response = (await blobItems.next()).value;
+    return response.segment.blobItems;
   }
 
   /**

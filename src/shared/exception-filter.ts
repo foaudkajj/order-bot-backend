@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {QueryFailedError} from 'typeorm';
@@ -32,6 +33,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
         if ((exception as any)?.code === 'ER_ROW_IS_REFERENCED_2') {
           message = 'ERROR.REFERENCE_ERROR';
         }
+        break;
+
+      case UnauthorizedException:
+        httpStatus = HttpStatus.UNAUTHORIZED;
+        message = 'ERROR.UNAUTHORIZED';
         break;
 
       default:
