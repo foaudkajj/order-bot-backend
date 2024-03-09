@@ -92,8 +92,10 @@ export class BotService implements OnModuleInit {
         );
 
         bot.use(this.composer);
-        await bot.launch();
-        BotService.botMap.set(bot.botInfo.username, bot);
+        bot.launch(() => {
+          console.log(`Bot started. Merchant: ${merchant.botUserName}`);
+          BotService.botMap.set(bot.botInfo.username, bot);
+        });
       }
     }
   }
@@ -229,9 +231,8 @@ export class BotService implements OnModuleInit {
 
     composer.on('inline_query', async ctx => {
       try {
-        const customer = await this.customerRepository.getCustomerByTelegramId(
-          ctx,
-        );
+        const customer =
+          await this.customerRepository.getCustomerByTelegramId(ctx);
         if (customer) {
           const category = await this.categoryRepository.orm.findOne({
             where: {
@@ -272,7 +273,7 @@ export class BotService implements OnModuleInit {
             {
               id: 'None',
               type: 'article',
-              thumb_url: '',
+              // thumb_url: '',
               title: 'Bir Hata Oluştu Lütfen Tekrar Deneyiniz',
               description: 'Bir Hata Oluştu Lütfen Tekrar Deneyiniz',
               input_message_content: {
@@ -304,9 +305,8 @@ export class BotService implements OnModuleInit {
 
   async EmptyBasket(ctx: BotContext) {
     try {
-      const order = await this.orderRepository.getOrderInBasketByTelegramId(
-        ctx,
-      );
+      const order =
+        await this.orderRepository.getOrderInBasketByTelegramId(ctx);
       if (order) {
         await this.orderRepository.orm.delete({id: order.id});
         await ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.');
@@ -323,9 +323,8 @@ export class BotService implements OnModuleInit {
   async SendOrder(ctx: BotContext) {
     try {
       // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-      const customer = await this.customerRepository.getCustomerByTelegramId(
-        ctx,
-      );
+      const customer =
+        await this.customerRepository.getCustomerByTelegramId(ctx);
       await this.orderRepository.orm.update(
         {customerId: customer.id, orderStatus: OrderStatus.New},
         {orderStatus: OrderStatus.UserConfirmed},
@@ -374,9 +373,8 @@ export class BotService implements OnModuleInit {
     if ('text' in ctx.message) {
       const selectedProduct = ctx.message.text;
 
-      const customer = await this.customerRepository.getCustomerByTelegramId(
-        ctx,
-      );
+      const customer =
+        await this.customerRepository.getCustomerByTelegramId(ctx);
       const order = await this.orderRepository.getOrderInBasketByTelegramId(
         ctx,
         {orderItems: true},
