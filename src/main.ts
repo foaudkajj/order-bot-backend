@@ -11,15 +11,12 @@ async function bootstrap() {
     .setDescription('Entegrasyon')
     .setVersion('1.0')
     .addTag('getir,yemeksepeti')
-    .addSecurity('SecurityScheme', {
-      scheme: 'Bearer',
-      description: '',
+    .addBearerAuth({
       type: 'http',
-      in: 'header',
+      scheme: 'bearer',
       bearerFormat: 'JWT',
-      name: 'JWT Authentication',
     })
-    .addSecurityRequirements('SecurityScheme')
+    .addSecurityRequirements('bearer')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);

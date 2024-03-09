@@ -30,16 +30,17 @@ export class AuthService {
       return;
     }
 
-    const permissions =
-      user.role.roleAndPermissions.map(mp => mp.permission.permissionKey) ?? [];
-
-    let menus = await this.menuRepository.orm.find({where: {enabled: true}});
-    menus = menus.filter(m => permissions.includes(m.role));
-
-    const navigationItems = this.createMenus(menus);
-
     const isMatch = bcrypt.compareSync(loginRequest.Password, user?.password);
     if (user && isMatch) {
+      const permissions =
+        user.role.roleAndPermissions.map(mp => mp.permission.permissionKey) ??
+        [];
+
+      let menus = await this.menuRepository.orm.find({where: {enabled: true}});
+      menus = menus.filter(m => permissions.includes(m.role));
+
+      const navigationItems = this.createMenus(menus);
+
       const loginReponse: UIResponseBase<LoginResponse> = {
         data: {
           isAuthenticated: true,
