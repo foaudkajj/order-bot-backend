@@ -1,16 +1,16 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {ProductRepository} from 'src/db/repositories';
-import {StoragePrefix} from 'src/models';
 import {Product} from 'src/models/product';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {StorageBlobService} from 'src/services';
+import {FreeImageHostingService} from 'src/services';
 import {removeHtmlTags} from 'src/shared/utils';
+import {Express} from 'express';
 @Injectable()
 export class ProductService {
   constructor(
     private productRepository: ProductRepository,
-    private storageBlobService: StorageBlobService,
+    private freeImageHostingService: FreeImageHostingService,
   ) {}
 
   async get(query: DataSourceLoadOptionsBase, merchantId: number) {
@@ -19,11 +19,11 @@ export class ProductService {
       entities = await this.productRepository.orm.find({
         take: query.take,
         skip: query.skip,
-        where: {merchantId: merchantId},
+        where: {merchantId},
       });
     } else {
       entities = await this.productRepository.orm.find({
-        where: {merchantId: merchantId},
+        where: {merchantId},
       });
     }
     const response: UIResponseBase<Product[]> = {
@@ -55,21 +55,16 @@ export class ProductService {
   }
 
   async Delete(Id: number, MerchantId: number) {
-    const product = await this.productRepository.orm.findOne({
-      where: {id: Id},
-    });
-    if (product.thumbUrl) {
-      await this.storageBlobService.deleteFile(
-        `${StoragePrefix.Products}/${product.thumbUrl}`,
-      );
-    }
     await this.productRepository.orm.delete({id: Id, merchantId: MerchantId});
   }
 
-  async uploadPicture(file: Express.Multer.File) {
-    await this.storageBlobService.uploadProductPicture(
-      file.originalname,
-      file.buffer,
-    );
+  async uploadPicture(productId: number, file: Express.Multer.File) {
+    const result = await this.freeImageHostingService.upload(file.buffer);
+    if (result.success === true) {
+      await this.productRepository.orm.update(productId, {
+        thumbUrl: result?.thumb?.url,
+      });
+    }
+    return result;
   }
 }
