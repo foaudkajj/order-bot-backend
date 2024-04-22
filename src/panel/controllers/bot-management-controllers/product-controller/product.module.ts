@@ -1,5 +1,5 @@
 import {Module} from '@nestjs/common';
-import {StorageBlobService} from 'src/services';
+import {FreeImageHostingService} from 'src/services';
 import {SharedModule} from 'src/shared.module';
 import {ProductController} from './product.controller';
 import {ProductService} from './product.service';
@@ -7,7 +7,7 @@ import {ProductService} from './product.service';
 @Module({
   imports: [SharedModule],
   controllers: [ProductController],
-  providers: [ProductService, StorageBlobService],
+  providers: [ProductService, FreeImageHostingService],
   exports: [],
 })
 export class ProductModule {}

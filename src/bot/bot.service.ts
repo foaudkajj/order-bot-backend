@@ -96,6 +96,8 @@ export class BotService implements OnModuleInit {
           console.log(`Bot started. Merchant: ${merchant.botUserName}`);
           BotService.botMap.set(bot.botInfo.username, bot);
         });
+        process.once('SIGINT', () => bot.stop('SIGINT'));
+        process.once('SIGTERM', () => bot.stop('SIGTERM'));
       }
     }
   }
@@ -247,9 +249,7 @@ export class BotService implements OnModuleInit {
                 <InlineQueryResultArticle>{
                   id: product.id.toString(),
                   type: 'article',
-                  thumb_url: product.thumbUrl
-                    ? `${process.env.BLOB_URL}${product.thumbUrl}`
-                    : undefined,
+                  thumb_url: product.thumbUrl,
                   title: product.title,
                   description: product.description,
                   // caption: product.Caption,
