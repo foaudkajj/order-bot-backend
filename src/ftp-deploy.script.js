@@ -57,6 +57,9 @@ client.list(ftpProjDirectory,async (e,buildFiles)=>{
             console.error('Error uploading build.zip:', err);
           } else {
             console.log('build.zip uploaded successfully');
+            console.log("-------------------------------------------WARN-------------------------------------------------")
+            console.warn("Don't forget to navigate to the following link to extract the zip file and restart the node instance. https://musteri.isimkaydet.com/login");
+            console.log("-------------------------------------------WARN-------------------------------------------------")
             client.end(); // Close FTP connection
           }
         });

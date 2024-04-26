@@ -59,12 +59,6 @@ export class ProductService {
   }
 
   async uploadPicture(productId: number, file: Express.Multer.File) {
-    const result = await this.freeImageHostingService.upload(file.buffer);
-    if (result.success === true) {
-      await this.productRepository.orm.update(productId, {
-        thumbUrl: result?.thumb?.url,
-      });
-    }
-    return result;
+    return this.freeImageHostingService.upload(file.buffer);
   }
 }

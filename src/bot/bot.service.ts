@@ -30,8 +30,9 @@ import {
   PhoneNumberWizardService,
 } from './wizards';
 import {Composer, Scenes, session, Telegraf} from 'telegraf';
-import {InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
+import {InlineKeyboardButton, InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
 import {Like} from 'typeorm';
+import {MainMenueInlineKeyboard} from './bot-commons';
 
 @Injectable()
 export class BotService implements OnModuleInit {
@@ -156,32 +157,11 @@ export class BotService implements OnModuleInit {
                     reply_markup: {
                       // one_time_keyboard: true,
                       inline_keyboard: [
-                        [
-                          {
-                            text: 'Sipariş Ver',
-                            callback_data: CallBackQueryResult.StartOrdering,
-                          },
-                        ],
-                        [
-                          {
-                            text: '🚚 Siparişini Takip Et 🚚',
-                            callback_data:
-                              CallBackQueryResult.GetConfirmedOrders,
-                          },
-                        ],
-                        // [{ text: "🗑 Sepetem 🗑", callback_data: CallBackQueryResult.MyBasket }],
-                        [
-                          {
-                            text: '🗑 Sepetemi Boşalt 🗑',
-                            callback_data: CallBackQueryResult.EmptyBakset,
-                          },
-                        ],
-                        [
-                          {
-                            text: '✔️ Siparişimi Tamamla ✔️',
-                            callback_data: CallBackQueryResult.CompleteOrder,
-                          },
-                        ],
+                        ...MainMenueInlineKeyboard.filter(
+                          k =>
+                            (k[0] as InlineKeyboardButton.CallbackButton).callback_data !==
+                            CallBackQueryResult.MyBasket,
+                        ),
                         [
                           {
                             text: '◀️ Ana Menüye Dön ◀️',

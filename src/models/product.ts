@@ -27,7 +27,7 @@ export class Product {
   // @Column({length: 50, nullable: true})
   // Caption: string;
 
-  @Column({type: 'decimal', default: 0})
+  @Column({type: 'decimal', precision: 2, default: 0})
   unitPrice?: number;
 
   @OneToMany(() => OrderItem, orderDetails => orderDetails.product)

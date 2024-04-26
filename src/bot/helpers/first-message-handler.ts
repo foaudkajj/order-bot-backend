@@ -1,10 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import {OrderChannel} from 'src/models';
 import {Customer} from 'src/models/customer';
-import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
+
 import {MerchantRepository, CustomerRepository} from '../../db/repositories';
 import {BotContext} from '../interfaces/bot-context';
-import {CallBackQueryResult} from '../models/enums';
+import {MainMenueInlineKeyboard} from '../bot-commons';
 
 @Injectable()
 export class FirstMessageHandler {
@@ -14,33 +14,6 @@ export class FirstMessageHandler {
   ) {}
 
   async startOptions(ctx: BotContext, messageToShow: null | string = null) {
-    const inlineKeyboard: InlineKeyboardButton[][] = [
-      [
-        {
-          text: '🥘 Sipariş Ver 🥘',
-          callback_data: CallBackQueryResult.StartOrdering,
-        },
-      ],
-      [
-        {
-          text: '🚚 Siparişini Takip Et 🚚',
-          callback_data: CallBackQueryResult.GetConfirmedOrders,
-        },
-      ],
-      [{text: '🗑 Sepetem 🗑', callback_data: CallBackQueryResult.MyBasket}],
-      [
-        {
-          text: '🗑 Sepetemi Boşalt 🗑',
-          callback_data: CallBackQueryResult.EmptyBakset,
-        },
-      ],
-      [
-        {
-          text: '✔️ Siparişimi Tamamla ✔️',
-          callback_data: CallBackQueryResult.CompleteOrder,
-        },
-      ],
-    ];
     await this.createNewUserIfUserDoesnitExist(ctx);
     if (ctx.updateType === 'message') {
       return await ctx.reply(
@@ -49,7 +22,7 @@ export class FirstMessageHandler {
         {
           reply_markup: {
             one_time_keyboard: true,
-            inline_keyboard: inlineKeyboard,
+            inline_keyboard: MainMenueInlineKeyboard,
           },
         },
       );
@@ -60,7 +33,7 @@ export class FirstMessageHandler {
         {
           reply_markup: {
             // one_time_keyboard: true,
-            inline_keyboard: inlineKeyboard,
+            inline_keyboard: MainMenueInlineKeyboard,
           },
         },
       );
