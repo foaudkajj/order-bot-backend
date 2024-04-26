@@ -19,6 +19,11 @@ import {CronModule} from './crons/cron.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [
+        `${process.env.NODE_ENV}`.trim() === 'production'
+          ? '.production.env'
+          : '.env',
+      ],
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',

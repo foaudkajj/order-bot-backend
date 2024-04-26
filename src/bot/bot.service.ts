@@ -96,8 +96,14 @@ export class BotService implements OnModuleInit {
           console.log(`Bot started. Merchant: ${merchant.botUserName}`);
           BotService.botMap.set(bot.botInfo.username, bot);
         });
-        process.once('SIGINT', () => bot.stop('SIGINT'));
-        process.once('SIGTERM', () => bot.stop('SIGTERM'));
+        process.once('SIGINT', () => {
+          bot.stop('SIGINT');
+          console.log('Bot stopped: ', merchant.botUserName);
+        });
+        process.once('SIGTERM', () => {
+          bot.stop('SIGTERM');
+          console.log('Bot stopped: ', merchant.botUserName);
+        });
       }
     }
   }
@@ -152,7 +158,7 @@ export class BotService implements OnModuleInit {
                       inline_keyboard: [
                         [
                           {
-                            text: '🥘 Sipariş Ver 🥘',
+                            text: 'Sipariş Ver',
                             callback_data: CallBackQueryResult.StartOrdering,
                           },
                         ],

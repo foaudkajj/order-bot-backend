@@ -31,13 +31,13 @@ module.exports = class init20220122095400 {
       `CREATE TABLE \`order\` (\`id\` int NOT NULL AUTO_INCREMENT, \`order_no\` varchar(36) NOT NULL, \`orderChannel\` enum ('TELEGRAM', 'YEMEKSEPETI', 'GETIR', 'PANEL') NOT NULL, \`paymentMethod\` enum ('OnDelivery', 'ONLINE') NOT NULL, \`totalPrice\` decimal(8,2) NOT NULL DEFAULT '0.00', \`orderStatus\` smallint NOT NULL DEFAULT '0', \`createDate\` datetime NOT NULL, \`note\` varchar(4000) NULL, \`cancel_reason\` varchar(4000) NULL, \`customer_id\` int NOT NULL, \`getirOrderId\` varchar(255) NULL, \`merchantId\` int NOT NULL, UNIQUE INDEX \`REL_60c614712f96cf7ca323ada03f\` (\`getirOrderId\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
-      `CREATE TABLE \`order_option\` (\`id\` int NOT NULL AUTO_INCREMENT, \`price\` decimal NOT NULL DEFAULT '0', \`optionId\` int NOT NULL, \`orderItemId\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      `CREATE TABLE \`order_option\` (\`id\` int NOT NULL AUTO_INCREMENT, \`price\` decimal(8,2) NOT NULL DEFAULT '0', \`optionId\` int NOT NULL, \`orderItemId\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
       `CREATE TABLE \`order_item\` (\`id\` int NOT NULL AUTO_INCREMENT, \`amount\` int NOT NULL, \`itemNote\` varchar(2000) NULL, \`productStatus\` enum ('SELECTED', 'INBASKET') NOT NULL, \`productId\` int NOT NULL, \`orderId\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
-      `CREATE TABLE \`product\` (\`id\` int NOT NULL AUTO_INCREMENT, \`thumbUrl\` varchar(255) NULL, \`title\` varchar(50) NOT NULL, \`description\` varchar(500) NOT NULL, \`unitPrice\` decimal NOT NULL DEFAULT '0', \`categoryId\` int NOT NULL, \`merchantId\` int NULL, \`getirProductId\` varchar(255) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      `CREATE TABLE \`product\` (\`id\` int NOT NULL AUTO_INCREMENT, \`thumbUrl\` varchar(255) NULL, \`title\` varchar(50) NOT NULL, \`description\` varchar(500) NOT NULL, \`unitPrice\` decimal(8,2) NOT NULL DEFAULT '0', \`categoryId\` int NOT NULL, \`merchantId\` int NULL, \`getirProductId\` varchar(255) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
       `CREATE TABLE \`category\` (\`id\` int NOT NULL AUTO_INCREMENT, \`name\` varchar(30) NOT NULL, \`categoryKey\` varchar(50) NOT NULL, \`merchantId\` int NOT NULL, \`getirCategoryId\` varchar(255) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,

@@ -12,7 +12,7 @@ export class OrderOption {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @Column({type: 'decimal', default: 0})
+  @Column({type: 'decimal', precision: 2, default: 0})
   price: number;
 
   @Column()
