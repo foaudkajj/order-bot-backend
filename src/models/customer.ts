@@ -9,6 +9,9 @@ import {Merchant} from '.';
 import {OrderChannel} from './enums';
 import {Order} from './order';
 
+/**
+ * Represents the model of the customers of the system (e.g. a Telegram user).
+ */
 @Entity()
 export class Customer {
   @PrimaryGeneratedColumn()
@@ -34,6 +37,9 @@ export class Customer {
 
   @Column({type: 'enum', enum: OrderChannel, nullable: false})
   customerChannel?: string;
+
+  @Column({type: 'datetime', name: 'create_date', nullable: false})
+  createDate: Date;
 
   @OneToMany(() => Order, order => order.customer, {nullable: true})
   orders?: Promise<Order[]>;

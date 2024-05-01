@@ -53,6 +53,7 @@ export class FirstMessageHandler {
         fullName: ctx.from.first_name + ' ' + ctx.from.last_name,
         telegramId: ctx.from.id,
         telegramUserName: ctx.from.username,
+        createDate: new Date(),
       };
       await this.customerRepository.orm.save(newCustomer);
     }
