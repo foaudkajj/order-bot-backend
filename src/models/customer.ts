@@ -23,7 +23,7 @@ export class Customer {
   @Column({length: 30, nullable: true})
   telegramUserName?: string;
 
-  @Column({nullable: true})
+  @Column({name: 'telegram_id', type: 'double', nullable: true})
   telegramId?: number;
 
   @Column({length: 30, nullable: true})
