@@ -580,6 +580,7 @@ export class GetirService {
           telegramId: null,
           telegramUserName: null,
           address: orderDetails.foodOrder.client.deliveryAddress.address,
+          createDate: new Date(),
         },
         getirOrder: <GetirOrder>{
           id: orderDetails.foodOrder.id,

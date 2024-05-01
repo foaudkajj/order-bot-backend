@@ -59,6 +59,7 @@ export class OrderService {
         customerChannel: OrderChannel.Panel,
         phoneNumber: entity.customer.phoneNumber,
         fullName: entity.customer.fullName,
+        createDate: new Date(),
       };
       entity.customer = NewCustomer;
     }

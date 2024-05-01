@@ -4,7 +4,6 @@ import {Customer} from 'src/models/customer';
 import {FindOptionsRelations, Repository} from 'typeorm';
 import {BotContext} from '../../bot/interfaces/bot-context';
 import {BaseRepository} from './base.repository';
-import {Equal} from 'typeorm';
 
 @Injectable()
 export class CustomerRepository extends BaseRepository<Customer> {
