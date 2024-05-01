@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import {Category, Customer, Order, Product} from '.';
-import {User} from './user';
 
 @Entity()
 export class Merchant {

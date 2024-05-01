@@ -10,12 +10,12 @@ export class BotCommands {
     [CallBackQueryResult.MainMenu]: '◀️ Ana Menüye Dön ◀️',
     [CallBackQueryResult.StartOrdering]: 'Sipariş Ver',
     [CallBackQueryResult.GetConfirmedOrders]: '🚚 Siparişini Takip Et 🚚',
-    [CallBackQueryResult.MyBasket]: '🛒 Siparişlerim 🛒',
-    [CallBackQueryResult.EmptyBakset]: '🗑 Sepetem 🗑',
+    [CallBackQueryResult.MyBasket]: '🛒 Sepetim 🛒',
+    [CallBackQueryResult.EmptyBakset]: '🗑 Sepetemi Boşalt 🗑',
     [CallBackQueryResult.AddToBasketAndContinueShopping]:
       '🛒 Sepete Ekle ve Alışverişe devam et 🛒',
     [CallBackQueryResult.SendOrder]: '👌 Siparişimi Onayla 👌',
-    [CallBackQueryResult.AddNoteToOrder]: '🗒 Siparişe Not Ekle 🗒',
+    [CallBackQueryResult.AddNoteToOrder]: '🗒 Siparişe Not Ekle/Düzenle 🗒',
   };
 
   static getMainMenu(

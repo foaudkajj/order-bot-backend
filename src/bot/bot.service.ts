@@ -158,7 +158,7 @@ export class BotService implements OnModuleInit {
                       // one_time_keyboard: true,
                       inline_keyboard: BotCommands.getCustom([
                         {action: CallBackQueryResult.StartOrdering},
-                        {action: CallBackQueryResult.ConfirmOrder},
+                        {action: CallBackQueryResult.GetConfirmedOrders},
                         {action: CallBackQueryResult.EmptyBakset},
                         {action: CallBackQueryResult.CompleteOrder},
                         {action: CallBackQueryResult.MainMenu},

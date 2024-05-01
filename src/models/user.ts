@@ -10,6 +10,9 @@ import {UserStatus} from './enums';
 import {Merchant} from './merchant';
 import {Role} from './role';
 
+/**
+ * Represents the model of the system users.
+ */
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
