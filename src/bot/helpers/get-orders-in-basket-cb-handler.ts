@@ -19,7 +19,7 @@ export class OrdersInBasketCb {
 
       const order = await this.orderRepository.getOrderInBasketByTelegramId(
         ctx,
-        {orderItems: {product: true}},
+        {orderItems: {product: true}, customer: true},
       );
       if (!order || order?.orderItems?.length === 0) {
         orderDetailsMessage = null; // 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';
@@ -28,27 +28,31 @@ export class OrdersInBasketCb {
           await ctx.answerCbQuery('Sepetiniz Boştur. Lütfen Ürün Seçiniz');
         }
       } else {
-        const TotalPrice = order.orderItems
-          .map(
-            order =>
-              order.product.unitPrice * (order.amount > 0 ? order.amount : 1),
-          )
-          .reduce((previous, current) => previous + current);
         orderDetailsMessage = 'Sepetinizdeki Ürünler:\n\n';
-        order.orderItems.forEach(orderDetails => {
+        order.orderItems.forEach((orderDetails, inx) => {
+          if (inx != 0) {
+            orderDetailsMessage = orderDetailsMessage.concat(`\n`);
+          }
           orderDetailsMessage = orderDetailsMessage.concat(
             `Ürün İsmi : ${orderDetails.product.title}\n`,
-            `Fiyat: <u> ${orderDetails.product.unitPrice} TL</u>\n`,
-            `Miktar : ${orderDetails.amount}\n` + '\n',
+            `Fiyat (adet): ${orderDetails.product.unitPrice} TL\n`,
+            `Miktar : ${orderDetails.amount}\n`,
+            `Toplam Fiyat : <u>${orderDetails.amount * orderDetails.product.unitPrice} TL</u> \n`,
           );
         });
         // `Açıklama : ${orderDetails.Order.Description ?? "Yok"}`
         orderDetailsMessage = orderDetailsMessage.concat(
-          `\n\n Toplam: <b>${TotalPrice} TL </b>`,
+          `\n\n Toplam: <b>${order.totalPrice} TL </b> \n\n`,
         );
+
+        orderDetailsMessage = orderDetailsMessage.concat(
+          `Adres : ${order.customer.address ?? ''}\n`,
+          `Telefon : ${order.customer.phoneNumber}\n`,
+        );
+
         orderDetailsMessage =
           order.note !== null
-            ? orderDetailsMessage.concat(`\n\n Not: ${order.note}`)
+            ? orderDetailsMessage.concat(`Not: ${order.note} \n`)
             : orderDetailsMessage;
 
         if (isCbQuyer) await ctx.answerCbQuery();
