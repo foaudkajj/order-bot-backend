@@ -3,6 +3,7 @@ import {Scenes} from 'telegraf';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {OrderRepository} from '../../db/repositories/order.repository';
+import {BotCommands} from '../bot-commands';
 
 @Injectable()
 export class AddressWizardService {
@@ -87,12 +88,10 @@ export class AddressWizardService {
       {
         parse_mode: 'HTML',
         reply_markup: {
-          inline_keyboard: [
-            [
-              {text: 'Evet', callback_data: CallBackQueryResult.AddNoteToOrder},
-              {text: 'Hayır', callback_data: CallBackQueryResult.ConfirmOrder},
-            ],
-          ],
+          inline_keyboard: BotCommands.getCustom([
+            {text: 'Evet', action: CallBackQueryResult.AddNoteToOrder},
+            {text: 'Hayır', action: CallBackQueryResult.ConfirmOrder},
+          ]),
         },
       },
     );

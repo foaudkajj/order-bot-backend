@@ -6,15 +6,15 @@ export enum OrderChannel {
 }
 
 export enum OrderStatus {
-  New = 0,
-  UserConfirmed = 1,
-  MerchantConfirmed = 2,
-  Prepared = 3,
-  OrderSent = 4,
-  Delivered = 5,
-  Canceled = 6,
-  FutureOrder = 7,
-  ConfirmedFutureOrder = 8,
+  New = 'NEW',
+  UserConfirmed = 'USER_CONFIRMED',
+  MerchantConfirmed = 'MERCHANT_CONFIRMED',
+  Prepared = 'PREPARED',
+  OrderSent = 'ORDER_SENT',
+  Delivered = 'DELIVERED',
+  Canceled = 'CANCELLED',
+  FutureOrder = 'FUTURE_ORDER',
+  ConfirmedFutureOrder = 'CONFIRMED_FUTURE_ORDER',
 }
 
 export enum ProductStatus {

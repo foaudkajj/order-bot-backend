@@ -10,7 +10,7 @@ import {
 import {OrderItem} from './order-item';
 import {Customer} from './customer';
 import {GetirOrder} from './getir-order';
-import {OrderChannel, PaymentMethod} from './enums';
+import {OrderChannel, OrderStatus, PaymentMethod} from './enums';
 import {Merchant} from './merchant';
 
 @Entity()
@@ -30,8 +30,8 @@ export class Order {
   @Column({type: 'decimal', precision: 8, scale: 2, default: 0})
   totalPrice: number;
 
-  @Column({type: 'smallint', default: 0})
-  orderStatus?: number;
+  @Column({type: 'enum', enum: OrderStatus, default: OrderStatus.New})
+  orderStatus?: OrderStatus;
 
   @Column({type: 'datetime'})
   createDate: Date;
@@ -94,9 +94,4 @@ export class Order {
   //   onDelete: 'CASCADE',
   // })
   // orderOptions?: OrderOption[];
-
-  operationItems?: {
-    Value: number;
-    Text: string;
-  }[];
 }

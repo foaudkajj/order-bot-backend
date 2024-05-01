@@ -87,10 +87,9 @@ export class GetirService {
   async GetRestaurantPaymentMethods(merchantId: number) {
     const token = await this.getirToken.getToken(merchantId);
     const restaurantPaymentMethods = await this.httpService
-      .get<any[]>(
-        process.env.GetirApi + Endpoints.GetRestaurantPaymentMethods,
-        {headers: {token: token.data}},
-      )
+      .get<
+        any[]
+      >(process.env.GetirApi + Endpoints.GetRestaurantPaymentMethods, {headers: {token: token.data}})
       .toPromise();
 
     return <UIResponseBase<any>>{
@@ -350,50 +349,39 @@ export class GetirService {
       let RestaurantStatus;
       if (body.status) {
         RestaurantStatus = await this.httpService
-          .put<any[]>(
-            process.env.GetirApi + Endpoints.OpenTheRestaurant,
-            {},
-            {headers: {token: token.data}},
-          )
+          .put<
+            any[]
+          >(process.env.GetirApi + Endpoints.OpenTheRestaurant, {}, {headers: {token: token.data}})
           .toPromise();
       } else {
         RestaurantStatus = await this.httpService
-          .put<any[]>(
-            process.env.GetirApi + Endpoints.CloseTheRestaurant,
-            {},
-            {headers: {token: token.data}},
-          )
+          .put<
+            any[]
+          >(process.env.GetirApi + Endpoints.CloseTheRestaurant, {}, {headers: {token: token.data}})
           .toPromise();
       }
 
       let CourierResult;
       if (body.isCourierAvailable) {
         CourierResult = await this.httpService
-          .post<any[]>(
-            process.env.GetirApi + Endpoints.EnableTheCourierService,
-            {},
-            {headers: {token: token.data}},
-          )
+          .post<
+            any[]
+          >(process.env.GetirApi + Endpoints.EnableTheCourierService, {}, {headers: {token: token.data}})
           .toPromise();
       } else {
         CourierResult = await this.httpService
-          .post<any[]>(
-            process.env.GetirApi + Endpoints.DisableTheCourierService,
-            {},
-            {headers: {token: token.data}},
-          )
+          .post<
+            any[]
+          >(process.env.GetirApi + Endpoints.DisableTheCourierService, {}, {headers: {token: token.data}})
           .toPromise();
       }
 
       let averagePreparationTimeResult;
       if (body.averagePreparationTime > 0) {
         averagePreparationTimeResult = await this.httpService
-          .put<any[]>(
-            process.env.GetirApi +
-              Endpoints.UpdateRestaurantAveragePreparationTime,
-            {averagePreparationTime: body.averagePreparationTime},
-            {headers: {token: token.data}},
-          )
+          .put<
+            any[]
+          >(process.env.GetirApi + Endpoints.UpdateRestaurantAveragePreparationTime, {averagePreparationTime: body.averagePreparationTime}, {headers: {token: token.data}})
           .toPromise();
       }
 
@@ -427,27 +415,15 @@ export class GetirService {
       let inactivateProduct;
       if (status) {
         activateProduct = await this.httpService
-          .post<any[]>(
-            process.env.GetirApi +
-              Endpoints.activeRestaurantOptionsWithProductId.replace(
-                '{productId}',
-                productId,
-              ),
-            {},
-            {headers: {token: token.data}},
-          )
+          .post<
+            any[]
+          >(process.env.GetirApi + Endpoints.activeRestaurantOptionsWithProductId.replace('{productId}', productId), {}, {headers: {token: token.data}})
           .toPromise();
       } else {
         inactivateProduct = await this.httpService
-          .post<any[]>(
-            process.env.GetirApi +
-              Endpoints.inactivateRestaurantOptionsWithProductId.replace(
-                '{productId}',
-                productId,
-              ),
-            {},
-            {headers: {token: token.data}},
-          )
+          .post<
+            any[]
+          >(process.env.GetirApi + Endpoints.inactivateRestaurantOptionsWithProductId.replace('{productId}', productId), {}, {headers: {token: token.data}})
           .toPromise();
       }
 
@@ -471,27 +447,15 @@ export class GetirService {
       let inactivateOption;
       if (status) {
         activateOption = await this.httpService
-          .post<any[]>(
-            process.env.GetirApi +
-              Endpoints.activateRestaurantOptionsWithOptionProductId.replace(
-                '{optionProductId}',
-                optionProductId,
-              ),
-            {},
-            {headers: {token: token.data}},
-          )
+          .post<
+            any[]
+          >(process.env.GetirApi + Endpoints.activateRestaurantOptionsWithOptionProductId.replace('{optionProductId}', optionProductId), {}, {headers: {token: token.data}})
           .toPromise();
       } else {
         inactivateOption = await this.httpService
-          .post<any[]>(
-            process.env.GetirApi +
-              Endpoints.inactivateRestaurantOptionsWithOptionProductId.replace(
-                '{optionProductId}',
-                optionProductId,
-              ),
-            {},
-            {headers: {token: token.data}},
-          )
+          .post<
+            any[]
+          >(process.env.GetirApi + Endpoints.inactivateRestaurantOptionsWithOptionProductId.replace('{optionProductId}', optionProductId), {}, {headers: {token: token.data}})
           .toPromise();
       }
 
@@ -522,15 +486,9 @@ export class GetirService {
       const token = await this.getirToken.getToken(merchantId);
       const {productId, optionCategoryId, optionId, status} = body;
       const result = await this.httpService
-        .put<any[]>(
-          process.env.GetirApi +
-            Endpoints.updateProductOptionStatus
-              .replace('{productId}', productId)
-              .replace('{optionCategoryId}', optionCategoryId)
-              .replace('{optionId}', optionId),
-          {status: status ? 100 : 200},
-          {headers: {token: token.data}},
-        )
+        .put<
+          any[]
+        >(process.env.GetirApi + Endpoints.updateProductOptionStatus.replace('{productId}', productId).replace('{optionCategoryId}', optionCategoryId).replace('{optionId}', optionId), {status: status ? 100 : 200}, {headers: {token: token.data}})
         .toPromise();
 
       return <UIResponseBase<any>>{data: {...result.data}, isError: false};
@@ -550,7 +508,7 @@ export class GetirService {
     if (existingOrder) {
       await this.orderRepository.orm.update(
         {id: existingOrder.id},
-        {orderStatus: 1},
+        {orderStatus: OrderStatus.New},
       );
     } else {
       const merchant = await this.merchantRepository.orm.findOne({
@@ -797,9 +755,8 @@ export class GetirService {
             newGetirProduct,
           );
         } else {
-          const craetedProduct = await this.productRepository.orm.save(
-            newGetirProduct,
-          );
+          const craetedProduct =
+            await this.productRepository.orm.save(newGetirProduct);
           productId = craetedProduct.id;
         }
 

@@ -2,6 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {OrderRepository} from '../../db/repositories/order.repository';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
+import {BotCommands} from '../bot-commands';
 
 @Injectable()
 export class CompleteOrderHandler {
@@ -25,22 +26,14 @@ export class CompleteOrderHandler {
           await ctx.replyWithMarkdown(
             `<i>${customer.address}</i> \n \n` +
               '<b>Kayıtlı olan adres ve konumunuz mu kullanalım?</b> \n \n' +
-              '<b>Note:</b> Açık adres ile konum uyuşmadığı tadirde, açık adres kullanılacaktır.',
+              '<b>Note:</b> Açık adres ile konum uyuşmadığı takdirde, açık adres kullanılacaktır.',
             {
               parse_mode: 'HTML',
               reply_markup: {
-                inline_keyboard: [
-                  [
-                    {
-                      text: 'Evet',
-                      callback_data: CallBackQueryResult.ConfirmOrder,
-                    },
-                    {
-                      text: 'Hayır',
-                      callback_data: CallBackQueryResult.EnterAddress,
-                    },
-                  ],
-                ],
+                inline_keyboard: BotCommands.getCustom([
+                  {text: 'Evet', action: CallBackQueryResult.ConfirmOrder},
+                  {text: 'Hayır', action: CallBackQueryResult.EnterAddress},
+                ]),
               },
             },
           );

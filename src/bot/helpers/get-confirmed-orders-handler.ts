@@ -3,6 +3,7 @@ import {OrderStatus} from 'src/models';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
+import {BotCommands} from '../bot-commands';
 
 @Injectable()
 export class GetConfirmedOrderCb {
@@ -21,16 +22,9 @@ export class GetConfirmedOrderCb {
           parse_mode: 'HTML',
           reply_markup: {
             one_time_keyboard: true,
-            inline_keyboard: [
-              // [{ text: "👌 Siparişimi Onayla 👌", callback_data: CallBackQueryResult.SendOrder }],
-              // [{ text: "🗒 Siparişe Not Ekle 🗒", callback_data: CallBackQueryResult.AddNoteToOrder }],
-              [
-                {
-                  text: '◀️ Ana Menüye Dön ◀️',
-                  callback_data: CallBackQueryResult.MainMenu,
-                },
-              ],
-            ],
+            inline_keyboard: BotCommands.getCustom([
+              {action: CallBackQueryResult.MainMenu},
+            ]),
           },
         },
       );

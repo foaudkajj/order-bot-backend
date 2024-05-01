@@ -4,7 +4,7 @@ import {Customer} from 'src/models/customer';
 
 import {MerchantRepository, CustomerRepository} from '../../db/repositories';
 import {BotContext} from '../interfaces/bot-context';
-import {MainMenueInlineKeyboard} from '../bot-commons';
+import {BotCommands} from '../bot-commands';
 
 @Injectable()
 export class FirstMessageHandler {
@@ -22,7 +22,7 @@ export class FirstMessageHandler {
         {
           reply_markup: {
             one_time_keyboard: true,
-            inline_keyboard: MainMenueInlineKeyboard,
+            inline_keyboard: BotCommands.getMainMenu(),
           },
         },
       );
@@ -33,7 +33,7 @@ export class FirstMessageHandler {
         {
           reply_markup: {
             // one_time_keyboard: true,
-            inline_keyboard: MainMenueInlineKeyboard,
+            inline_keyboard: BotCommands.getMainMenu(),
           },
         },
       );

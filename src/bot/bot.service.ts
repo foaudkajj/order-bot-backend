@@ -1,5 +1,6 @@
 import {Injectable, OnModuleInit} from '@nestjs/common';
 import {
+  Order,
   OrderChannel,
   OrderItem,
   OrderStatus,
@@ -22,17 +23,20 @@ import {
   OrdersInBasketCb,
   StartOrderingCb,
 } from './helpers';
-import {BotContext} from './interfaces/bot-context';
 import {CallBackQueryResult} from './models/enums';
 import {
   AddnoteToOrderWizardService,
   AddressWizardService,
   PhoneNumberWizardService,
 } from './wizards';
-import {Composer, Scenes, session, Telegraf} from 'telegraf';
-import {InlineKeyboardButton, InlineQueryResultArticle} from 'telegraf/typings/core/types/typegram';
-import {Like} from 'typeorm';
-import {MainMenueInlineKeyboard} from './bot-commons';
+import {safeJsonParse} from 'src/shared/utils';
+import {CallbackQueryData} from './interfaces/callback-query-data';
+import {BotContext} from './interfaces';
+import {InlineQueryResultArticle} from '@telegraf/types';
+import {Composer, Scenes, Telegraf, session} from 'telegraf';
+import {Like} from 'typeorm/find-options/operator/Like';
+import {BotCommands} from './bot-commands';
+import {DataSource, In} from 'typeorm';
 
 @Injectable()
 export class BotService implements OnModuleInit {
@@ -52,12 +56,10 @@ export class BotService implements OnModuleInit {
     private getConfirmedOrderCb: GetConfirmedOrderCb,
     private ordersInBasketCb: OrdersInBasketCb,
     private startOrderingCb: StartOrderingCb,
+    private dataSource: DataSource,
   ) {}
 
-  static botMap: Map<string, Telegraf<BotContext>> = new Map<
-    string,
-    Telegraf<BotContext>
-  >();
+  static botMap = new Map<string, Telegraf<BotContext>>();
 
   onModuleInit() {
     this.InitlizeAndLunchBot();
@@ -88,9 +90,7 @@ export class BotService implements OnModuleInit {
       }
 
       if (merchant.botToken) {
-        const bot: Telegraf<BotContext> = new Telegraf<BotContext>(
-          merchant.botToken,
-        );
+        const bot = new Telegraf<BotContext>(merchant.botToken);
 
         bot.use(this.composer);
         bot.launch(() => {
@@ -111,39 +111,39 @@ export class BotService implements OnModuleInit {
 
   InilizeBotEventsHandlers(composer: Composer<BotContext>) {
     composer.command('start', async ctx => await this.fmh.startOptions(ctx));
-
     composer.on('callback_query', async ctx => {
       try {
         if ('data' in ctx.callbackQuery && ctx.callbackQuery.data) {
-          switch (ctx.callbackQuery.data) {
+          const callbackQueryData = safeJsonParse<CallbackQueryData>(
+            ctx.callbackQuery.data,
+          );
+          switch (callbackQueryData.action) {
             case CallBackQueryResult.StartOrdering:
               await ctx.answerCbQuery();
               await this.startOrderingCb.StartOrdering(ctx);
               break;
-
             // case CallBackQueryResult.AddProductAndCompleteOrder:
             //   await ctx.answerCbQuery();
             //   await this.AddProductAndCompleteOrder(ctx);
             //   break;
-
             case CallBackQueryResult.CompleteOrder:
               await this.askForPhoneNumberIfNotAvailable(ctx);
               break;
-
             case CallBackQueryResult.AddToBasketAndContinueShopping:
               await ctx.answerCbQuery();
-              await this.AddToBasketAndContinueShopping(ctx);
+              await this.AddProdToBasket(
+                ctx,
+                Number.parseInt(callbackQueryData.data.selectedProductId),
+              );
+              await this.startOrderingCb.StartOrdering(ctx);
               break;
-
             case CallBackQueryResult.EnterAddress:
               await ctx.answerCbQuery();
               await this.EnterAddress(ctx);
               break;
-
             case CallBackQueryResult.SendOrder:
               await this.SendOrder(ctx);
               break;
-
             case CallBackQueryResult.MyBasket:
               {
                 const orderDetails =
@@ -156,53 +156,39 @@ export class BotService implements OnModuleInit {
                     parse_mode: 'HTML',
                     reply_markup: {
                       // one_time_keyboard: true,
-                      inline_keyboard: [
-                        ...MainMenueInlineKeyboard.filter(
-                          k =>
-                            (k[0] as InlineKeyboardButton.CallbackButton).callback_data !==
-                            CallBackQueryResult.MyBasket,
-                        ),
-                        [
-                          {
-                            text: '◀️ Ana Menüye Dön ◀️',
-                            callback_data: CallBackQueryResult.MainMenu,
-                          },
-                        ],
-                      ],
+                      inline_keyboard: BotCommands.getCustom([
+                        {action: CallBackQueryResult.StartOrdering},
+                        {action: CallBackQueryResult.ConfirmOrder},
+                        {action: CallBackQueryResult.EmptyBakset},
+                        {action: CallBackQueryResult.CompleteOrder},
+                        {action: CallBackQueryResult.MainMenu},
+                      ]),
                     },
                   });
                 }
               }
-
               break;
-
             case CallBackQueryResult.ConfirmOrder:
               await this.confirmOrderHandler.ConfirmOrder(ctx);
               // await this.fmh.startOptions(ctx);
               break;
-
             case CallBackQueryResult.EmptyBakset:
               await this.EmptyBasket(ctx);
               break;
-
             case CallBackQueryResult.MainMenu:
               await ctx.answerCbQuery();
               await this.fmh.startOptions(ctx);
               break;
-
             case CallBackQueryResult.TrackOrder:
               await ctx.answerCbQuery('Bu Özellik Yapım Aşamasındadır');
               break;
-
             case CallBackQueryResult.AddNoteToOrder:
               await this.addNoteToOrder(ctx);
               break;
-
             case CallBackQueryResult.GetConfirmedOrders:
               await this.getConfirmedOrderCb.GetConfirmedOrders(ctx);
               // await this.fmh.startOptions(ctx);
               break;
-
             default:
               await ctx.answerCbQuery();
               break;
@@ -216,7 +202,6 @@ export class BotService implements OnModuleInit {
       //   console.log(ctx.callbackQuery.from.id)
       // }
     });
-
     composer.on('inline_query', async ctx => {
       try {
         const customer =
@@ -276,7 +261,7 @@ export class BotService implements OnModuleInit {
       }
     });
 
-    composer.on('message', async (ctx: BotContext) => {
+    composer.on('message', async ctx => {
       try {
         if ('text' in ctx.message && ctx.message.via_bot?.is_bot) {
           if (parseInt(ctx.message.text, 10)) {
@@ -332,11 +317,6 @@ export class BotService implements OnModuleInit {
     );
   }
 
-  async AddToBasketAndContinueShopping(ctx: BotContext) {
-    await this.AddNewOrder(ctx);
-    await this.startOrderingCb.StartOrdering(ctx);
-  }
-
   InitlizeWizards(composer: Composer<BotContext>) {
     const addNoteToOrderWizard =
       this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
@@ -357,72 +337,15 @@ export class BotService implements OnModuleInit {
 
   async AddToBasketAndComplteOrderOrContinueShopping(ctx: BotContext) {
     if ('text' in ctx.message) {
-      const selectedProduct = ctx.message.text;
+      const selectedProductId = ctx.message.text;
 
       const customer =
         await this.customerRepository.getCustomerByTelegramId(ctx);
-      const order = await this.orderRepository.getOrderInBasketByTelegramId(
-        ctx,
-        {orderItems: true},
-      );
-      if (order) {
-        // let selectedProducts: string[] = user.SelectedProducts ? JSON.parse(user.SelectedProducts) : [];
-        // let selectedProducts: string[] = [selectedProduct];
-        // selectedProducts.push(ctx.message.text);
-        // order.SelectedProducts = JSON.stringify(selectedProducts);
-        await this.orderItemRepository.orm.delete({
-          orderId: order.id,
-          productStatus: ProductStatus.Selected,
-        });
-        order.orderItems = order.orderItems.filter(
-          oi => oi.productStatus !== ProductStatus.Selected,
-        );
-        order.orderItems.push({
-          productId: Number.parseInt(selectedProduct),
-          amount: 1,
-          orderId: order.id,
-        });
-        await this.orderRepository.orm.save(order);
-      } else {
-        // let telegramUser = await this.telegramUserRepository.getTelegramUserTelegramId(
-        //   ctx,
-        // );
-        // if (!telegramUser) {
-        //   telegramUser = {
-        //     Username: ctx.from.username,
-        //     FirstName: ctx.from.first_name,
-        //     LastName: ctx.from.last_name,
-        //     TelegramId: ctx.from.id,
-        //   };
-        // }
-        await this.orderRepository.orm.save({
-          customerId: customer.id,
-          merchantId: customer.merchantId,
-          orderNo: new Date().getTime().toString(36),
-          createDate: new Date(),
-          orderChannel: OrderChannel.Telegram,
-          orderStatus: OrderStatus.New,
-          paymentMethod: PaymentMethod.OnDelivery,
-          orderItems: [
-            <OrderItem>{
-              amount: 1,
-              productId: Number.parseInt(selectedProduct),
-              productStatus: ProductStatus.Selected,
-            },
-          ],
-          // TelegramOrder: telegramUser,
-        });
-
-        // ({OrderNo:uuid(), OrderChannel: OrderChannel.Telegram,CreateDate: new Date(),OrderStatus: OrderStatus.InBasket,
-        // orderItems:[{Amount: 1, productId: selectedProduct}]  });
-
-        // this.orderDetailsRepository.insert({Amount: 1, productId: selectedProduct, OrderId: newOrder.Id});
-      }
 
       // Get Prodcut Details From DB and Show Them
       const product = await this.productRepository.orm.findOne({
         where: {
-          id: Number.parseInt(selectedProduct),
+          id: Number.parseInt(selectedProductId),
           merchantId: customer.merchantId,
         },
       });
@@ -434,39 +357,23 @@ export class BotService implements OnModuleInit {
           parse_mode: 'HTML',
           reply_markup: {
             one_time_keyboard: true,
-            inline_keyboard: [
-              [
-                {
-                  text: '🛒 Sepete Ekle ve Alışverişe devam et 🛒',
-                  callback_data:
-                    CallBackQueryResult.AddToBasketAndContinueShopping,
-                },
-              ],
-              // [
-              //   {
-              //     text: '🛒 Sepete Ekle ve Siparişimi Tamamla ✔️',
-              //     callback_data: CallBackQueryResult.AddProductAndCompleteOrder,
-              //   },
-              // ],
-              [
-                {
-                  text: '🍛 Başka bir ürün seç 🍝',
-                  callback_data: CallBackQueryResult.StartOrdering,
-                },
-              ],
-              [
-                {
-                  text: '✔️ Siparişimi Tamamla ✔️',
-                  callback_data: CallBackQueryResult.CompleteOrder,
-                },
-              ],
-              [
-                {
-                  text: '◀️ Ana Menüye Dön ◀️',
-                  callback_data: CallBackQueryResult.MainMenu,
-                },
-              ],
-            ],
+            inline_keyboard: BotCommands.getCustom([
+              {
+                action: CallBackQueryResult.AddToBasketAndContinueShopping,
+                data: {selectedProductId},
+              },
+
+              {
+                action: CallBackQueryResult.StartOrdering,
+                text: 'Başka bir ürün seç',
+              },
+              {
+                action: CallBackQueryResult.CompleteOrder,
+              },
+              {
+                action: CallBackQueryResult.MainMenu,
+              },
+            ]),
           },
         },
       );
@@ -478,36 +385,82 @@ export class BotService implements OnModuleInit {
   //   await CompleteOrderHandler.CompleteOrder(ctx);
   // }
 
-  async AddNewOrder(ctx: BotContext) {
-    const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, {
-      orderItems: {product: true},
-    });
-    if (order) {
-      const selectedProduct = order.orderItems.find(
-        fi => fi.productStatus === ProductStatus.Selected,
-      );
-      if (selectedProduct) {
-        const totalPrice = order.orderItems
-          .map(product => product.product)
-          ?.map(mp => mp.unitPrice)
-          .reduce((prev, current) => prev + current);
-        order.totalPrice = order.totalPrice + totalPrice;
+  /**
+   * Creates an order if not exists and adds the selected product to the basket.
+   * @param ctx
+   * @param selectedProductId
+   */
+  async AddProdToBasket(ctx: BotContext, selectedProductId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-        const productExists = order.orderItems.find(
-          fi =>
-            fi.productId === selectedProduct.productId &&
-            fi.productStatus !== ProductStatus.Selected,
+    try {
+      let order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, {
+        orderItems: true,
+      });
+
+      if (order) {
+        const selectedProduct = (order.orderItems ?? []).find(
+          (orderItem: OrderItem) => orderItem.productId === selectedProductId,
         );
-        if (productExists) {
-          await this.orderItemRepository.orm.delete({id: selectedProduct.id});
-          order.orderItems = order.orderItems.filter(
-            fi => fi.id !== selectedProduct.id,
-          );
-          productExists.amount += 1;
+
+        if (selectedProduct) {
+          selectedProduct.amount = selectedProduct.amount + 1;
+        } else {
+          order.orderItems.push(<OrderItem>{
+            amount: 1,
+            productId: selectedProductId,
+            productStatus: ProductStatus.InBasket,
+          });
         }
-        selectedProduct.productStatus = ProductStatus.InBasket;
-        await this.orderRepository.orm.save(order);
+
+        await queryRunner.manager.save(Order, order);
+      } else {
+        const customer =
+          await this.customerRepository.getCustomerByTelegramId(ctx);
+        order = {
+          customerId: customer.id,
+          merchantId: customer.merchantId,
+          orderNo: new Date().getTime().toString(36),
+          createDate: new Date(),
+          orderChannel: OrderChannel.Telegram,
+          orderStatus: OrderStatus.New,
+          paymentMethod: PaymentMethod.OnDelivery,
+          totalPrice: 0,
+          orderItems: [
+            <OrderItem>{
+              amount: 1,
+              productId: selectedProductId,
+              productStatus: ProductStatus.InBasket,
+            },
+          ],
+        };
+
+        await queryRunner.manager.save(Order, order);
       }
+
+      const products = await this.productRepository.orm.find({
+        where: {id: In(order.orderItems?.map(oi => oi.productId) ?? [])},
+      });
+
+      const selectedProductsPrice = order.orderItems.map(oi => {
+        const product = products.find(p => p.id === oi.productId);
+        return oi.amount * product.unitPrice;
+      });
+      // update the total price of the order.
+      order.totalPrice = selectedProductsPrice.reduce(
+        (totalPrice, amount) => totalPrice + amount,
+        0,
+      );
+
+      await queryRunner.manager.save(Order, order);
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 

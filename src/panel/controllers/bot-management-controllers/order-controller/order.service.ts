@@ -3,7 +3,7 @@ import {Order} from 'src/models/order';
 import {Customer} from 'src/models/customer';
 import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {FindManyOptions, MoreThan} from 'typeorm';
+import {FindManyOptions, Not} from 'typeorm';
 import {InformationMessages} from 'src/bot/helpers/informtaion-msgs';
 import {OrderChannel, OrderStatus} from 'src/models';
 import {
@@ -35,7 +35,10 @@ export class OrderService {
       'orderItems.orderOptions.option',
     ];
 
-    findOptions.where = {orderStatus: MoreThan(0), merchantId: merchantId};
+    findOptions.where = {
+      orderStatus: Not(OrderStatus.New),
+      merchantId: merchantId,
+    };
     const orders: Order[] = await this.orderRepository.orm.find(findOptions);
 
     const response: UIResponseBase<Order[]> = {

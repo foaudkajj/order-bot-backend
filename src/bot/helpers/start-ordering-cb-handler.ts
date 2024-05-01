@@ -5,6 +5,7 @@ import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {CategoryRepository} from '../../db/repositories';
 import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
+import {BotCommands} from '../bot-commands';
 
 @Injectable()
 export class StartOrderingCb {
@@ -45,12 +46,9 @@ export class StartOrderingCb {
                     },
                   ],
               ),
-              [
-                {
-                  text: '◀️ Ana Menüye Dön ◀️',
-                  callback_data: CallBackQueryResult.MainMenu,
-                },
-              ],
+              ...BotCommands.getCustom([
+                {action: CallBackQueryResult.MainMenu},
+              ]),
             ],
           },
         });
