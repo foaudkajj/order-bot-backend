@@ -72,7 +72,7 @@ export class BotService implements OnModuleInit {
       where: {isActive: true},
     });
 
-    this.InitlizeWizards(this.composer);
+    this.initlizeWizards(this.composer);
     this.InilizeBotEventsHandlers(this.composer);
 
     const isProd = process.env.NODE_ENV === 'production';
@@ -110,6 +110,11 @@ export class BotService implements OnModuleInit {
   }
 
   InilizeBotEventsHandlers(composer: Composer<BotContext>) {
+    // initlize the custom properties.
+    composer.use((ctx, next) => {
+      ctx.botUser = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
+      return next();
+    });
     composer.command('start', async ctx => await this.fmh.startOptions(ctx));
     composer.on('callback_query', async ctx => {
       try {
@@ -130,11 +135,14 @@ export class BotService implements OnModuleInit {
               await this.askForPhoneNumberIfNotAvailable(ctx);
               break;
             case CallBackQueryResult.AddToBasketAndContinueShopping:
-              await ctx.answerCbQuery();
-              await this.AddProdToBasket(
-                ctx,
-                Number.parseInt(callbackQueryData.data.selectedProductId),
-              );
+              await Promise.all([
+                ctx.answerCbQuery(),
+                this.AddProdToBasket(
+                  ctx,
+                  Number.parseInt(callbackQueryData.data.selectedProductId),
+                ),
+              ]);
+
               await this.startOrderingCb.StartOrdering(ctx);
               break;
             case CallBackQueryResult.EnterAddress:
@@ -147,7 +155,7 @@ export class BotService implements OnModuleInit {
             case CallBackQueryResult.MyBasket:
               {
                 const orderDetails =
-                  await this.ordersInBasketCb.GetOrdersInBasketByStatus(
+                  await this.ordersInBasketCb.getActiveOrderDetails(
                     ctx,
                     OrderStatus.New,
                   );
@@ -169,7 +177,7 @@ export class BotService implements OnModuleInit {
               }
               break;
             case CallBackQueryResult.ConfirmOrder:
-              await this.confirmOrderHandler.ConfirmOrder(ctx);
+              await this.confirmOrderHandler.confirmOrder(ctx);
               // await this.fmh.startOptions(ctx);
               break;
             case CallBackQueryResult.EmptyBakset:
@@ -186,8 +194,123 @@ export class BotService implements OnModuleInit {
               await this.addNoteToOrder(ctx);
               break;
             case CallBackQueryResult.GetConfirmedOrders:
-              await this.getConfirmedOrderCb.GetConfirmedOrders(ctx);
+              await this.getConfirmedOrderCb.getConfirmedOrders(ctx);
               // await this.fmh.startOptions(ctx);
+              break;
+
+            case CallBackQueryResult.RemoveFromBasket:
+              const queryRunner = this.dataSource.createQueryRunner();
+              await queryRunner.connect();
+              await queryRunner.startTransaction();
+              try {
+                const order =
+                  await this.orderRepository.getCurrentUserActiveOrder(ctx, {
+                    orderItems: {product: true},
+                  });
+
+                const selectedProducts = order?.orderItems?.map(
+                  oi => oi.product,
+                );
+
+                if (selectedProducts.length === 0) {
+                  await Promise.all([
+                    ctx.answerCbQuery('Sepette ürün yoktur.'),
+                    this.fmh.startOptions(ctx),
+                  ]);
+                }
+
+                const productIdToRemove = callbackQueryData.data?.productId;
+                if (productIdToRemove) {
+                  const remainingProducts = selectedProducts.filter(
+                    p => p.id !== productIdToRemove,
+                  );
+
+                  order.totalPrice = remainingProducts.reduce(
+                    (sum, p) => sum + p.unitPrice,
+                    0,
+                  );
+
+                  await Promise.all([
+                    queryRunner.manager.delete(OrderItem, {
+                      productId: productIdToRemove,
+                      orderId: order.id,
+                    }),
+                    queryRunner.manager.update(
+                      Order,
+                      {id: order.id},
+                      {totalPrice: order.totalPrice},
+                    ),
+                  ]);
+
+                  if (remainingProducts.length > 0) {
+                    await ctx.editMessageText(
+                      `Ürün çıkarılmıştır.\n Lütfen çıkarmak istediğiniz başka bir ürün seçiniz:`,
+                      {
+                        reply_markup: {
+                          inline_keyboard: [
+                            ...remainingProducts
+                              .map(p => {
+                                return BotCommands.getCustom([
+                                  {
+                                    text: p.title,
+                                    action:
+                                      CallBackQueryResult.RemoveFromBasket,
+                                    data: {
+                                      productId: p.id,
+                                    },
+                                  },
+                                ]);
+                              })
+                              .flat(),
+                            ...BotCommands.getCustom([
+                              {action: CallBackQueryResult.MainMenu},
+                            ]),
+                          ],
+                        },
+                      },
+                    );
+                  } else {
+                    await Promise.all([
+                      ctx.answerCbQuery('Sepette ürün kalmamıştır.'),
+                      this.fmh.startOptions(ctx),
+                    ]);
+                  }
+                } else {
+                  await ctx.editMessageText(
+                    'Lütfen çıkarmak istediğiniz ürünü seçiniz:',
+                    {
+                      reply_markup: {
+                        inline_keyboard: [
+                          ...selectedProducts
+                            .map(p => {
+                              return BotCommands.getCustom([
+                                {
+                                  text: p.title,
+                                  action: CallBackQueryResult.RemoveFromBasket,
+                                  data: {
+                                    productId: p.id,
+                                  },
+                                },
+                              ]);
+                            })
+                            .flat(),
+                          ...BotCommands.getCustom([
+                            {action: CallBackQueryResult.MainMenu},
+                          ]),
+                        ],
+                      },
+                    },
+                  );
+                }
+
+                await queryRunner.commitTransaction();
+              } catch (error) {
+                await queryRunner.rollbackTransaction();
+                throw error;
+              } finally {
+                await queryRunner.release();
+              }
+
               break;
             default:
               await ctx.answerCbQuery();
@@ -204,8 +327,7 @@ export class BotService implements OnModuleInit {
     });
     composer.on('inline_query', async ctx => {
       try {
-        const customer =
-          await this.customerRepository.getCustomerByTelegramId(ctx);
+        const customer = await this.customerRepository.getCurrentCustomer(ctx);
         if (customer) {
           const category = await this.categoryRepository.orm.findOne({
             where: {
@@ -226,10 +348,6 @@ export class BotService implements OnModuleInit {
                   // caption: product.Caption,
                   input_message_content: {
                     message_text: product.id.toString(),
-                    //       // message_text:
-                    //       //   `<b>🎞️ TesTRTt</b>\n` +
-                    //       //   `http://www.youtube.com/watch?v=${'L_Gqpg0q1sfdxs' || ''}`,
-                    // parse_mode: 'HTML',
                   },
                 },
             ),
@@ -276,11 +394,12 @@ export class BotService implements OnModuleInit {
 
   async EmptyBasket(ctx: BotContext) {
     try {
-      const order =
-        await this.orderRepository.getOrderInBasketByTelegramId(ctx);
+      const order = await this.orderRepository.getCurrentUserActiveOrder(ctx);
       if (order) {
-        await this.orderRepository.orm.delete({id: order.id});
-        await ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.');
+        await Promise.all([
+          this.orderRepository.orm.delete({id: order.id}),
+          ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.'),
+        ]);
       } else {
         await ctx.answerCbQuery('Sepetiniz Boştur.');
       }
@@ -294,14 +413,16 @@ export class BotService implements OnModuleInit {
   async SendOrder(ctx: BotContext) {
     try {
       // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-      const customer =
-        await this.customerRepository.getCustomerByTelegramId(ctx);
-      await this.orderRepository.orm.update(
-        {customerId: customer.id, orderStatus: OrderStatus.New},
-        {orderStatus: OrderStatus.UserConfirmed},
-      );
-      await ctx.answerCbQuery('Siparişiniz Gönderilmiştir');
-      await this.fmh.startOptions(ctx);
+      const customer = await this.customerRepository.getCurrentCustomer(ctx);
+
+      await Promise.all([
+        this.orderRepository.orm.update(
+          {customerId: customer.id, orderStatus: OrderStatus.New},
+          {orderStatus: OrderStatus.UserConfirmed},
+        ),
+        ctx.answerCbQuery('Siparişiniz Gönderilmiştir'),
+        this.fmh.startOptions(ctx),
+      ]);
     } catch (error) {
       console.log(error);
       await ctx.answerCbQuery('Bir hata oluştu. Lütfen tekrar deneyiniz.');
@@ -317,7 +438,7 @@ export class BotService implements OnModuleInit {
     );
   }
 
-  InitlizeWizards(composer: Composer<BotContext>) {
+  initlizeWizards(composer: Composer<BotContext>) {
     const addNoteToOrderWizard =
       this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
     const addressWizard = this.addressWizard.InitilizeAdressWizard();
@@ -339,8 +460,7 @@ export class BotService implements OnModuleInit {
     if ('text' in ctx.message) {
       const selectedProductId = ctx.message.text;
 
-      const customer =
-        await this.customerRepository.getCustomerByTelegramId(ctx);
+      const customer = await this.customerRepository.getCurrentCustomer(ctx);
 
       // Get Prodcut Details From DB and Show Them
       const product = await this.productRepository.orm.findOne({
@@ -396,7 +516,7 @@ export class BotService implements OnModuleInit {
     await queryRunner.startTransaction();
 
     try {
-      let order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, {
+      let order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
         orderItems: true,
       });
 
@@ -417,8 +537,7 @@ export class BotService implements OnModuleInit {
 
         await queryRunner.manager.save(Order, order);
       } else {
-        const customer =
-          await this.customerRepository.getCustomerByTelegramId(ctx);
+        const customer = await this.customerRepository.getCurrentCustomer(ctx);
         order = {
           customerId: customer.id,
           merchantId: customer.merchantId,
@@ -465,10 +584,7 @@ export class BotService implements OnModuleInit {
   }
 
   async addNoteToOrder(ctx: BotContext) {
-    const order = await this.orderRepository.getOrdersInBasketByStatus(
-      ctx,
-      OrderStatus.New,
-    );
+    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx);
     if (order) {
       ctx.scene.enter(
         'AddNoteToOrder',
@@ -482,7 +598,7 @@ export class BotService implements OnModuleInit {
   }
 
   async askForPhoneNumberIfNotAvailable(ctx: BotContext) {
-    const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+    const customer = await this.customerRepository.getCurrentCustomer(ctx);
     if (!customer.phoneNumber) {
       await ctx.scene.enter(
         'phone-number',
@@ -502,7 +618,7 @@ export class BotService implements OnModuleInit {
         // }),
       );
     } else {
-      await this.completeOrderHandler.CompleteOrder(ctx);
+      await this.completeOrderHandler.completeOrder(ctx);
     }
   }
 }
