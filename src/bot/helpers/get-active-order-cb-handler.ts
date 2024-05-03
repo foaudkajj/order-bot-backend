@@ -6,21 +6,27 @@ import {BotContext} from '../interfaces/bot-context';
 @Injectable()
 export class OrdersInBasketCb {
   constructor(private orderRepository: OrderRepository) {}
-  public async GetOrdersInBasketByStatus(
+
+  /**
+   * Displays the details of the current order (with the details of the products).
+   * @param ctx
+   * @returns {string}
+   */
+  public async getActiveOrderDetails(
     ctx: BotContext,
     // eslint-disable-next-line unused-imports/no-unused-vars
     orderStatus: OrderStatus,
-  ) {
+  ): Promise<string> {
     try {
       let isCbQuyer = false;
       if (ctx.updateType === 'callback_query') isCbQuyer = true;
 
       let orderDetailsMessage = '';
 
-      const order = await this.orderRepository.getOrderInBasketByTelegramId(
-        ctx,
-        {orderItems: {product: true}, customer: true},
-      );
+      const order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
+        orderItems: {product: true},
+        customer: true,
+      });
       if (!order || order?.orderItems?.length === 0) {
         orderDetailsMessage = null; // 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';
 

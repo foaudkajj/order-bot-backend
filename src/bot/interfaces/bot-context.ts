@@ -1,5 +1,6 @@
 import {Context, Scenes} from 'telegraf';
 import {WizardSession} from './wizard-session';
+import {User} from '@telegraf/types';
 
 /**
  * We can define our own context object.
@@ -17,4 +18,6 @@ export interface BotContext extends Context {
   scene: Scenes.SceneContextScene<BotContext, WizardSession>;
   // declare wizard type
   wizard: Scenes.WizardContextWizard<BotContext>;
+
+  botUser: User;
 }

@@ -65,7 +65,7 @@ export class AddressWizardService {
   }
 
   async SaveAddressToDBAndLeaveWizard(ctx: BotContext) {
-    const order = await this.orderRepository.getOrderInBasketByTelegramId(ctx, {
+    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
       customer: true,
     });
     if (order) {

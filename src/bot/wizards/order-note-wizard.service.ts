@@ -23,12 +23,12 @@ export class AddnoteToOrderWizardService {
           await ctx.reply('Kaydedilmiştir...');
           // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
           const customer =
-            await this.customerRepository.getCustomerByTelegramId(ctx);
+            await this.customerRepository.getCurrentCustomer(ctx);
           await this.orderRepository.orm.update(
             {customerId: customer.id, orderStatus: OrderStatus.New},
             {note: ctx.message.text},
           );
-          await this.confirmOrderHandler.ConfirmOrder(ctx);
+          await this.confirmOrderHandler.confirmOrder(ctx);
           await ctx.scene.leave();
         } else {
           await ctx.reply(

@@ -17,20 +17,6 @@ export class OrderRepository extends BaseRepository<Order> {
     super();
     this.orm = _;
   }
-  async getOrdersInBasketByStatus(
-    ctx: BotContext,
-    orderStatus: OrderStatus,
-    relations?: FindOptionsRelations<Order>,
-  ) {
-    // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-    const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
-    const order = await this.orm.findOne({
-      where: {customerId: customer.id, orderStatus: orderStatus},
-      relations: relations,
-      order: {createDate: 'DESC'},
-    });
-    return order;
-  }
 
   /**
    * Returns the current order of the current customer(user) account.
@@ -39,15 +25,16 @@ export class OrderRepository extends BaseRepository<Order> {
    * @param relations the relations
    * @returns {Promise<Order>} the current order
    */
-  async getOrderInBasketByTelegramId(
+  async getCurrentUserActiveOrder(
     ctx: BotContext,
     relations?: FindOptionsRelations<Order>,
   ): Promise<Order> {
-    const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+    const customer = await this.customerRepository.getCurrentCustomer(ctx);
 
     return await this.orm.findOne({
       where: {customerId: customer.id, orderStatus: OrderStatus.New},
       relations: relations ?? {},
+      order: {createDate: 'DESC'},
     });
   }
 
@@ -57,7 +44,7 @@ export class OrderRepository extends BaseRepository<Order> {
    * @returns {boolean} true if the customer(user) has an active order.
    */
   async hasActiveOrder(ctx: BotContext): Promise<boolean> {
-    const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+    const customer = await this.customerRepository.getCurrentCustomer(ctx);
     return this.orm.existsBy({
       customerId: customer.id,
       orderStatus: OrderStatus.New,

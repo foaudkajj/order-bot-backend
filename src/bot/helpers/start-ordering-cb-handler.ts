@@ -4,7 +4,7 @@ import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {CategoryRepository} from '../../db/repositories';
-import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
+import {OrdersInBasketCb} from './get-active-order-cb-handler';
 import {BotCommands} from '../bot-commands';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class StartOrderingCb {
   ) {}
   public async StartOrdering(ctx: BotContext) {
     try {
-      const orderDetails = await this.ordersInBasket.GetOrdersInBasketByStatus(
+      const orderDetails = await this.ordersInBasket.getActiveOrderDetails(
         ctx,
         OrderStatus.New,
       );

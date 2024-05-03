@@ -2,14 +2,19 @@ import {Injectable} from '@nestjs/common';
 import {OrderStatus} from 'src/models';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
-import {OrdersInBasketCb} from './get-orders-in-basket-cb-handler';
+import {OrdersInBasketCb} from './get-active-order-cb-handler';
 import {BotCommands} from '../bot-commands';
 
 @Injectable()
 export class GetConfirmedOrderCb {
   constructor(private orderInBasket: OrdersInBasketCb) {}
-  public async GetConfirmedOrders(ctx: BotContext) {
-    const orderDetails = await this.orderInBasket.GetOrdersInBasketByStatus(
+
+  /**
+   * Returns the user confirmed order. User confirmed means that the user has finished the selection of the products and confirmed the order.
+   * @param ctx
+   */
+  public async getConfirmedOrders(ctx: BotContext) {
+    const orderDetails = await this.orderInBasket.getActiveOrderDetails(
       ctx,
       OrderStatus.UserConfirmed,
     );

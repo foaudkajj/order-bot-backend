@@ -19,12 +19,12 @@ export class PhoneNumberWizardService {
 
         if (ctx?.message && 'contact' in ctx?.message) {
           const customer =
-            await this.customerRepository.getCustomerByTelegramId(ctx);
+            await this.customerRepository.getCurrentCustomer(ctx);
           customer.phoneNumber = ctx.message.contact.phone_number;
           await this.customerRepository.orm.update({id: customer.id}, customer);
           // ctx.scene.session.address = ctx.message.contact.phone_number;
           await ctx.scene.leave();
-          await this.completeOrderHandler.CompleteOrder(ctx);
+          await this.completeOrderHandler.completeOrder(ctx);
         } else {
           await ctx.reply('Lütfen telefon numarınızı gönderiniz. /iptal', {
             reply_markup: {

@@ -8,10 +8,10 @@ import {BotCommands} from '../bot-commands';
 export class CompleteOrderHandler {
   constructor(private orderRepository: OrderRepository) {}
 
-  async CompleteOrder(ctx: BotContext) {
+  async completeOrder(ctx: BotContext) {
     try {
       const ordersInBasket =
-        await this.orderRepository.getOrderInBasketByTelegramId(ctx, {
+        await this.orderRepository.getCurrentUserActiveOrder(ctx, {
           customer: true,
         });
       if (ordersInBasket) {

@@ -41,7 +41,7 @@ export class FirstMessageHandler {
   }
 
   private async createNewUserIfUserDoesnitExist(ctx: BotContext) {
-    const customer = await this.customerRepository.getCustomerByTelegramId(ctx);
+    const customer = await this.customerRepository.getCurrentCustomer(ctx);
     if (!customer) {
       const merchant = await this.merchantRepository.getMerchantIdByBotUserName(
         ctx.botInfo.username,
