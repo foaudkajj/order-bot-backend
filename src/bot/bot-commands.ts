@@ -14,6 +14,7 @@ export class BotCommands {
     [CallBackQueryResult.EmptyBakset]: '🗑 Sepetemi Boşalt 🗑',
     [CallBackQueryResult.AddToBasketAndContinueShopping]:
       '🛒 Sepete Ekle ve Alışverişe devam et 🛒',
+    [CallBackQueryResult.RemoveFromBasket]: 'Ürün çıkar',
     [CallBackQueryResult.SendOrder]: '👌 Siparişimi Onayla 👌',
     [CallBackQueryResult.AddNoteToOrder]: '🗒 Siparişe Not Ekle/Düzenle 🗒',
   };
@@ -28,6 +29,7 @@ export class BotCommands {
       CallBackQueryResult.MyBasket,
       CallBackQueryResult.EmptyBakset,
       CallBackQueryResult.CompleteOrder,
+      CallBackQueryResult.RemoveFromBasket,
     ]
       .filter(cmnd => !(exclude ?? []).includes(cmnd))
       .map(action => {
