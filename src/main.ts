@@ -2,10 +2,15 @@ import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
 import 'reflect-metadata';
 import {SwaggerModule, DocumentBuilder} from '@nestjs/swagger';
+import {WinstonLoggerService} from './logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {cors: true});
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+    bufferLogs: true,
+  });
 
+  app.useLogger(new WinstonLoggerService());
   const config = new DocumentBuilder()
     .setTitle('Telegram Siparis Botu')
     .setDescription('Entegrasyon')

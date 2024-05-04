@@ -14,6 +14,7 @@ import {BotModule} from './bot/bot.module';
 import {HttpExceptionFilter} from './shared/exception-filter';
 import {ScheduleModule} from '@nestjs/schedule';
 import {CronModule} from './crons/cron.module';
+import {LoggerModule} from './logger';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import {CronModule} from './crons/cron.module';
           : '.env',
       ],
     }),
+    LoggerModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
