@@ -16,6 +16,8 @@ export class AppController {
   @Get('version')
   @AllowAnonymous()
   getVersion(): UIResponseBase<string> {
-    return <UIResponseBase<string>>{data: `${process.env.npm_package_version}`};
+    return <UIResponseBase<string>>{
+      data: `${require('./package.json').version}`,
+    };
   }
 }
