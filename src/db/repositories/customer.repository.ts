@@ -23,9 +23,10 @@ export class CustomerRepository extends BaseRepository<Customer> {
       relations.merchant = true;
     }
 
-    return await this.orm.findOne({
+    const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
+    return this.orm.findOne({
       where: {
-        telegramId: ctx.botUser.id,
+        telegramId: ctx.botUser?.id ?? userInfo.id,
         merchant: {botUserName: ctx.botInfo.username},
       },
       relations: relations ?? {},

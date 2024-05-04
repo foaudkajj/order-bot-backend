@@ -4,6 +4,7 @@ import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
 import {OrderRepository} from '../../db/repositories/order.repository';
 import {BotCommands} from '../bot-commands';
+import {turkishToEnglish} from 'src/shared/utils';
 
 @Injectable()
 export class AddressWizardService {
@@ -34,7 +35,10 @@ export class AddressWizardService {
         if (
           ctx?.message &&
           'text' in ctx.message &&
-          ctx.message.text?.toLowerCase() === 'istemiyorum'
+          turkishToEnglish(ctx.message.text ?? '')
+            .trim()
+            .toLowerCase()
+            ?.toLowerCase() === 'istemiyorum'
         ) {
           ctx.scene.session.isLocation = false;
           await this.SaveAddressToDBAndLeaveWizard(ctx);
