@@ -53,7 +53,7 @@ export class OrdersInBasketCb {
 
         orderDetailsMessage = orderDetailsMessage.concat(
           `Adres : ${order.customer.address ?? ''}\n`,
-          `Telefon : ${order.customer.phoneNumber}\n`,
+          `Telefon : ${order.customer.phoneNumber ?? ''}\n`,
         );
 
         orderDetailsMessage =

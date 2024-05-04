@@ -16,7 +16,6 @@ const transports: winston.transport[] = [
   }),
 ];
 
-let logLevel: string = 'silly';
 if (process.env.NODE_ENV === 'production') {
   transports.push(
     new winston.transports.DailyRotateFile({
@@ -31,12 +30,10 @@ if (process.env.NODE_ENV === 'production') {
       ),
     }),
   );
-
-  logLevel = 'fatal';
 }
 
 export const logger = winston.createLogger({
-  level: logLevel,
+  level: 'info',
   format: winston.format.json(),
   transports,
 });
