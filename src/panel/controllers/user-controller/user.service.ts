@@ -61,6 +61,24 @@ export class UserService {
   }
 
   async delete(Id: number, merchantId: number) {
-    await this.userRepository.orm.delete({id: Id, merchantId: merchantId});
+    const merchantUsers = await this.userRepository.orm.find({
+      where: {merchantId: merchantId},
+    });
+
+    if (!merchantUsers || !merchantUsers.length) {
+      throw new HttpException(
+        'ERROR.MERCHANT_USER_NOT_FOUND',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // if the current merchant has only one account, dont allow it to be deleted.
+    else if (merchantUsers.length === 1) {
+      throw new HttpException(
+        'ERROR.MERCHANT_LAST_USER',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else {
+      await this.userRepository.orm.delete({id: Id, merchantId: merchantId});
+    }
   }
 }
