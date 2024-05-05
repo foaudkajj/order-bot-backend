@@ -70,7 +70,10 @@ export class OrderController {
     @Request() request,
   ): Promise<void> {
     if (!cancelOrder || !cancelOrder.orderId) {
-      throw new HttpException('ORDER_ID_NOT_PROVIDED', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'ERROR.ORDER_ID_NOT_PROVIDED',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return await this.orderService.cancelOrder(cancelOrder, request.merchantId);
   }

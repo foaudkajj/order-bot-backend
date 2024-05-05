@@ -236,7 +236,7 @@ export class OrderService {
         });
       } else {
         throw new HttpException(
-          'Getir service error',
+          'GETIR.ERRORS.SERVICE_ERROR',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
