@@ -43,3 +43,17 @@ export const turkishToEnglish = (input: string) => {
   });
   return input;
 };
+
+/**
+ * Generate a random number with the specified number of digits
+ * @param numDigits Number of digits to generate
+ * @returns {string} Random number
+ */
+export const generateUniqueNumber = (numDigits: number): string => {
+  const min = Math.pow(10, numDigits - 1);
+  const max = Math.pow(10, numDigits) - 1;
+  const randomNumber = Math.floor(min + Math.random() * (max - min + 1));
+  const randomNumberString = randomNumber.toString();
+
+  return randomNumberString;
+};

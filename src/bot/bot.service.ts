@@ -29,7 +29,7 @@ import {
   AddressWizardService,
   PhoneNumberWizardService,
 } from './wizards';
-import {safeJsonParse} from 'src/shared/utils';
+import {safeJsonParse, turkishToEnglish} from 'src/shared/utils';
 import {CallbackQueryData} from './interfaces/callback-query-data';
 import {BotContext} from './interfaces';
 import {InlineQueryResultArticle} from '@telegraf/types';
@@ -381,9 +381,34 @@ export class BotService implements OnModuleInit {
 
     composer.on('message', async ctx => {
       try {
-        if ('text' in ctx.message && ctx.message.via_bot?.is_bot) {
-          if (parseInt(ctx.message.text, 10)) {
-            await this.AddToBasketAndComplteOrderOrContinueShopping(ctx);
+        if ('text' in ctx.message) {
+          const message = ctx.message.text;
+
+          if (ctx.message.via_bot?.is_bot && parseInt(message, 10)) {
+            await this.selectedProductOptions(
+              ctx,
+              Number.parseInt(ctx.message.text),
+            );
+          } else if (
+            turkishToEnglish(message).toLowerCase().startsWith('kod:')
+          ) {
+            const productCode = message
+              .substring(message.indexOf(':') + 1)
+              // replace non numerics
+              .replace(/[^\d]+/g, '');
+
+            const product = await this.productRepository.orm.findOneBy({
+              code: productCode,
+            });
+
+            if (product) {
+              await this.selectedProductOptions(ctx, product.id);
+            } else {
+              await ctx.replyWithHTML(
+                '<b>Girdiğiniz koda ait bir ürün bulunamamıştır.</b>',
+              );
+              await this.fmh.startOptions(ctx);
+            }
           }
         }
       } catch (e) {
@@ -456,48 +481,44 @@ export class BotService implements OnModuleInit {
     composer.use(stage.middleware());
   }
 
-  async AddToBasketAndComplteOrderOrContinueShopping(ctx: BotContext) {
-    if ('text' in ctx.message) {
-      const selectedProductId = ctx.message.text;
+  async selectedProductOptions(ctx: BotContext, selectedProductId: number) {
+    const customer = await this.customerRepository.getCurrentCustomer(ctx);
 
-      const customer = await this.customerRepository.getCurrentCustomer(ctx);
+    // Get Prodcut Details From DB and Show Them
+    const product = await this.productRepository.orm.findOne({
+      where: {
+        id: selectedProductId,
+        merchantId: customer.merchantId,
+      },
+    });
+    await ctx.reply(
+      `<b>${product.title}</b> \n` +
+        `Açıklama:<i> ${product.description}</i> \n` +
+        `Fiyat: <u> ${product.unitPrice} TL</u>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          one_time_keyboard: true,
+          inline_keyboard: BotCommands.getCustom([
+            {
+              action: CallBackQueryResult.AddToBasketAndContinueShopping,
+              data: {selectedProductId},
+            },
 
-      // Get Prodcut Details From DB and Show Them
-      const product = await this.productRepository.orm.findOne({
-        where: {
-          id: Number.parseInt(selectedProductId),
-          merchantId: customer.merchantId,
+            {
+              action: CallBackQueryResult.StartOrdering,
+              text: 'Başka bir ürün seç',
+            },
+            {
+              action: CallBackQueryResult.CompleteOrder,
+            },
+            {
+              action: CallBackQueryResult.MainMenu,
+            },
+          ]),
         },
-      });
-      await ctx.reply(
-        `<b>${product.title}</b> \n` +
-          `Açıklama:<i> ${product.description}</i> \n` +
-          `Fiyat: <u> ${product.unitPrice} TL</u>`,
-        {
-          parse_mode: 'HTML',
-          reply_markup: {
-            one_time_keyboard: true,
-            inline_keyboard: BotCommands.getCustom([
-              {
-                action: CallBackQueryResult.AddToBasketAndContinueShopping,
-                data: {selectedProductId},
-              },
-
-              {
-                action: CallBackQueryResult.StartOrdering,
-                text: 'Başka bir ürün seç',
-              },
-              {
-                action: CallBackQueryResult.CompleteOrder,
-              },
-              {
-                action: CallBackQueryResult.MainMenu,
-              },
-            ]),
-          },
-        },
-      );
-    }
+      },
+    );
   }
 
   // async AddProductAndCompleteOrder(ctx: BotContext) {

@@ -74,7 +74,7 @@ export class ProductController {
     @Body() deleteBody: DxGridDeleteRequest,
     @Request() request,
   ): Promise<void> {
-    return this.productService.Delete(deleteBody.key, request.merchantId);
+    return this.productService.delete(deleteBody.key, request.merchantId);
   }
 
   @Post('upload')

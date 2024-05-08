@@ -30,6 +30,9 @@ export class Product {
   @Column({type: 'decimal', precision: 2, default: 0})
   unitPrice?: number;
 
+  @Column({type: 'varchar', nullable: false, length: 6})
+  code: string;
+
   @OneToMany(() => OrderItem, orderDetails => orderDetails.product)
   orderDetails?: OrderItem[];
 
@@ -43,13 +46,13 @@ export class Product {
   @JoinColumn({name: 'categoryId'})
   category?: Category;
 
-  @Column({nullable: true})
+  @Column({name: 'merchant_id', nullable: true})
   merchantId: number;
 
   @ManyToOne(() => Merchant, merchant => merchant.products, {
     cascade: ['insert'],
   })
-  @JoinColumn({name: 'merchantId'})
+  @JoinColumn({name: 'merchant_id'})
   merchant?: Merchant;
 
   @Column({type: 'uuid', nullable: true})

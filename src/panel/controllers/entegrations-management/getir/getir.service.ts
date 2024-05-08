@@ -31,6 +31,7 @@ import {
   ProductRepository,
 } from 'src/db/repositories';
 import {DevextremeService} from 'src/services/devextreme.service';
+import {generateUniqueNumber} from 'src/shared/utils';
 
 @Injectable()
 export class GetirService {
@@ -746,6 +747,7 @@ export class GetirService {
           thumbUrl: getirProduct.imageURL,
           getirProductId: getirProduct.id,
           merchantId: merchantId,
+          code: generateUniqueNumber(6),
         };
         if (productList.map(m => m.getirProductId).includes(getirProduct.id)) {
           productId = productList.find(
