@@ -13,7 +13,9 @@ export class InformationMessages {
     if (botUserName && text) {
       const botInstance = BotService.botMap.get(botUserName);
       if (botInstance) {
-        await botInstance.telegram.sendMessage(telegramId, text);
+        await botInstance.telegram.sendMessage(telegramId, text, {
+          parse_mode: 'HTML',
+        });
       }
     }
   }

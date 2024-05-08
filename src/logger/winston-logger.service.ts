@@ -5,7 +5,7 @@ import {logger} from './winston.config';
  * A class that is used to manage the logging.
  */
 @Injectable({scope: Scope.TRANSIENT})
-export class WinstonLoggerService implements WinstonLoggerService {
+export class WinstonLoggerService {
   log(message: string, context?: string) {
     logger.info(message, {context});
   }

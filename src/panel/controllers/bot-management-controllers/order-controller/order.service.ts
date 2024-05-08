@@ -163,28 +163,28 @@ export class OrderService {
           this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            `Siparişiniz Onaylandı. sipariş no: ${order.orderNo}`,
+            `Siparişiniz Onaylandı. sipariş no: <b>${order.orderNo}</b>`,
           );
           break;
         case OrderStatus.Prepared:
           this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            `Siparişiniz Hazır. sipariş no: ${order.orderNo}`,
+            `Siparişiniz Hazır. sipariş no: <b>${order.orderNo}</b>`,
           );
           break;
         case OrderStatus.OrderSent:
           this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            `Siparişiniz Yola Çıkmıştır. sipariş no: ${order.orderNo}`,
+            `Siparişiniz Yola Çıkmıştır. sipariş no: <b>${order.orderNo}</b>`,
           );
           break;
         case OrderStatus.Delivered:
           this.informationMessages.SendInformationMessage(
             order.merchant.botUserName,
             order.customer.telegramId,
-            `Siparişiniz Size Teslim Edilmiştir. sipariş no: ${order.orderNo}`,
+            `Siparişiniz Size Teslim Edilmiştir. sipariş no: <b>${order.orderNo}</b>`,
           );
           break;
         default:
@@ -221,7 +221,7 @@ export class OrderService {
       this.informationMessages.SendInformationMessage(
         order.merchant.botUserName,
         order.customer.telegramId,
-        `Siparişiniz İptal Edilmiştir. Sebep: ${cancelOrder.cancelReason}`,
+        `Siparişiniz İptal Edilmiştir. Sebep: <b>${cancelOrder.cancelReason}</b>`,
       );
     } else if (order.orderChannel === OrderChannel.Getir) {
       const response = await this.getirService.cancelOrder(

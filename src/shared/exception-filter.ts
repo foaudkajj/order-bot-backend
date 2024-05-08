@@ -7,11 +7,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
+import {WinstonLoggerService} from 'src/logger';
 import {QueryFailedError} from 'typeorm';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+    private loggerService: WinstonLoggerService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     // In certain situations `httpAdapter` might not be available in the
@@ -19,9 +23,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const {httpAdapter} = this.httpAdapterHost;
 
     const ctx = host.switchToHttp();
-
+    const path = httpAdapter.getRequestUrl(ctx.getRequest());
     let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'error';
+
     switch (exception.constructor) {
       case HttpException:
         httpStatus = (exception as HttpException).getStatus();
@@ -44,11 +49,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
         break;
     }
 
+    // log the error
+    this.loggerService.error(
+      'HttpExceptionFilter: Unhandled exception',
+      JSON.stringify({
+        exception,
+        path,
+      }),
+    );
+
     const responseBody = {
       message: message,
       statusCode: httpStatus,
       timestamp: new Date().toISOString(),
-      path: httpAdapter.getRequestUrl(ctx.getRequest()),
+      path: path,
     };
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
