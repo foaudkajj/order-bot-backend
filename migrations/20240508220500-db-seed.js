@@ -1,6 +1,6 @@
 const {MigrationInterface, QueryRunner} = require('typeorm');
 
-module.exports = class dbSeed20240508211900 {
+module.exports = class dbSeed20240508220500 {
   // please create new db before starting the app.
   async up(queryRunner) {
 
