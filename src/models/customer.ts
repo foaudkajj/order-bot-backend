@@ -4,6 +4,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import {Merchant} from '.';
 import {OrderChannel} from './enums';
@@ -17,16 +18,16 @@ export class Customer {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @Column({length: 30})
+  @Column({name: 'full_name', length: 30})
   fullName?: string;
 
-  @Column({length: 30, nullable: true})
+  @Column({name: 'telegram_user_name', length: 30, nullable: true})
   telegramUserName?: string;
 
   @Column({name: 'telegram_id', type: 'double', nullable: true})
   telegramId?: number;
 
-  @Column({length: 30, nullable: true})
+  @Column({name: 'phone_number', length: 30, nullable: true})
   phoneNumber?: string;
 
   @Column({length: 1000, nullable: true})
@@ -35,7 +36,12 @@ export class Customer {
   @Column({length: 1000, nullable: true})
   address?: string;
 
-  @Column({type: 'enum', enum: OrderChannel, nullable: false})
+  @Column({
+    name: 'customer_channel',
+    type: 'enum',
+    enum: OrderChannel,
+    nullable: false,
+  })
   customerChannel?: string;
 
   @Column({type: 'datetime', name: 'create_date', nullable: false})
@@ -46,11 +52,12 @@ export class Customer {
   // @OneToMany(() => Product, product => product.user, { nullable: true })
   // Products?: Promise<Product[]>;
 
-  @Column()
+  @Column({name: 'merchant_id'})
   merchantId: number;
 
   @ManyToOne(() => Merchant, merchant => merchant.customers, {
     cascade: ['insert'],
   })
+  @JoinColumn({name: 'merchant_id'})
   merchant?: Merchant;
 }

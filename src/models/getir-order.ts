@@ -9,82 +9,82 @@ export class GetirOrder {
   @Column()
   status: number;
 
-  @Column()
+  @Column({name: 'is_scheduled'})
   isScheduled: boolean;
 
-  @Column()
+  @Column({name: 'confirmation_id'})
   confirmationId: string;
 
-  @Column()
+  @Column({name: 'client_id'})
   clientId: string;
 
-  @Column()
+  @Column({name: 'client_name'})
   clientName: string;
 
-  @Column()
+  @Column({name: 'client_contact_phone_number'})
   clientContactPhoneNumber: string;
 
-  @Column()
+  @Column({name: 'client_phone_number'})
   clientPhoneNumber: string;
 
-  @Column()
+  @Column({name: 'client_delivery_address_id'})
   clientDeliveryAddressId: string;
 
-  @Column()
+  @Column({name: 'client_delivery_address'})
   clientDeliveryAddress: string;
 
-  @Column()
+  @Column({name: 'client_city'})
   clientCity: string;
 
-  @Column()
+  @Column({name: 'client_district'})
   clientDistrict: string;
 
-  @Column()
+  @Column({name: 'client_location'})
   clientLocation: string;
 
-  @Column()
+  @Column({name: 'courier_id'})
   courierId: string;
 
-  @Column()
+  @Column({name: 'courier_status'})
   courierStatus: number;
 
-  @Column()
+  @Column({name: 'courier_name'})
   courierName: string;
 
-  @Column()
+  @Column({name: 'courier_location'})
   courierLocation: string;
 
-  @Column({type: 'varchar', length: '4000'})
+  @Column({name: 'client_note', type: 'varchar', length: '4000'})
   clientNote: string;
 
-  @Column()
+  @Column({name: 'do_not_knock'})
   doNotKnock: boolean;
 
-  @Column()
+  @Column({name: 'drop_off_at_door'})
   dropOffAtDoor: boolean;
 
-  @Column()
+  @Column({name: 'total_price'})
   totalPrice: number;
 
-  @Column()
+  @Column({name: 'checkout_date'})
   checkoutDate: string;
 
-  @Column()
+  @Column({name: 'delivery_type'})
   deliveryType: number;
 
-  @Column()
+  @Column({name: 'is_eco_friendly'})
   isEcoFriendly: boolean;
 
-  @Column()
+  @Column({name: 'payment_method_id'})
   paymentMethodId: number;
 
-  @Column()
+  @Column({name: 'payment_method_text'})
   paymentMethodText: string;
 
-  @Column()
+  @Column({name: 'restaurant_id'})
   restaurantId: string;
 
-  @Column({name: 'orderId', nullable: true})
+  @Column({name: 'order_id', nullable: true})
   OrderId?: number;
 
   @OneToOne(() => Order, order => order.getirOrder)

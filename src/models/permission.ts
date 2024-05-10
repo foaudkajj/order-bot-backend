@@ -14,13 +14,13 @@ export class Permission {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({name: 'permission_key'})
   permissionKey: string;
 
-  @Column({type: 'nvarchar', length: 50, nullable: true})
+  @Column({name: 'parent_key', type: 'nvarchar', length: 50, nullable: true})
   parentKey: string;
 
-  @Column({type: 'boolean'})
+  @Column({name: 'is_parent', type: 'boolean'})
   isParent: string;
 
   @OneToMany(

@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import {Merchant} from './merchant';
 import {Product} from './product';
@@ -16,20 +17,21 @@ export class Category {
   @Column({length: 30})
   name: string;
 
-  @Column({length: 50})
+  @Column({name: 'category_key', length: 50})
   categoryKey: string;
 
   @OneToMany(() => Product, product => product.category)
   products?: Product[];
 
-  @Column()
+  @Column({name: 'merchant_id'})
   merchantId: number;
 
   @ManyToOne(() => Merchant, merchant => merchant.categories, {
     cascade: ['insert'],
   })
+  @JoinColumn({name: 'merchant_id'})
   merchant?: Merchant;
 
-  @Column({type: 'uuid', nullable: true})
+  @Column({name: 'getir_category_id', type: 'uuid', nullable: true})
   getirCategoryId: string;
 }

@@ -15,7 +15,7 @@ export class Product {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @Column({nullable: true})
+  @Column({name: 'thumb_url', nullable: true})
   thumbUrl?: string;
 
   @Column({length: 50})
@@ -27,7 +27,7 @@ export class Product {
   // @Column({length: 50, nullable: true})
   // Caption: string;
 
-  @Column({type: 'decimal', precision: 2, default: 0})
+  @Column({name: 'unit_price', type: 'decimal', precision: 2, default: 0})
   unitPrice?: number;
 
   @Column({type: 'varchar', nullable: false, length: 6})
@@ -36,14 +36,14 @@ export class Product {
   @OneToMany(() => OrderItem, orderDetails => orderDetails.product)
   orderDetails?: OrderItem[];
 
-  @Column()
+  @Column({name: 'category_id'})
   categoryId: number;
 
   @ManyToOne(() => Category, category => category.products, {
     nullable: false,
     cascade: ['insert'],
   })
-  @JoinColumn({name: 'categoryId'})
+  @JoinColumn({name: 'category_id'})
   category?: Category;
 
   @Column({name: 'merchant_id', nullable: true})
@@ -55,6 +55,6 @@ export class Product {
   @JoinColumn({name: 'merchant_id'})
   merchant?: Merchant;
 
-  @Column({type: 'uuid', nullable: true})
+  @Column({name: 'getir_product_id', type: 'uuid', nullable: true})
   getirProductId: string;
 }

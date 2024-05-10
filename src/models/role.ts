@@ -1,16 +1,16 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from './user';
-import { RoleAndPermission } from './role-and-permission';
+import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {User} from './user';
+import {RoleAndPermission} from './role-and-permission';
 
 @Entity()
 export class Role {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({name: 'role_name'})
   roleName: string;
 
-  @Column({ nullable: true })
+  @Column({nullable: true})
   description: string;
 
   @OneToMany(

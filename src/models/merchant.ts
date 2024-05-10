@@ -13,34 +13,34 @@ export class Merchant {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({length: 50, nullable: true})
+  @Column({name: 'bot_user_name', length: 50, nullable: true})
   botUserName: string;
 
-  @Column({length: 50, nullable: true})
+  @Column({name: 'bot_token', length: 50, nullable: true})
   botToken: string;
 
-  @Column({type: 'boolean', default: true})
+  @Column({name: 'is_active', type: 'boolean', default: true})
   isActive: boolean;
 
-  @Column({length: 50, nullable: true})
+  @Column({name: 'getir_app_secret_key', length: 50, nullable: true})
   getirAppSecretKey: string;
 
-  @Column({length: 50, nullable: true})
+  @Column({name: 'getir_restaurant_secret_key', length: 50, nullable: true})
   getirRestaurantSecretKey: string;
 
-  @Column({nullable: true, length: 2000})
+  @Column({name: 'getir_access_token', nullable: true, length: 2000})
   getirAccessToken: string;
 
-  @Column({nullable: true})
+  @Column({name: 'getir_token_last_created', nullable: true})
   getirTokenLastCreated: Date;
 
-  @Column({length: 50, nullable: true})
+  @Column({name: 'getir_restaurant_id', length: 50, nullable: true})
   getirRestaurantId: string;
 
-  @Column({length: 50, nullable: true})
+  @Column({name: 'ys_app_secret_key', length: 50, nullable: true})
   ysAppSecretKey: string;
 
-  @Column({length: 50, nullable: true})
+  @Column({name: 'ys_restaurant_secret_key', length: 50, nullable: true})
   ysRestaurantSecretKey: string;
 
   @OneToMany(() => Product, product => product.merchant)

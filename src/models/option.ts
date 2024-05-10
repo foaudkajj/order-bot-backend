@@ -15,7 +15,7 @@ export class Option {
   @Column({length: 500})
   name: string;
 
-  @Column({length: 500})
+  @Column({name: 'getir_option_id', length: 500})
   getirOptionId: string;
 
   @Column({type: 'decimal', precision: 8, scale: 2, default: 0})
@@ -24,14 +24,14 @@ export class Option {
   // @Column({length: 500})
   // getirProductId: string;
 
-  @Column()
+  @Column({name: 'option_category_id'})
   optionCategoryId: number;
 
   @ManyToOne(() => OptionCategory, optionCategory => optionCategory.options, {
     nullable: false,
     cascade: ['insert'],
   })
-  @JoinColumn({name: 'optionCategoryId'})
+  @JoinColumn({name: 'option_category_id'})
   optionCategory?: OptionCategory;
 
   // @Column({name: 'merchantId'})

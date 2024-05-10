@@ -34,7 +34,7 @@ export enum UserStatus {
 
 export enum PaymentMethod {
   OnDelivery = 'OnDelivery',
-  Online = 'ONLINE',
+  Online = 'Online',
 }
 
 export enum StoragePrefix {

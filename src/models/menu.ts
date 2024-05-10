@@ -5,7 +5,7 @@ export class Menu {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({length: 50})
+  @Column({name: 'menu_key', length: 50})
   menuKey: string;
 
   @Column({length: 20, nullable: true})
@@ -20,10 +20,10 @@ export class Menu {
   @Column({length: 300, nullable: true})
   url: string;
 
-  @Column({type: 'nvarchar', length: '50', nullable: true})
+  @Column({name: 'parent_id', type: 'nvarchar', length: '50', nullable: true})
   parentId: string;
 
-  @Column()
+  @Column({name: 'is_parent'})
   isParent: boolean;
 
   @Column()

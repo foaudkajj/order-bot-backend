@@ -9,7 +9,7 @@ export class OptionCategory {
   @Column({length: 500})
   name: string;
 
-  @Column({length: 500})
+  @Column({name: 'getir_option_category_id', length: 500})
   getirOptionCategoryId?: string;
 
   @OneToMany(() => Option, option => option.optionCategory, {cascade: true})

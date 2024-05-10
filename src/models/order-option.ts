@@ -15,14 +15,14 @@ export class OrderOption {
   @Column({type: 'decimal', precision: 2, default: 0})
   price: number;
 
-  @Column()
+  @Column({name: 'option_id'})
   optionId: number;
 
   @ManyToOne(() => Option)
-  @JoinColumn({name: 'optionId'})
+  @JoinColumn({name: 'option_id'})
   option?: Option;
 
-  @Column()
+  @Column({name: 'order_item_id'})
   orderItemId?: number;
 
   @ManyToOne(() => OrderItem, orderItem => orderItem.orderOptions, {
@@ -30,6 +30,6 @@ export class OrderOption {
     cascade: ['insert'],
     onDelete: 'CASCADE',
   })
-  @JoinColumn({name: 'orderItemId'})
+  @JoinColumn({name: 'order_item_id'})
   orderItem?: OrderItem;
 }

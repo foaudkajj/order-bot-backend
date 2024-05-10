@@ -10,14 +10,14 @@ export class AppController {
   @Get()
   @AllowAnonymous()
   getEnv(): string {
-    return `node-version: ${process.env.NODE_ENV} - db: ${process.env.DB_HOST} - version: ${require('./package.json').version}`;
+    return `node-version: ${process.env.NODE_ENV} - db: ${process.env.DB_HOST} - version: ${require('../package.json').version}`;
   }
 
   @Get('version')
   @AllowAnonymous()
   getVersion(): UIResponseBase<string> {
     return <UIResponseBase<string>>{
-      data: `${require('./package.json').version}`,
+      data: `${require('../package.json').version}`,
     };
   }
 }

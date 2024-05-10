@@ -43,7 +43,7 @@ import {LoggerModule} from './logger';
       autoLoadEntities: true,
       keepConnectionAlive: true,
       migrationsRun: true,
-      migrations: ['migration/*.js'],
+      migrations: ['migrations/*.js'],
     }),
     PanelModule,
     SharedModule,

@@ -19,24 +19,24 @@ export class OrderItem {
   @Column()
   amount: number;
 
-  @Column({type: 'nvarchar', length: '2000', nullable: true})
+  @Column({name: 'item_note', type: 'nvarchar', length: '2000', nullable: true})
   itemNote?: string;
 
-  @Column({type: 'enum', enum: ProductStatus})
+  @Column({name: 'product_status', type: 'enum', enum: ProductStatus})
   productStatus?: ProductStatus;
 
-  @Column()
+  @Column({name: 'product_id'})
   productId?: number;
 
   @ManyToOne(() => Product, product => product.orderDetails)
-  @JoinColumn({name: 'productId'})
+  @JoinColumn({name: 'product_id'})
   product?: Product;
 
-  @Column({name: 'orderId'})
+  @Column({name: 'order_id'})
   orderId?: number;
 
   @ManyToOne(() => Order, order => order.orderItems, {onDelete: 'CASCADE'})
-  @JoinColumn({name: 'orderId'})
+  @JoinColumn({name: 'order_id'})
   order?: Order;
 
   @OneToMany(() => OrderOption, orderOption => orderOption.orderItem, {

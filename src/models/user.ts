@@ -18,16 +18,16 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({length: 30, nullable: true})
+  @Column({name: 'user_name', length: 30, nullable: true})
   userName: string;
 
-  @Column({type: 'int'})
+  @Column({name: 'user_status', type: 'int'})
   userStatus: UserStatus;
 
   @Column()
   password: string;
 
-  @Column({nullable: true})
+  @Column({name: 'image_path', nullable: true})
   imagePath: string;
 
   @Column({nullable: true, length: 50})
@@ -36,7 +36,7 @@ export class User {
   @Column({nullable: true, length: 30})
   cellphone: string;
 
-  @Column()
+  @Column({name: 'last_succesful_login_date'})
   lastSuccesfulLoginDate: Date;
 
   @Column()
@@ -45,19 +45,20 @@ export class User {
   @Column({length: 50})
   name: string;
 
-  @Column({length: 50})
+  @Column({name: 'last_name', length: 50})
   lastName: string;
 
-  @Column({name: 'roleId'})
+  @Column({name: 'role_id'})
   roleId: number;
 
   @ManyToOne(() => Role, role => role.users)
+  @JoinColumn({name: 'role_id'})
   role: Role;
 
-  @Column({name: 'merchantId'})
+  @Column({name: 'merchant_id'})
   merchantId: number;
 
   @OneToOne(() => Merchant, {nullable: true})
-  @JoinColumn({name: 'merchantId'})
+  @JoinColumn({name: 'merchant_id'})
   merchant: Merchant;
 }
