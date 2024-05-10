@@ -62,12 +62,12 @@ export class BotService implements OnModuleInit {
   static botMap = new Map<string, Telegraf<BotContext>>();
 
   onModuleInit() {
-    this.InitlizeAndLunchBot();
+    this.initlizeAndLunchBot();
   }
 
   composer = new Composer<BotContext>();
 
-  async InitlizeAndLunchBot() {
+  async initlizeAndLunchBot() {
     const merchantList = await this.merchantRepository.orm.find({
       where: {isActive: true},
     });

@@ -1,6 +1,6 @@
 {
   "name": "telegram-siparis-botu",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "",
   "author": "",
   "private": true,
@@ -21,7 +21,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "upload-with-ftp": "node scripts/ftp-upload.script.mjs",
-    "copy-required-files": "cpx .production.env dist && cpx \"package.json\" dist && cpx \"migration/*.js\" \"dist/migration\""
+    "copy-required-files": "cpx .production.env dist && cpx \"package.json\" dist && cpx \"migrations/*.js\" \"dist/migrations\""
   },
   "dependencies": {
     "@azure/storage-blob": "^12.17.0",
