@@ -166,7 +166,7 @@ module.exports = class init20240508211900 {
         CONSTRAINT \`pk_order\` PRIMARY KEY (\`id\`),
         CONSTRAINT \`fk_order_merchant\` FOREIGN KEY (\`merchant_id\`) REFERENCES \`merchant\` (\`id\`) ON DELETE CASCADE ON UPDATE RESTRICT,
         CONSTRAINT \`fk_order_getir_order\` FOREIGN KEY (\`getir_order_id\`) REFERENCES \`getir_order\` (\`id\`) ON DELETE CASCADE ON UPDATE RESTRICT,
-        CONSTRAINT \`fk_order_customer\` FOREIGN KEY (\`customer_id\`) REFERENCES \`customer\` (\`id\`) ON DELETE CASCADE ON UPDATE RESTRICT
+        CONSTRAINT \`fk_order_customer\` FOREIGN KEY (\`customer_id\`) REFERENCES \`customer\` (\`id\`) ON DELETE RESTRICT ON UPDATE RESTRICT
       ) ENGINE = InnoDB;
       `,
     );

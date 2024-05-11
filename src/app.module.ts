@@ -35,7 +35,7 @@ import {LoggerModule} from './logger';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       synchronize: false,
-      logging: true,
+      logging: false,
       extra: {
         decimalNumbers: true,
       },

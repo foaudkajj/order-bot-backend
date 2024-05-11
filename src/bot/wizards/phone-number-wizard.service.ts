@@ -20,7 +20,12 @@ export class PhoneNumberWizardService {
         if (ctx?.message && 'contact' in ctx?.message) {
           const customer =
             await this.customerRepository.getCurrentCustomer(ctx);
-          customer.phoneNumber = ctx.message.contact.phone_number;
+          const phoneNumberComplete =
+            ctx.message.contact.phone_number.startsWith('+');
+          const phoneNumber = ctx.message.contact.phone_number;
+          customer.phoneNumber = phoneNumberComplete
+            ? phoneNumber
+            : `+${phoneNumber}`;
           await this.customerRepository.orm.update({id: customer.id}, customer);
           // ctx.scene.session.address = ctx.message.contact.phone_number;
           await ctx.scene.leave();

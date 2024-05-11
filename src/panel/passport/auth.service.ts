@@ -30,6 +30,7 @@ export class AuthService {
       return;
     }
 
+    const isAdmin = user.role?.roleName === 'admin';
     const isMatch = bcrypt.compareSync(loginRequest.Password, user?.password);
     if (user && isMatch) {
       const permissions =
@@ -37,7 +38,7 @@ export class AuthService {
         [];
 
       let menus = await this.menuRepository.orm.find({where: {enabled: true}});
-      menus = menus.filter(m => permissions.includes(m.role));
+      menus = menus.filter(m => isAdmin || permissions.includes(m.role));
 
       const navigationItems = this.createMenus(menus);
 
@@ -49,11 +50,12 @@ export class AuthService {
             permissions: permissions,
             merchantId: user.merchantId,
           }),
+          isAdmin: isAdmin,
           userId: user.id,
           merchantId: user.merchantId,
           userName: user.userName,
           userStatus: user.userStatus,
-          permissions: JSON.stringify(permissions),
+          permissions: permissions,
           navigationItems: navigationItems,
         },
       };

@@ -7,7 +7,7 @@ import {DataSourceLoadOptionsBase} from 'src/panel/dtos/devextreme-query';
 import {GetRolesDto} from 'src/panel/dtos/get-roles.dto';
 import {RoleIdAndPermissionsRequest} from 'src/panel/dtos/role-id-and-permissions.request';
 import {UIResponseBase} from 'src/panel/dtos/ui-response-base';
-import {DataSource} from 'typeorm';
+import {DataSource, Not} from 'typeorm';
 
 @Injectable()
 export class RoleService {
@@ -24,10 +24,14 @@ export class RoleService {
         take: query.take,
         skip: query.skip,
         relations: {roleAndPermissions: {permission: true}},
+        // ignore the adming role
+        where: {id: Not(1)},
       });
     } else {
       roles = await this.roleRepository.orm.find({
         relations: {roleAndPermissions: {permission: true}},
+        // ignore the adming role
+        where: {id: Not(1)},
       });
     }
     const result = roles.map(
