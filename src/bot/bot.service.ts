@@ -343,7 +343,7 @@ export class BotService implements OnModuleInit {
                   id: product.id.toString(),
                   type: 'article',
                   thumb_url: product.thumbUrl,
-                  title: product.title,
+                  title: `${product.title} - ${product.unitPrice} TL`,
                   description: product.description,
                   // caption: product.Caption,
                   input_message_content: {
