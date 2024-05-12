@@ -3,7 +3,7 @@ import {OrderStatus} from 'src/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
-import {CategoryRepository} from '../../db/repositories';
+import {CategoryRepository, CustomerRepository} from '../../db/repositories';
 import {OrdersInBasketCb} from './get-active-order-cb-handler';
 import {BotCommands} from '../bot-commands';
 
@@ -12,6 +12,7 @@ export class StartOrderingCb {
   constructor(
     private ordersInBasket: OrdersInBasketCb,
     private categoryRepository: CategoryRepository,
+    private customerRepository: CustomerRepository,
   ) {}
   public async StartOrdering(ctx: BotContext) {
     try {
@@ -27,7 +28,11 @@ export class StartOrderingCb {
 
   async showProductCategories(ctx: BotContext, orderDetails: string) {
     try {
-      const categories = await this.categoryRepository.orm.find();
+      const customer = await this.customerRepository.getCurrentCustomer(ctx);
+      const categories = await this.categoryRepository.orm.find({
+        where: {merchantId: customer.merchantId},
+      });
+
       if (categories?.length > 0) {
         const orders =
           orderDetails === null ? 'Lütfen seçim yapınız:' : orderDetails;
