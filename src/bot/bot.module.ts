@@ -15,9 +15,10 @@ import {
   AddnoteToOrderWizardService,
   PhoneNumberWizardService,
 } from './wizards';
+import {LoggerModule} from 'src/logger';
 
 @Module({
-  imports: [SharedModule],
+  imports: [SharedModule, LoggerModule],
   controllers: [],
   providers: [
     BotService,

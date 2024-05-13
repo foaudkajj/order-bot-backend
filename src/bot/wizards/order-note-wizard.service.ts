@@ -13,17 +13,18 @@ export class AddnoteToOrderWizardService {
     private confirmOrderHandler: ConfirmOrderHandler,
   ) {}
 
-  InitilizeAddnoteToOrderWizard() {
+  initilizeAddnoteToOrderWizard() {
     const AddnoteToOrderWizard = new Scenes.WizardScene(
       'AddNoteToOrder',
       async (ctx: BotContext) => {
         if (ctx.updateType === 'callback_query') ctx.answerCbQuery();
 
         if (ctx.message && 'text' in ctx.message) {
-          await ctx.reply('Kaydedilmiştir...');
-          // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-          const customer =
-            await this.customerRepository.getCurrentCustomer(ctx);
+          const [customer, _] = await Promise.all([
+            this.customerRepository.getCurrentCustomer(ctx),
+            ctx.reply('Kaydedilmiştir...'),
+          ]);
+
           await this.orderRepository.orm.update(
             {customerId: customer.id, orderStatus: OrderStatus.New},
             {note: ctx.message.text},

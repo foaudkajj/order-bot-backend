@@ -22,6 +22,6 @@ export class MerchantRepository extends BaseRepository<Merchant> {
   }
 
   async getMerchantIdByBotUserName(botUserName: string): Promise<Merchant> {
-    return await this.orm.findOne({where: {botUserName: botUserName}});
+    return this.orm.findOne({where: {botUserName: botUserName}});
   }
 }

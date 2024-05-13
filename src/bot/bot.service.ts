@@ -37,6 +37,7 @@ import {Composer, Scenes, Telegraf, session} from 'telegraf';
 import {Like} from 'typeorm/find-options/operator/Like';
 import {BotCommands} from './bot-commands';
 import {DataSource, In} from 'typeorm';
+import {WinstonLoggerService} from 'src/logger';
 
 @Injectable()
 export class BotService implements OnModuleInit {
@@ -57,6 +58,7 @@ export class BotService implements OnModuleInit {
     private ordersInBasketCb: OrdersInBasketCb,
     private startOrderingCb: StartOrderingCb,
     private dataSource: DataSource,
+    private loggerService: WinstonLoggerService,
   ) {}
 
   static botMap = new Map<string, Telegraf<BotContext>>();
@@ -92,6 +94,13 @@ export class BotService implements OnModuleInit {
       if (merchant.botToken) {
         const bot = new Telegraf<BotContext>(merchant.botToken);
 
+        bot.catch((err, ctx) => {
+          this.loggerService.error(
+            'Error catched by bot catcher: ',
+            JSON.stringify(err),
+          );
+        });
+
         bot.use(this.composer);
         bot.launch(() => {
           console.log(`Bot started. Merchant: ${merchant.botUserName}`);
@@ -117,40 +126,37 @@ export class BotService implements OnModuleInit {
     });
     composer.command('start', async ctx => await this.fmh.startOptions(ctx));
     composer.on('callback_query', async ctx => {
-      try {
-        if ('data' in ctx.callbackQuery && ctx.callbackQuery.data) {
-          const callbackQueryData = safeJsonParse<CallbackQueryData>(
-            ctx.callbackQuery.data,
-          );
+      if ('data' in ctx.callbackQuery && ctx.callbackQuery.data) {
+        const callbackQueryData = safeJsonParse<CallbackQueryData>(
+          ctx.callbackQuery.data,
+        );
+        try {
           switch (callbackQueryData.action) {
             case CallBackQueryResult.StartOrdering:
               await ctx.answerCbQuery();
-              await this.startOrderingCb.StartOrdering(ctx);
+              await this.startOrderingCb.startOrdering(ctx);
               break;
-            // case CallBackQueryResult.AddProductAndCompleteOrder:
-            //   await ctx.answerCbQuery();
-            //   await this.AddProductAndCompleteOrder(ctx);
-            //   break;
+
             case CallBackQueryResult.CompleteOrder:
               await this.askForPhoneNumberIfNotAvailable(ctx);
               break;
             case CallBackQueryResult.AddToBasketAndContinueShopping:
               await Promise.all([
                 ctx.answerCbQuery(),
-                this.AddProdToBasket(
+                this.addProdToBasket(
                   ctx,
                   Number.parseInt(callbackQueryData.data.selectedProductId),
                 ),
               ]);
 
-              await this.startOrderingCb.StartOrdering(ctx);
+              await this.startOrderingCb.startOrdering(ctx);
               break;
             case CallBackQueryResult.EnterAddress:
               await ctx.answerCbQuery();
-              await this.EnterAddress(ctx);
+              await this.enterAddress(ctx);
               break;
             case CallBackQueryResult.SendOrder:
-              await this.SendOrder(ctx);
+              await this.sendOrder(ctx);
               break;
             case CallBackQueryResult.MyBasket:
               {
@@ -181,7 +187,7 @@ export class BotService implements OnModuleInit {
               // await this.fmh.startOptions(ctx);
               break;
             case CallBackQueryResult.EmptyBakset:
-              await this.EmptyBasket(ctx);
+              await this.emptyBasket(ctx);
               break;
             case CallBackQueryResult.MainMenu:
               await ctx.answerCbQuery();
@@ -195,14 +201,13 @@ export class BotService implements OnModuleInit {
               break;
             case CallBackQueryResult.GetConfirmedOrders:
               await this.getConfirmedOrderCb.getConfirmedOrders(ctx);
-              // await this.fmh.startOptions(ctx);
               break;
 
             case CallBackQueryResult.RemoveFromBasket:
               const queryRunner = this.dataSource.createQueryRunner();
-              await queryRunner.connect();
-              await queryRunner.startTransaction();
               try {
+                await queryRunner.connect();
+                await queryRunner.startTransaction();
                 const order =
                   await this.orderRepository.getCurrentUserActiveOrder(ctx, {
                     orderItems: {product: true},
@@ -310,21 +315,22 @@ export class BotService implements OnModuleInit {
               } finally {
                 await queryRunner.release();
               }
-
               break;
+
             default:
               await ctx.answerCbQuery();
               break;
           }
+        } catch (e) {
+          this.loggerService.error(
+            `callbackQueryData: ${JSON.stringify(callbackQueryData)}`,
+            e,
+          );
+          await ctx.answerCbQuery();
         }
-      } catch (e) {
-        console.log(e);
-        await ctx.answerCbQuery();
       }
-      // if ("data" in ctx.callbackQuery && ctx.callbackQuery.data) {
-      //   console.log(ctx.callbackQuery.from.id)
-      // }
     });
+
     composer.on('inline_query', async ctx => {
       try {
         const customer = await this.customerRepository.getCurrentCustomer(ctx);
@@ -355,8 +361,10 @@ export class BotService implements OnModuleInit {
           );
         }
       } catch (error) {
-        // Loglama
-        console.log(error);
+        this.loggerService.error(
+          `callbackQueryData: ${JSON.stringify(ctx)}`,
+          error,
+        );
         await ctx.answerInlineQuery(
           [
             {
@@ -412,49 +420,41 @@ export class BotService implements OnModuleInit {
           }
         }
       } catch (e) {
-        console.log(e);
+        this.loggerService.error(
+          `callbackQueryData: ${JSON.stringify(ctx)}`,
+          e,
+        );
       }
     });
   }
 
-  async EmptyBasket(ctx: BotContext) {
-    try {
-      const order = await this.orderRepository.getCurrentUserActiveOrder(ctx);
-      if (order) {
-        await Promise.all([
-          this.orderRepository.orm.delete({id: order.id}),
-          ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.'),
-        ]);
-      } else {
-        await ctx.answerCbQuery('Sepetiniz Boştur.');
-      }
-    } catch (error) {
-      // Loglama
-      console.log(error);
-      await ctx.answerCbQuery('Bir hata oluştu. Lütfen tekrar deneyiniz.');
-    }
-  }
-
-  async SendOrder(ctx: BotContext) {
-    try {
-      // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
-      const customer = await this.customerRepository.getCurrentCustomer(ctx);
-
+  async emptyBasket(ctx: BotContext) {
+    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx);
+    if (order) {
       await Promise.all([
-        this.orderRepository.orm.update(
-          {customerId: customer.id, orderStatus: OrderStatus.New},
-          {orderStatus: OrderStatus.UserConfirmed},
-        ),
-        ctx.answerCbQuery('Siparişiniz Gönderilmiştir'),
-        this.fmh.startOptions(ctx),
+        this.orderRepository.orm.delete({id: order.id}),
+        ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.'),
       ]);
-    } catch (error) {
-      console.log(error);
-      await ctx.answerCbQuery('Bir hata oluştu. Lütfen tekrar deneyiniz.');
+    } else {
+      await ctx.answerCbQuery('Sepetiniz Boştur.');
     }
   }
 
-  async EnterAddress(ctx: BotContext) {
+  async sendOrder(ctx: BotContext) {
+    // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
+    const customer = await this.customerRepository.getCurrentCustomer(ctx);
+
+    await Promise.all([
+      this.orderRepository.orm.update(
+        {customerId: customer.id, orderStatus: OrderStatus.New},
+        {orderStatus: OrderStatus.UserConfirmed},
+      ),
+      ctx.answerCbQuery('Siparişiniz Gönderilmiştir'),
+      this.fmh.startOptions(ctx),
+    ]);
+  }
+
+  async enterAddress(ctx: BotContext) {
     await ctx.scene.enter(
       'address',
       // await ctx.reply(
@@ -465,7 +465,7 @@ export class BotService implements OnModuleInit {
 
   initlizeWizards(composer: Composer<BotContext>) {
     const addNoteToOrderWizard =
-      this.addNoteToOrderWizard.InitilizeAddnoteToOrderWizard();
+      this.addNoteToOrderWizard.initilizeAddnoteToOrderWizard();
     const addressWizard = this.addressWizard.InitilizeAdressWizard();
     const phoneNumber = this.phoneNumberService.InitilizePhoneNumberWizard();
     const stage = new Scenes.Stage<BotContext>([
@@ -531,7 +531,7 @@ export class BotService implements OnModuleInit {
    * @param ctx
    * @param selectedProductId
    */
-  async AddProdToBasket(ctx: BotContext, selectedProductId: number) {
+  async addProdToBasket(ctx: BotContext, selectedProductId: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
