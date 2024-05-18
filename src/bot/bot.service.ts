@@ -619,6 +619,15 @@ export class BotService implements OnModuleInit {
   }
 
   async askForPhoneNumberIfNotAvailable(ctx: BotContext) {
+    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
+      orderItems: true,
+    });
+
+    if (!order?.orderItems?.length) {
+      await ctx.answerCbQuery('Sepetiniz Boştur.');
+      return;
+    }
+
     const customer = await this.customerRepository.getCurrentCustomer(ctx);
     if (!customer.phoneNumber) {
       await ctx.scene.enter(

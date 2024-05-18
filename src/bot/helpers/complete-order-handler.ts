@@ -24,7 +24,7 @@ export class CompleteOrderHandler {
           await ctx.replyWithLocation(location.latitude, location.longitude);
         }
 
-        await ctx.replyWithMarkdown(
+        await ctx.replyWithMarkdownV2(
           `<i>${customer.address}</i> \n \n` +
             '<b>Kayıtlı olan adres ve konumunuz mu kullanalım?</b> \n \n' +
             '<b>Note:</b> Açık adres ile konum uyuşmadığı takdirde, açık adres kullanılacaktır.',
