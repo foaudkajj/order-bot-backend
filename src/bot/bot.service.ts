@@ -23,7 +23,7 @@ import {
   OrdersInBasketCb,
   StartOrderingCb,
 } from './helpers';
-import {CallBackQueryResult} from './models/enums';
+import {CallBackQueryResult, Messages} from './models/enums';
 import {
   AddnoteToOrderWizardService,
   AddressWizardService,
@@ -160,31 +160,41 @@ export class BotService implements OnModuleInit {
               break;
             case CallBackQueryResult.MyBasket:
               {
-                const orderDetails =
-                  await this.ordersInBasketCb.getActiveOrderDetails(
-                    ctx,
-                    OrderStatus.New,
+                const order = await this.orderRepository.getCurrentOrder(ctx, {
+                  orderItems: {product: true},
+                  customer: true,
+                });
+
+                if (!order || order?.orderItems?.length === 0) {
+                  await ctx.answerCbQuery(
+                    'Sepetiniz Boştur. Lütfen Ürün Seçiniz',
                   );
-                if (orderDetails != null) {
-                  await ctx.editMessageText(orderDetails, {
-                    parse_mode: 'HTML',
-                    reply_markup: {
-                      // one_time_keyboard: true,
-                      inline_keyboard: BotCommands.getCustom([
-                        {action: CallBackQueryResult.StartOrdering},
-                        {action: CallBackQueryResult.GetConfirmedOrders},
-                        {action: CallBackQueryResult.EmptyBakset},
-                        {action: CallBackQueryResult.CompleteOrder},
-                        {action: CallBackQueryResult.MainMenu},
-                      ]),
-                    },
-                  });
+                } else {
+                  const [orderDetails, _] = await Promise.all([
+                    this.ordersInBasketCb.getOrdersDetails(ctx, [order]),
+                    ctx.answerCbQuery(),
+                  ]);
+
+                  if (orderDetails != null) {
+                    await ctx.editMessageText(orderDetails, {
+                      parse_mode: 'HTML',
+                      reply_markup: {
+                        inline_keyboard: BotCommands.getCustom([
+                          {action: CallBackQueryResult.StartOrdering},
+                          {action: CallBackQueryResult.TrackOrder},
+                          {action: CallBackQueryResult.EmptyBakset},
+                          {action: CallBackQueryResult.CompleteOrder},
+                          {action: CallBackQueryResult.MainMenu},
+                        ]),
+                      },
+                    });
+                  }
                 }
               }
               break;
             case CallBackQueryResult.ConfirmOrder:
+              await ctx.answerCbQuery();
               await this.confirmOrderHandler.confirmOrder(ctx);
-              // await this.fmh.startOptions(ctx);
               break;
             case CallBackQueryResult.EmptyBakset:
               await this.emptyBasket(ctx);
@@ -193,14 +203,11 @@ export class BotService implements OnModuleInit {
               await ctx.answerCbQuery();
               await this.fmh.startOptions(ctx);
               break;
-            case CallBackQueryResult.TrackOrder:
-              await ctx.answerCbQuery('Bu Özellik Yapım Aşamasındadır');
-              break;
             case CallBackQueryResult.AddNoteToOrder:
               await this.addNoteToOrder(ctx);
               break;
-            case CallBackQueryResult.GetConfirmedOrders:
-              await this.getConfirmedOrderCb.getConfirmedOrders(ctx);
+            case CallBackQueryResult.TrackOrder:
+              await this.getConfirmedOrderCb.getActiveOrders(ctx);
               break;
 
             case CallBackQueryResult.RemoveFromBasket:
@@ -208,18 +215,16 @@ export class BotService implements OnModuleInit {
               try {
                 await queryRunner.connect();
                 await queryRunner.startTransaction();
-                const order =
-                  await this.orderRepository.getCurrentUserActiveOrder(ctx, {
-                    orderItems: {product: true},
-                  });
+                const order = await this.orderRepository.getCurrentOrder(ctx, {
+                  orderItems: {product: true},
+                });
 
-                const selectedProducts = order?.orderItems?.map(
-                  oi => oi.product,
-                );
+                const selectedProducts =
+                  order?.orderItems?.map(oi => oi.product) ?? [];
 
                 if (selectedProducts.length === 0) {
                   await Promise.all([
-                    ctx.answerCbQuery('Sepette ürün yoktur.'),
+                    ctx.answerCbQuery(Messages.EMPTY_BASKET),
                     this.fmh.startOptions(ctx),
                   ]);
                 }
@@ -276,7 +281,7 @@ export class BotService implements OnModuleInit {
                     );
                   } else {
                     await Promise.all([
-                      ctx.answerCbQuery('Sepette ürün kalmamıştır.'),
+                      ctx.answerCbQuery(Messages.EMPTY_BASKET),
                       this.fmh.startOptions(ctx),
                     ]);
                   }
@@ -392,7 +397,7 @@ export class BotService implements OnModuleInit {
         if ('text' in ctx.message) {
           const message = ctx.message.text;
 
-          if (ctx.message.via_bot?.is_bot && parseInt(message, 10)) {
+          if (!ctx.message.from.is_bot && parseInt(message, 10)) {
             await this.selectedProductOptions(
               ctx,
               Number.parseInt(ctx.message.text),
@@ -429,14 +434,14 @@ export class BotService implements OnModuleInit {
   }
 
   async emptyBasket(ctx: BotContext) {
-    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx);
+    const order = await this.orderRepository.getCurrentOrder(ctx);
     if (order) {
       await Promise.all([
         this.orderRepository.orm.delete({id: order.id}),
         ctx.answerCbQuery('Sepetiniz Boşaltılmıştır.'),
       ]);
     } else {
-      await ctx.answerCbQuery('Sepetiniz Boştur.');
+      await ctx.answerCbQuery(Messages.EMPTY_BASKET);
     }
   }
 
@@ -491,34 +496,36 @@ export class BotService implements OnModuleInit {
         merchantId: customer.merchantId,
       },
     });
-    await ctx.reply(
-      `<b>${product.title}</b> \n` +
-        `Açıklama:<i> ${product.description}</i> \n` +
-        `Fiyat: <u> ${product.unitPrice} TL</u>`,
-      {
-        parse_mode: 'HTML',
-        reply_markup: {
-          one_time_keyboard: true,
-          inline_keyboard: BotCommands.getCustom([
-            {
-              action: CallBackQueryResult.AddToBasketAndContinueShopping,
-              data: {selectedProductId},
-            },
+    if (product) {
+      await ctx.reply(
+        `<b>${product.title}</b> \n` +
+          `Açıklama:<i> ${product.description}</i> \n` +
+          `Fiyat: <u> ${product.unitPrice} TL</u>`,
+        {
+          parse_mode: 'HTML',
+          reply_markup: {
+            one_time_keyboard: true,
+            inline_keyboard: BotCommands.getCustom([
+              {
+                action: CallBackQueryResult.AddToBasketAndContinueShopping,
+                data: {selectedProductId},
+              },
 
-            {
-              action: CallBackQueryResult.StartOrdering,
-              text: 'Başka bir ürün seç',
-            },
-            {
-              action: CallBackQueryResult.CompleteOrder,
-            },
-            {
-              action: CallBackQueryResult.MainMenu,
-            },
-          ]),
+              {
+                action: CallBackQueryResult.StartOrdering,
+                text: 'Başka bir ürün seç',
+              },
+              {
+                action: CallBackQueryResult.CompleteOrder,
+              },
+              {
+                action: CallBackQueryResult.MainMenu,
+              },
+            ]),
+          },
         },
-      },
-    );
+      );
+    }
   }
 
   // async AddProductAndCompleteOrder(ctx: BotContext) {
@@ -537,7 +544,7 @@ export class BotService implements OnModuleInit {
     await queryRunner.startTransaction();
 
     try {
-      let order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
+      let order = await this.orderRepository.getCurrentOrder(ctx, {
         orderItems: true,
       });
 
@@ -605,7 +612,7 @@ export class BotService implements OnModuleInit {
   }
 
   async addNoteToOrder(ctx: BotContext) {
-    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx);
+    const order = await this.orderRepository.getCurrentOrder(ctx);
     if (order) {
       ctx.scene.enter(
         'AddNoteToOrder',
@@ -614,17 +621,17 @@ export class BotService implements OnModuleInit {
         // ),
       );
     } else {
-      await ctx.answerCbQuery('Sepetiniz Boştur.');
+      await ctx.answerCbQuery(Messages.EMPTY_BASKET);
     }
   }
 
   async askForPhoneNumberIfNotAvailable(ctx: BotContext) {
-    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
+    const order = await this.orderRepository.getCurrentOrder(ctx, {
       orderItems: true,
     });
 
     if (!order?.orderItems?.length) {
-      await ctx.answerCbQuery('Sepetiniz Boştur.');
+      await ctx.answerCbQuery(Messages.EMPTY_BASKET);
       return;
     }
 

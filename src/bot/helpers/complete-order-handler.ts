@@ -9,14 +9,11 @@ export class CompleteOrderHandler {
   constructor(private orderRepository: OrderRepository) {}
 
   async completeOrder(ctx: BotContext) {
-    const ordersInBasket = await this.orderRepository.getCurrentUserActiveOrder(
-      ctx,
-      {
-        customer: true,
-      },
-    );
-    if (ordersInBasket) {
-      const customer = ordersInBasket.customer;
+    const order = await this.orderRepository.getCurrentOrder(ctx, {
+      customer: true,
+    });
+    if (order) {
+      const customer = order.customer;
       if (ctx.updateType === 'callback_query') await ctx.answerCbQuery();
       if (customer.address) {
         if (customer.location) {

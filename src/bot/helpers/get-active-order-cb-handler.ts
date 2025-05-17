@@ -1,40 +1,32 @@
 import {Injectable} from '@nestjs/common';
-import {OrderStatus} from 'src/models';
-import {OrderRepository} from '../../db/repositories/order.repository';
+import {Order, orderStatusTranslations} from 'src/models';
 import {BotContext} from '../interfaces/bot-context';
 
 @Injectable()
 export class OrdersInBasketCb {
-  constructor(private orderRepository: OrderRepository) {}
+  constructor() {}
 
   /**
    * Displays the details of the current order (with the details of the products).
    * @param ctx
    * @returns {string}
    */
-  public async getActiveOrderDetails(
+  public async getOrdersDetails(
     ctx: BotContext,
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    orderStatus: OrderStatus,
+    orders: Order[],
   ): Promise<string> {
-    let isCbQuyer = false;
-    if (ctx.updateType === 'callback_query') isCbQuyer = true;
-
     let orderDetailsMessage = '';
 
-    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
-      orderItems: {product: true},
-      customer: true,
-    });
-    if (!order || order?.orderItems?.length === 0) {
-      orderDetailsMessage = null; // 'Sepetinizde Ürün Yoktur.\n Lütfen ürün seçiniz.\n\n';
+    if (!orders.length || orders?.every(o => !o?.orderItems?.length)) {
+      return null;
+    }
 
-      if (isCbQuyer) {
-        await ctx.answerCbQuery('Sepetiniz Boştur. Lütfen Ürün Seçiniz');
+    for (const order of orders) {
+      if (!order?.orderItems?.length) {
+        continue;
       }
-    } else {
-      orderDetailsMessage = 'Sepetinizdeki Ürünler:\n\n';
-      order.orderItems.forEach((orderDetails, inx) => {
+
+      order?.orderItems.forEach((orderDetails, inx) => {
         if (inx != 0) {
           orderDetailsMessage = orderDetailsMessage.concat(`\n`);
         }
@@ -42,25 +34,27 @@ export class OrdersInBasketCb {
           `Ürün İsmi : ${orderDetails.product.title}\n`,
           `Fiyat (adet): ${orderDetails.product.unitPrice} TL\n`,
           `Miktar : ${orderDetails.amount}\n`,
-          `Toplam Fiyat : <u>${orderDetails.amount * orderDetails.product.unitPrice} TL</u> \n`,
         );
       });
-      // `Açıklama : ${orderDetails.Order.Description ?? "Yok"}`
-      orderDetailsMessage = orderDetailsMessage.concat(
-        `\n\n Toplam: <b>${order.totalPrice} TL </b> \n\n`,
-      );
+
+      orderDetailsMessage = orderDetailsMessage.concat(`\n`);
 
       orderDetailsMessage = orderDetailsMessage.concat(
         `Adres : ${order.customer.address ?? ''}\n`,
         `Telefon : ${order.customer.phoneNumber ?? ''}\n`,
+        `Sipariş Durumu: ${orderStatusTranslations(order.orderStatus, 'tr')} \n`,
+        `Sipariş No: ${order.orderNo} \n`,
+        `Sipariş Tarihi: ${order.createDate.toLocaleDateString('tr-TR', {dateStyle: 'medium'})}\n`,
+        order.note !== null ? `Not: ${order.note} \n` : '',
       );
 
-      orderDetailsMessage =
-        order.note !== null
-          ? orderDetailsMessage.concat(`Not: ${order.note} \n`)
-          : orderDetailsMessage;
+      orderDetailsMessage = orderDetailsMessage.concat(
+        `\n <b>Toplam: ${order.totalPrice} TL</b> \n`,
+      );
 
-      if (isCbQuyer) await ctx.answerCbQuery();
+      orderDetailsMessage = orderDetailsMessage.concat(
+        `---------------------------------------------------------------- \n`,
+      );
     }
 
     return orderDetailsMessage;

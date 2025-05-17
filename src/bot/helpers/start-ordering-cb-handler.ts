@@ -1,9 +1,12 @@
 import {Injectable} from '@nestjs/common';
-import {OrderStatus} from 'src/models/enums';
 import {InlineKeyboardButton} from 'telegraf/typings/core/types/typegram';
 import {BotContext} from '../interfaces/bot-context';
 import {CallBackQueryResult} from '../models/enums';
-import {CategoryRepository, CustomerRepository} from '../../db/repositories';
+import {
+  CategoryRepository,
+  CustomerRepository,
+  OrderRepository,
+} from '../../db/repositories';
 import {OrdersInBasketCb} from './get-active-order-cb-handler';
 import {BotCommands} from '../bot-commands';
 
@@ -13,12 +16,17 @@ export class StartOrderingCb {
     private ordersInBasket: OrdersInBasketCb,
     private categoryRepository: CategoryRepository,
     private customerRepository: CustomerRepository,
+    private orderRepository: OrderRepository,
   ) {}
   public async startOrdering(ctx: BotContext) {
-    const orderDetails = await this.ordersInBasket.getActiveOrderDetails(
-      ctx,
-      OrderStatus.New,
-    );
+    const order = await this.orderRepository.getCurrentOrder(ctx, {
+      orderItems: {product: true},
+      customer: true,
+    });
+
+    const orderDetails = await this.ordersInBasket.getOrdersDetails(ctx, [
+      order,
+    ]);
     await this.showProductCategories(ctx, orderDetails);
   }
 
@@ -30,7 +38,7 @@ export class StartOrderingCb {
 
     if (categories?.length > 0) {
       const orders =
-        orderDetails === null ? 'Lütfen seçim yapınız:' : orderDetails;
+        orderDetails == null ? 'Lütfen seçim yapınız:' : orderDetails;
 
       await ctx.editMessageText(orders, {
         parse_mode: 'HTML',

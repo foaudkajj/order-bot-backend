@@ -41,7 +41,7 @@ export class AddressWizardService {
             ?.toLowerCase() === 'istemiyorum'
         ) {
           ctx.scene.session.isLocation = false;
-          await this.SaveAddressToDBAndLeaveWizard(ctx);
+          await this.saveAddressToDBAndLeaveWizard(ctx);
         } else {
           if (
             ctx?.message &&
@@ -51,7 +51,7 @@ export class AddressWizardService {
             ctx.scene.session.isLocation = true;
             ctx.scene.session.latitude = ctx.message.location.latitude;
             ctx.scene.session.longitude = ctx.message.location.longitude;
-            await this.SaveAddressToDBAndLeaveWizard(ctx);
+            await this.saveAddressToDBAndLeaveWizard(ctx);
           } else {
             ctx.scene.session.isLocation = false;
             if (ctx.updateType === 'callback_query') ctx.answerCbQuery();
@@ -68,8 +68,8 @@ export class AddressWizardService {
     return address;
   }
 
-  async SaveAddressToDBAndLeaveWizard(ctx: BotContext) {
-    const order = await this.orderRepository.getCurrentUserActiveOrder(ctx, {
+  async saveAddressToDBAndLeaveWizard(ctx: BotContext) {
+    const order = await this.orderRepository.getCurrentOrder(ctx, {
       customer: true,
     });
     if (order) {
@@ -83,11 +83,11 @@ export class AddressWizardService {
       await this.orderRepository.orm.save(order);
     }
     await ctx.scene.leave();
-    await this.AskIfUserWantsToAddNote(ctx);
+    await this.askIfUserWantsToAddNote(ctx);
   }
 
-  async AskIfUserWantsToAddNote(ctx: BotContext) {
-    await ctx.replyWithMarkdown(
+  async askIfUserWantsToAddNote(ctx: BotContext) {
+    await ctx.replyWithMarkdownV2(
       '<b>Siparişinize bir not eklemek ister misiniz?</b> \n \n',
       {
         parse_mode: 'HTML',

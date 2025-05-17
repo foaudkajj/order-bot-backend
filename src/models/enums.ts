@@ -7,14 +7,14 @@ export enum OrderChannel {
 
 export enum OrderStatus {
   New = 'NEW',
-  UserConfirmed = 'USER_CONFIRMED',
   MerchantConfirmed = 'MERCHANT_CONFIRMED',
   Prepared = 'PREPARED',
   OrderSent = 'ORDER_SENT',
   Delivered = 'DELIVERED',
   Canceled = 'CANCELLED',
-  FutureOrder = 'FUTURE_ORDER',
-  ConfirmedFutureOrder = 'CONFIRMED_FUTURE_ORDER',
+  FutureOrder = 'FUTURE_ORDER', // only getir
+  ConfirmedFutureOrder = 'CONFIRMED_FUTURE_ORDER', // only getir
+  UserConfirmed = 'USER_CONFIRMED', // only getir
 }
 
 export enum ProductStatus {

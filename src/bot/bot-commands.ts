@@ -9,7 +9,7 @@ export class BotCommands {
     [CallBackQueryResult.CompleteOrder]: '✔️ Siparişimi Tamamla ✔️',
     [CallBackQueryResult.MainMenu]: '◀️ Ana Menüye Dön ◀️',
     [CallBackQueryResult.StartOrdering]: 'Sipariş Ver',
-    [CallBackQueryResult.GetConfirmedOrders]: '🚚 Siparişini Takip Et 🚚',
+    [CallBackQueryResult.TrackOrder]: '😍 Aktif siparişler 😍',
     [CallBackQueryResult.MyBasket]: '🛒 Sepetim 🛒',
     [CallBackQueryResult.EmptyBakset]: '🗑 Sepetemi Boşalt 🗑',
     [CallBackQueryResult.AddToBasketAndContinueShopping]:
@@ -25,7 +25,7 @@ export class BotCommands {
   ): InlineKeyboardButton[][] {
     return [
       CallBackQueryResult.StartOrdering,
-      CallBackQueryResult.GetConfirmedOrders,
+      CallBackQueryResult.TrackOrder,
       CallBackQueryResult.MyBasket,
       CallBackQueryResult.EmptyBakset,
       CallBackQueryResult.CompleteOrder,

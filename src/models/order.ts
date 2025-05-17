@@ -107,3 +107,19 @@ export class Order {
   // })
   // orderOptions?: OrderOption[];
 }
+
+export const orderStatusTranslations = (s: OrderStatus, lng: 'tr' = 'tr') => {
+  const translations = {
+    tr: {
+      [OrderStatus.New]: 'Sepette',
+      [OrderStatus.MerchantConfirmed]: 'Onaylandı',
+      [OrderStatus.Prepared]: 'Hazırlandı',
+      [OrderStatus.OrderSent]: 'Yola çıktı',
+      [OrderStatus.Delivered]: 'Teslim edildi',
+      [OrderStatus.Canceled]: 'İptal edildi',
+      [OrderStatus.UserConfirmed]: 'Gönderildi',
+    },
+  };
+
+  return translations?.[lng]?.[s] ?? s;
+};
