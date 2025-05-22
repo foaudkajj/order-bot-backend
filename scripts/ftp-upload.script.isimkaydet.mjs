@@ -1,7 +1,7 @@
 import {Client} from 'basic-ftp';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({path: '.env.production'});
 // FTP server configuration
 const ftpConfig = {
   host: process.env.ftp_host,
