@@ -22,7 +22,7 @@ import {LoggerModule} from './logger';
       isGlobal: true,
       envFilePath: [
         `${process.env.NODE_ENV}`.trim() === 'production'
-          ? '.production.env'
+          ? '.env.production'
           : '.env',
       ],
     }),
