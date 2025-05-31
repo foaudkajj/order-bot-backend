@@ -11,7 +11,7 @@ const sftpConfig = {
 
 const localBuildPath = './dist';
 
-const projDirectory = '/root/order-bot-backend/';
+const projDirectory = '/home/nodejs/order-bot-backend/';
 
 // Initialize SFTP client
 const client = new Client();
@@ -24,19 +24,19 @@ try {
 }
 
 console.log('Connected to SFTP server');
-const projDirectoryExists = await client.exists(projDirectory);
-if (!projDirectoryExists) {
+const directoryExists = await client.exists(projDirectory);
+if (!directoryExists) {
   await client.mkdir(projDirectory, true);
 } else {
   // remove the contents of the directory except node_modules
-  const buildFiles = await client.list(ftpProjDirectory);
+  const buildFiles = await client.list(projDirectory);
   const directoryContent = buildFiles.filter(
     v => !'node_modules'.includes(v.name),
   );
 
-  // remove all files/folders (system files/folders excluded).
+  // remove all files/folders (node_modules excluded).
   for await (const f of directoryContent) {
-    const filePath = ftpProjDirectory + f.name;
+    const filePath = projDirectory + f.name;
 
     if (f.type === 'd') {
       // Remove the directory after all its contents are removed

@@ -27,8 +27,14 @@ async function bootstrap() {
   SwaggerModule.setup('swagger', app, document);
 
   if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `Running in development mode - port ${process.env.PORT || 3000}`,
+    );
     await app.listen(process.env.PORT || 3000);
   } else {
+    console.log(
+      `Running in production mode - port ${process.env.PORT || 3000}`,
+    );
     await app.listen(process.env.PORT || 3000, '0.0.0.0');
   }
 }
