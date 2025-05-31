@@ -9,6 +9,7 @@ import {
   OrdersInBasketCb,
   StartOrderingCb,
   InformationMessages,
+  RemoveFromBasketCb,
 } from './helpers';
 import {
   AddressWizardService,
@@ -31,6 +32,7 @@ import {LoggerModule} from 'src/logger';
     GetConfirmedOrderCb,
     OrdersInBasketCb,
     StartOrderingCb,
+    RemoveFromBasketCb,
     InformationMessages,
   ],
   exports: [
@@ -43,6 +45,7 @@ import {LoggerModule} from 'src/logger';
     GetConfirmedOrderCb,
     OrdersInBasketCb,
     StartOrderingCb,
+    RemoveFromBasketCb,
     InformationMessages,
   ],
 })

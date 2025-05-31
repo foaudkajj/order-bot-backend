@@ -54,14 +54,14 @@ export class OrderService {
     };
     if (entity.customer) {
       // Address: entity.customer.Address, FirstName: entity.customer.FirstName,LastName: entity.customer.LastName,Location: entity.customer.Location,, Username: entity.customer.Username
-      const NewCustomer: Customer = {
+      const newCustomer: Customer = {
         merchantId: MerchantId,
         customerChannel: OrderChannel.Panel,
         phoneNumber: entity.customer.phoneNumber,
         fullName: entity.customer.fullName,
         createDate: new Date(),
       };
-      entity.customer = NewCustomer;
+      entity.customer = newCustomer;
     }
     if (!entity.orderNo) entity.orderNo = new Date().getTime().toString(36);
     entity.createDate = new Date();
@@ -221,7 +221,7 @@ export class OrderService {
       this.informationMessages.SendInformationMessage(
         order.merchant.botUserName,
         order.customer.telegramId,
-        `Siparişiniz İptal Edilmiştir. Sebep: <b>${cancelOrder.cancelReason}</b>`,
+        `Siparişiniz İptal Edilmiştir.\nSipariş No: ${order.orderNo}.\nSebep: <b>${cancelOrder.cancelReason}.</b>`,
       );
     } else if (order.orderChannel === OrderChannel.Getir) {
       const response = await this.getirService.cancelOrder(

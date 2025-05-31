@@ -21,6 +21,7 @@ import {
   FirstMessageHandler,
   GetConfirmedOrderCb,
   OrdersInBasketCb,
+  RemoveFromBasketCb,
   StartOrderingCb,
 } from './helpers';
 import {CallBackQueryResult, Messages} from './models/enums';
@@ -57,6 +58,7 @@ export class BotService implements OnModuleInit {
     private getConfirmedOrderCb: GetConfirmedOrderCb,
     private ordersInBasketCb: OrdersInBasketCb,
     private startOrderingCb: StartOrderingCb,
+    private removeFromBasketCb: RemoveFromBasketCb,
     private dataSource: DataSource,
     private loggerService: WinstonLoggerService,
   ) {}
@@ -75,7 +77,7 @@ export class BotService implements OnModuleInit {
     });
 
     this.initlizeWizards(this.composer);
-    this.InilizeBotEventsHandlers(this.composer);
+    this.inilizeBotEventsHandlers(this.composer);
 
     const isProd = process.env.NODE_ENV === 'production';
 
@@ -92,6 +94,9 @@ export class BotService implements OnModuleInit {
       }
 
       if (merchant.botToken) {
+        console.log(
+          `Bot with username: ${merchant.botUserName} is starting...`,
+        );
         const bot = new Telegraf<BotContext>(merchant.botToken);
 
         bot.catch((err, ctx) => {
@@ -103,22 +108,28 @@ export class BotService implements OnModuleInit {
 
         bot.use(this.composer);
         bot.launch(() => {
-          console.log(`Bot started. Merchant: ${merchant.botUserName}`);
+          this.loggerService.log(
+            `Bot started. Merchant: ${merchant.botUserName}`,
+          );
           BotService.botMap.set(bot.botInfo.username, bot);
         });
         process.once('SIGINT', () => {
           bot.stop('SIGINT');
-          console.log('Bot stopped: ', merchant.botUserName);
+          this.loggerService.log(
+            `Bot stopped. Merchant: ${merchant.botUserName}`,
+          );
         });
         process.once('SIGTERM', () => {
           bot.stop('SIGTERM');
-          console.log('Bot stopped: ', merchant.botUserName);
+          this.loggerService.log(
+            `Bot stopped. Merchant: ${merchant.botUserName}`,
+          );
         });
       }
     }
   }
 
-  InilizeBotEventsHandlers(composer: Composer<BotContext>) {
+  inilizeBotEventsHandlers(composer: Composer<BotContext>) {
     // initlize the custom properties.
     composer.use((ctx, next) => {
       ctx.botUser = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
@@ -211,115 +222,10 @@ export class BotService implements OnModuleInit {
               break;
 
             case CallBackQueryResult.RemoveFromBasket:
-              const queryRunner = this.dataSource.createQueryRunner();
-              try {
-                await queryRunner.connect();
-                await queryRunner.startTransaction();
-                const order = await this.orderRepository.getCurrentOrder(ctx, {
-                  orderItems: {product: true},
-                });
-
-                const selectedProducts =
-                  order?.orderItems?.map(oi => oi.product) ?? [];
-
-                if (selectedProducts.length === 0) {
-                  await Promise.all([
-                    ctx.answerCbQuery(Messages.EMPTY_BASKET),
-                    this.fmh.startOptions(ctx),
-                  ]);
-                }
-
-                const productIdToRemove = callbackQueryData.data?.productId;
-                if (productIdToRemove) {
-                  const remainingProducts = selectedProducts.filter(
-                    p => p.id !== productIdToRemove,
-                  );
-
-                  order.totalPrice = remainingProducts.reduce(
-                    (sum, p) => sum + p.unitPrice,
-                    0,
-                  );
-
-                  await Promise.all([
-                    queryRunner.manager.delete(OrderItem, {
-                      productId: productIdToRemove,
-                      orderId: order.id,
-                    }),
-                    queryRunner.manager.update(
-                      Order,
-                      {id: order.id},
-                      {totalPrice: order.totalPrice},
-                    ),
-                  ]);
-
-                  if (remainingProducts.length > 0) {
-                    await ctx.editMessageText(
-                      `Ürün çıkarılmıştır.\n Lütfen çıkarmak istediğiniz başka bir ürün seçiniz:`,
-                      {
-                        reply_markup: {
-                          inline_keyboard: [
-                            ...remainingProducts
-                              .map(p => {
-                                return BotCommands.getCustom([
-                                  {
-                                    text: p.title,
-                                    action:
-                                      CallBackQueryResult.RemoveFromBasket,
-                                    data: {
-                                      productId: p.id,
-                                    },
-                                  },
-                                ]);
-                              })
-                              .flat(),
-                            ...BotCommands.getCustom([
-                              {action: CallBackQueryResult.MainMenu},
-                            ]),
-                          ],
-                        },
-                      },
-                    );
-                  } else {
-                    await Promise.all([
-                      ctx.answerCbQuery(Messages.EMPTY_BASKET),
-                      this.fmh.startOptions(ctx),
-                    ]);
-                  }
-                } else {
-                  await ctx.editMessageText(
-                    'Lütfen çıkarmak istediğiniz ürünü seçiniz:',
-                    {
-                      reply_markup: {
-                        inline_keyboard: [
-                          ...selectedProducts
-                            .map(p => {
-                              return BotCommands.getCustom([
-                                {
-                                  text: p.title,
-                                  action: CallBackQueryResult.RemoveFromBasket,
-                                  data: {
-                                    productId: p.id,
-                                  },
-                                },
-                              ]);
-                            })
-                            .flat(),
-                          ...BotCommands.getCustom([
-                            {action: CallBackQueryResult.MainMenu},
-                          ]),
-                        ],
-                      },
-                    },
-                  );
-                }
-
-                await queryRunner.commitTransaction();
-              } catch (error) {
-                await queryRunner.rollbackTransaction();
-                throw error;
-              } finally {
-                await queryRunner.release();
-              }
+              await this.removeFromBasketCb.removeFromBasket(
+                ctx,
+                callbackQueryData.data?.productId,
+              );
               break;
 
             default:
@@ -448,6 +354,38 @@ export class BotService implements OnModuleInit {
   async sendOrder(ctx: BotContext) {
     // const userInfo = ctx.from.is_bot ? ctx.callbackQuery.from : ctx.from;
     const customer = await this.customerRepository.getCurrentCustomer(ctx);
+    const order = await this.orderRepository.getCurrentOrder(ctx, {
+      orderItems: true,
+    });
+    const productIdList = order.orderItems.map(oi => oi.productId);
+
+    const products = await this.productRepository.orm.find({
+      where: {id: In(productIdList)},
+    });
+
+    for (const oi of order.orderItems) {
+      const product = products.find(p => p.id === oi.productId);
+      const remainingAmount = product.count - oi.amount;
+      if (remainingAmount < 0) {
+        await Promise.all([
+          ctx.answerCbQuery(
+            `Ürün sayısı ${oi.amount} adet, ancak stokta ${product.count} adet var.`,
+          ),
+          await this.orderItemRepository.orm.delete({
+            orderId: order.id,
+            productId: oi.productId,
+          }),
+          this.fmh.startOptions(ctx),
+        ]);
+
+        return;
+      } else {
+        await this.productRepository.orm.update(
+          {id: product.id},
+          {count: remainingAmount},
+        );
+      }
+    }
 
     await Promise.all([
       this.orderRepository.orm.update(

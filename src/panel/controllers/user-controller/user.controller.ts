@@ -34,6 +34,12 @@ export class UserController {
     return this.authService.login(req.user);
   }
 
+  @Get('validate-token')
+  async ValidateToken(): Promise<UIResponseBase> {
+    // when the request reaches this line, this means that the token is valid.
+    return <UIResponseBase>{data: true};
+  }
+
   @Get('get')
   @PermissionsGuard(PermissionEnum.SHOW_USER)
   async Get(

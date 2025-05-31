@@ -30,6 +30,9 @@ export class Product {
   @Column({name: 'unit_price', type: 'decimal', precision: 2, default: 0})
   unitPrice?: number;
 
+  @Column({name: 'count', type: 'smallint'})
+  count?: number;
+
   @Column({type: 'varchar', nullable: false, length: 6})
   code: string;
 
