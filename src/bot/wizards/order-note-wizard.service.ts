@@ -33,7 +33,7 @@ export class AddnoteToOrderWizardService {
           await ctx.scene.leave();
         } else {
           await ctx.reply(
-            'Lütfen Eklemek İstediğiniz notu giriniz.... \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
+            'Lütfen Eklemek İstediğiniz notu giriniz.... \n Tekrar Ana Menüyedönmek için iptale /iptal tıklayınız',
           );
         }
       },

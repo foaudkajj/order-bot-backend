@@ -6,3 +6,4 @@ export * from './get-active-order-cb-handler';
 export * from './informtaion-msgs';
 export * from './start-ordering-cb-handler';
 export * from './remove-from-basket-cb-handler';
+export * from './address.handler';

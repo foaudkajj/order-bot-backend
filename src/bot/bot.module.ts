@@ -10,6 +10,7 @@ import {
   StartOrderingCb,
   InformationMessages,
   RemoveFromBasketCb,
+  AddressHandler,
 } from './helpers';
 import {
   AddressWizardService,
@@ -34,6 +35,7 @@ import {LoggerModule} from 'src/logger';
     StartOrderingCb,
     RemoveFromBasketCb,
     InformationMessages,
+    AddressHandler,
   ],
   exports: [
     AddressWizardService,
@@ -47,6 +49,7 @@ import {LoggerModule} from 'src/logger';
     StartOrderingCb,
     RemoveFromBasketCb,
     InformationMessages,
+    AddressHandler,
   ],
 })
 export class BotModule {}

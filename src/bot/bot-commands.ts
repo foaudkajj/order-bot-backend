@@ -17,6 +17,7 @@ export class BotCommands {
     [CallBackQueryResult.RemoveFromBasket]: 'Ürün çıkar',
     [CallBackQueryResult.SendOrder]: '👌 Siparişimi Onayla 👌',
     [CallBackQueryResult.AddNoteToOrder]: '🗒 Siparişe Not Ekle/Düzenle 🗒',
+    [CallBackQueryResult.AddUpdateAddress]: '📍Adresimi Güncelle📍',
   };
 
   static getMainMenu(
@@ -30,6 +31,7 @@ export class BotCommands {
       CallBackQueryResult.EmptyBakset,
       CallBackQueryResult.CompleteOrder,
       CallBackQueryResult.RemoveFromBasket,
+      CallBackQueryResult.AddUpdateAddress,
     ]
       .filter(cmnd => !(exclude ?? []).includes(cmnd))
       .map(action => {

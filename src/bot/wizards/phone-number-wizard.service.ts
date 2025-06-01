@@ -11,7 +11,7 @@ export class PhoneNumberWizardService {
     private completeOrderHandler: CompleteOrderHandler,
   ) {}
 
-  InitilizePhoneNumberWizard() {
+  initilizePhoneNumberWizard() {
     const phoneNumber = new Scenes.WizardScene(
       'phone-number',
       async (ctx: BotContext) => {
@@ -31,19 +31,22 @@ export class PhoneNumberWizardService {
           await ctx.scene.leave();
           await this.completeOrderHandler.completeOrder(ctx);
         } else {
-          await ctx.reply('Lütfen telefon numarınızı gönderiniz. /iptal', {
-            reply_markup: {
-              keyboard: [
-                [
-                  {
-                    request_contact: true,
-                    text: 'Bu butona tıklayarak telefon numaranızı gönderebilirsiniz.',
-                  },
+          await ctx.reply(
+            'Lütfen telefon numarınızı gönderiniz.\n Tekrar Ana Menüye dönmek için iptale /iptal tıklayınız',
+            {
+              reply_markup: {
+                keyboard: [
+                  [
+                    {
+                      request_contact: true,
+                      text: 'Bu butona tıklayarak telefon numaranızı gönderebilirsiniz.',
+                    },
+                  ],
                 ],
-              ],
-              one_time_keyboard: true,
+                one_time_keyboard: true,
+              },
             },
-          });
+          );
         }
       },
     );

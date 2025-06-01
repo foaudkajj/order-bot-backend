@@ -16,6 +16,7 @@ import {
   ProductRepository,
 } from 'src/db/repositories';
 import {
+  AddressHandler,
   CompleteOrderHandler,
   ConfirmOrderHandler,
   FirstMessageHandler,
@@ -44,6 +45,7 @@ import {WinstonLoggerService} from 'src/logger';
 export class BotService implements OnModuleInit {
   constructor(
     private addressWizard: AddressWizardService,
+    private addressHandler: AddressHandler,
     private addNoteToOrderWizard: AddnoteToOrderWizardService,
     private phoneNumberService: PhoneNumberWizardService,
     private categoryRepository: CategoryRepository,
@@ -149,7 +151,22 @@ export class BotService implements OnModuleInit {
               break;
 
             case CallBackQueryResult.CompleteOrder:
-              await this.askForPhoneNumberIfNotAvailable(ctx);
+              const order = await this.orderRepository.getCurrentOrder(ctx, {
+                orderItems: true,
+                customer: true,
+              });
+
+              if (!order?.orderItems?.length) {
+                await ctx.answerCbQuery(Messages.EMPTY_BASKET);
+                break;
+              }
+              const customer = order.customer;
+              if (!customer?.phoneNumber) {
+                await ctx.scene.enter('phone-number');
+              } else {
+                await this.completeOrderHandler.completeOrder(ctx);
+              }
+
               break;
             case CallBackQueryResult.AddToBasketAndContinueShopping:
               await Promise.all([
@@ -162,9 +179,17 @@ export class BotService implements OnModuleInit {
 
               await this.startOrderingCb.startOrdering(ctx);
               break;
-            case CallBackQueryResult.EnterAddress:
+            case CallBackQueryResult.StartAdderssWizard:
               await ctx.answerCbQuery();
-              await this.enterAddress(ctx);
+              await this.addressHandler.enterAddress(ctx);
+              break;
+            case CallBackQueryResult.AddUpdateAddress:
+              await ctx.answerCbQuery();
+              await this.addressHandler.startAddressSteps(
+                ctx,
+                await this.customerRepository.getCurrentCustomer(ctx),
+                CallBackQueryResult.MainMenu,
+              );
               break;
             case CallBackQueryResult.SendOrder:
               await this.sendOrder(ctx);
@@ -397,20 +422,11 @@ export class BotService implements OnModuleInit {
     ]);
   }
 
-  async enterAddress(ctx: BotContext) {
-    await ctx.scene.enter(
-      'address',
-      // await ctx.reply(
-      //   'Lütfen Açık Adresinizi Giriniz. \n Tekrar Ana Menüye dönmek için bu komutu çalıştırınız /iptal',
-      // ),
-    );
-  }
-
   initlizeWizards(composer: Composer<BotContext>) {
     const addNoteToOrderWizard =
       this.addNoteToOrderWizard.initilizeAddnoteToOrderWizard();
-    const addressWizard = this.addressWizard.InitilizeAdressWizard();
-    const phoneNumber = this.phoneNumberService.InitilizePhoneNumberWizard();
+    const addressWizard = this.addressWizard.initilizeAdressWizard();
+    const phoneNumber = this.phoneNumberService.initilizePhoneNumberWizard();
     const stage = new Scenes.Stage<BotContext>([
       addressWizard,
       addNoteToOrderWizard,
@@ -465,11 +481,6 @@ export class BotService implements OnModuleInit {
       );
     }
   }
-
-  // async AddProductAndCompleteOrder(ctx: BotContext) {
-  //   await this.AddNewOrder(ctx);
-  //   await CompleteOrderHandler.CompleteOrder(ctx);
-  // }
 
   /**
    * Creates an order if not exists and adds the selected product to the basket.
@@ -560,40 +571,6 @@ export class BotService implements OnModuleInit {
       );
     } else {
       await ctx.answerCbQuery(Messages.EMPTY_BASKET);
-    }
-  }
-
-  async askForPhoneNumberIfNotAvailable(ctx: BotContext) {
-    const order = await this.orderRepository.getCurrentOrder(ctx, {
-      orderItems: true,
-    });
-
-    if (!order?.orderItems?.length) {
-      await ctx.answerCbQuery(Messages.EMPTY_BASKET);
-      return;
-    }
-
-    const customer = await this.customerRepository.getCurrentCustomer(ctx);
-    if (!customer.phoneNumber) {
-      await ctx.scene.enter(
-        'phone-number',
-        // await ctx.reply('Lütfen telefon numarınızı gönderiniz. /iptal', {
-        //   reply_markup: {
-        //     keyboard: [
-        //       [
-        //         {
-        //           request_contact: true,
-        //           text:
-        //             'Bu butona tıklayarak telefon numaranızı gönderebilirsiniz.',
-        //         },
-        //       ],
-        //     ],
-        //     one_time_keyboard: true,
-        //   },
-        // }),
-      );
-    } else {
-      await this.completeOrderHandler.completeOrder(ctx);
     }
   }
 }
